@@ -1,0 +1,34 @@
+{
+  "name": "sesimiz-ol-backend",
+  "version": "1.0.0",
+  "description": "Backend API for Sesimiz Ol digital storytelling platform",
+  "main": "src/app.js",
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch src/app.js",
+    "start": "node src/app.js",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:studio": "prisma studio",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "digital-storytelling",
+    "anonymous",
+    "women-empowerment"
+  ],
+  "author": "Claude Developer",
+  "license": "MIT",
+  "dependencies": {
+    "@prisma/client": "^6.15.0",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "helmet": "^8.1.0",
+    "joi": "^18.0.1",
+    "prisma": "^6.15.0"
+  },
+  "devDependencies": {
+    "eslint": "^9.34.0",
+    "prettier": "^3.6.2"
+  }
+}
