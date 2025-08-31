@@ -82,6 +82,11 @@ export const storyAPI = {
       data: { authorId }
     });
   },
+
+  // Increment view count
+  incrementView: async (storyId) => {
+    return await api.post(`/stories/${storyId}/view`);
+  },
 };
 
 // Health check

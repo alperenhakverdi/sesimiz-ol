@@ -23,20 +23,33 @@ import {
 } from '@chakra-ui/react'
 import { Link as RouterLink } from 'react-router-dom'
 import { AddIcon, HamburgerIcon } from '@chakra-ui/icons'
+import { useAuth } from '../../contexts/AuthContext'
+import { useDisclosure as useLoginDisclosure } from '@chakra-ui/react'
+import AuthButton from '../auth/AuthButton'
+import LoginModal from '../auth/LoginModal'
+import AnimatedButton from '../animations/AnimatedButton'
 
 const Header = () => {
   const { isOpen, onOpen, onClose } = useDisclosure()
+  const { isOpen: isLoginOpen, onOpen: onLoginOpen, onClose: onLoginClose } = useLoginDisclosure()
+  const { isAuthenticated } = useAuth()
   const isMobile = useBreakpointValue({ base: true, md: false })
+  
+  const handleShareClick = () => {
+    if (!isAuthenticated) {
+      onLoginOpen()
+    }
+  }
 
   const NavLinks = () => (
     <>
-      <Link as={RouterLink} to="/" _hover={{ color: 'brand.500' }}>
+      <Link as={RouterLink} to="/" color="neutral.800" _hover={{ color: 'accent.600', textDecoration: 'underline' }}>
         Ana Sayfa
       </Link>
-      <Link as={RouterLink} to="/hikayeler" _hover={{ color: 'brand.500' }}>
+      <Link as={RouterLink} to="/hikayeler" color="neutral.800" _hover={{ color: 'accent.600', textDecoration: 'underline' }}>
         Hikâyeler
       </Link>
-      <Link as={RouterLink} to="/hakkinda" _hover={{ color: 'brand.500' }}>
+      <Link as={RouterLink} to="/hakkinda" color="neutral.800" _hover={{ color: 'accent.600', textDecoration: 'underline' }}>
         Hakkında
       </Link>
     </>
@@ -52,8 +65,8 @@ const Header = () => {
               as={RouterLink} 
               to="/" 
               size="lg" 
-              color="brand.500"
-              _hover={{ textDecoration: 'none', color: 'brand.600' }}
+              color="accent.500"
+              _hover={{ textDecoration: 'none', color: 'accent.600' }}
               fontWeight="bold"
             >
               Sesimiz Ol
@@ -68,24 +81,17 @@ const Header = () => {
               </HStack>
               
               <HStack spacing={4}>
-                <Button 
-                  variant="outline" 
-                  colorScheme="brand"
-                  as={RouterLink}
-                  to="/"
-                  size="sm"
-                >
-                  Hikâyeleri Gör
-                </Button>
-                <Button 
-                  colorScheme="brand" 
+                <AuthButton size="sm" />
+                <AnimatedButton 
+                  colorScheme="accent" 
                   leftIcon={<AddIcon />}
-                  as={RouterLink}
-                  to="/hikaye-olustur"
+                  as={isAuthenticated ? RouterLink : 'button'}
+                  to={isAuthenticated ? "/hikaye-olustur" : undefined}
+                  onClick={!isAuthenticated ? handleShareClick : undefined}
                   size="sm"
                 >
                   Hikâyeni Paylaş
-                </Button>
+                </AnimatedButton>
               </HStack>
             </HStack>
           )}
@@ -93,15 +99,17 @@ const Header = () => {
           {/* Mobile Navigation */}
           {isMobile && (
             <HStack spacing={2}>
-              <Button 
+              <AuthButton size="sm" />
+              <AnimatedButton 
                 colorScheme="brand" 
                 leftIcon={<AddIcon />}
-                as={RouterLink}
-                to="/hikaye-olustur"
+                as={isAuthenticated ? RouterLink : 'button'}
+                to={isAuthenticated ? "/hikaye-olustur" : undefined}
+                onClick={!isAuthenticated ? handleShareClick : undefined}
                 size="sm"
               >
                 Paylaş
-              </Button>
+              </AnimatedButton>
               <IconButton
                 size="sm"
                 icon={<HamburgerIcon />}
@@ -117,7 +125,7 @@ const Header = () => {
             <DrawerContent>
               <DrawerCloseButton />
               <DrawerHeader borderBottomWidth="1px">
-                <Heading size="md" color="brand.500">
+                <Heading size="md" color="accent.500">
                   Sesimiz Ol
                 </Heading>
               </DrawerHeader>
@@ -129,7 +137,8 @@ const Header = () => {
                       to="/" 
                       fontSize="lg"
                       fontWeight="medium"
-                      _hover={{ color: 'brand.500' }}
+                      color="neutral.800"
+                      _hover={{ color: 'accent.600', textDecoration: 'underline' }}
                       onClick={onClose}
                     >
                       Ana Sayfa
@@ -139,7 +148,8 @@ const Header = () => {
                       to="/hikayeler" 
                       fontSize="lg"
                       fontWeight="medium"
-                      _hover={{ color: 'brand.500' }}
+                      color="neutral.800"
+                      _hover={{ color: 'accent.600', textDecoration: 'underline' }}
                       onClick={onClose}
                     >
                       Hikâyeler
@@ -149,7 +159,8 @@ const Header = () => {
                       to="/hakkinda" 
                       fontSize="lg"
                       fontWeight="medium"
-                      _hover={{ color: 'brand.500' }}
+                      color="neutral.800"
+                      _hover={{ color: 'accent.600', textDecoration: 'underline' }}
                       onClick={onClose}
                     >
                       Hakkında
@@ -157,32 +168,26 @@ const Header = () => {
                   </VStack>
                   
                   <Box pt={4} borderTopWidth="1px">
-                    <Button 
-                      variant="outline" 
-                      colorScheme="brand"
-                      as={RouterLink}
-                      to="/"
-                      w="full"
-                      mb={3}
-                      onClick={onClose}
-                    >
-                      Hikâyeleri Gör
-                    </Button>
-                    <Button 
-                      colorScheme="brand" 
+                    <Box mb={3}>
+                      <AuthButton size="md" />
+                    </Box>
+                    <AnimatedButton 
+                      colorScheme="accent" 
                       leftIcon={<AddIcon />}
-                      as={RouterLink}
-                      to="/hikaye-olustur"
+                      as={isAuthenticated ? RouterLink : 'button'}
+                      to={isAuthenticated ? "/hikaye-olustur" : undefined}
+                      onClick={isAuthenticated ? onClose : () => { onClose(); handleShareClick(); }}
                       w="full"
-                      onClick={onClose}
                     >
                       Hikâyeni Paylaş
-                    </Button>
+                    </AnimatedButton>
                   </Box>
                 </VStack>
               </DrawerBody>
             </DrawerContent>
           </Drawer>
+          
+          <LoginModal isOpen={isLoginOpen} onClose={onLoginClose} />
         </Flex>
       </Container>
     </Box>

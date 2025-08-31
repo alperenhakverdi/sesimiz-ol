@@ -13,7 +13,10 @@ datasource db {
 model User {
   id        Int      @id @default(autoincrement())
   nickname  String   @unique
-  avatar    String?
+  email     String?  @unique
+  password  String   // Hashed password with bcrypt
+  avatar    String?  // Avatar file path/URL
+  isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -28,6 +31,7 @@ model Story {
   title     String
   content   String
   authorId  Int
+  viewCount Int      @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

@@ -36,7 +36,7 @@ const Footer = () => {
               as={RouterLink} 
               to="/hakkinda"
               color="gray.300"
-              _hover={{ color: 'brand.300' }}
+              _hover={{ color: 'accent.300', textDecoration: 'underline' }}
             >
               Hakkında
             </Link>
@@ -44,7 +44,7 @@ const Footer = () => {
               as={RouterLink} 
               to="/gizlilik"
               color="gray.300"
-              _hover={{ color: 'brand.300' }}
+              _hover={{ color: 'accent.300', textDecoration: 'underline' }}
             >
               Gizlilik
             </Link>
@@ -52,7 +52,7 @@ const Footer = () => {
               as={RouterLink} 
               to="/destek"
               color="gray.300"
-              _hover={{ color: 'brand.300' }}
+              _hover={{ color: 'accent.300', textDecoration: 'underline' }}
             >
               Destek
             </Link>
@@ -60,7 +60,7 @@ const Footer = () => {
               as={RouterLink} 
               to="/iletisim"
               color="gray.300"
-              _hover={{ color: 'brand.300' }}
+              _hover={{ color: 'accent.300', textDecoration: 'underline' }}
             >
               İletişim
             </Link>

@@ -21,9 +21,12 @@ import { ArrowBackIcon } from '@chakra-ui/icons'
 import { formatDistanceToNow } from 'date-fns'
 import { tr } from 'date-fns/locale'
 import { storyAPI } from '../services/api'
+import { useAuth } from '../contexts/AuthContext'
+import CommentSection from '../components/comments/CommentSection'
 
 const StoryDetailPage = () => {
   const { id } = useParams()
+  const { getCurrentNickname } = useAuth()
   const [story, setStory] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -89,7 +92,7 @@ const StoryDetailPage = () => {
           <Button 
             leftIcon={<ArrowBackIcon />} 
             variant="ghost" 
-            colorScheme="brand"
+            colorScheme="accent"
             as={RouterLink}
             to="/"
             size="sm"
@@ -117,17 +120,17 @@ const StoryDetailPage = () => {
                     color="brand.500"
                   />
                   <VStack align="start" spacing={0}>
-                    <Text fontWeight="medium" color="gray.700">
+                    <Text fontWeight="medium" color="neutral.700">
                       @{story.author.nickname}
                     </Text>
-                    <Text fontSize="sm" color="gray.500">
+                    <Text fontSize="sm" color="neutral.500">
                       {timeAgo}
                     </Text>
                   </VStack>
                 </HStack>
                 
                 <Badge 
-                  colorScheme="brand" 
+                  colorScheme="accent" 
                   variant="subtle"
                   px={3}
                   py={1}
@@ -144,7 +147,7 @@ const StoryDetailPage = () => {
               <Text 
                 fontSize="lg"
                 lineHeight="tall"
-                color="gray.700"
+                color="neutral.700"
                 whiteSpace="pre-wrap"
               >
                 {story.content}
@@ -155,7 +158,7 @@ const StoryDetailPage = () => {
 
             {/* Story Footer */}
             <HStack justify="space-between" align="center">
-              <Text fontSize="sm" color="gray.500">
+              <Text fontSize="sm" color="neutral.500">
                 Paylaşım tarihi: {new Date(story.createdAt).toLocaleDateString('tr-TR')}
                 {story.updatedAt !== story.createdAt && (
                   <Text as="span" ml={2}>
@@ -167,13 +170,21 @@ const StoryDetailPage = () => {
           </VStack>
         </Box>
 
+        {/* Comments Section */}
+        <Box bg="neutral.50" p={6} borderRadius="lg">
+          <CommentSection 
+            storyId={id}
+            currentUserNickname={getCurrentNickname()}
+          />
+        </Box>
+
         {/* Related Actions */}
         <VStack spacing={4} textAlign="center" py={8}>
-          <Text fontSize="lg" color="gray.600">
+          <Text fontSize="lg" color="neutral.600">
             Sen de hikâyeni paylaşmak istiyor musun?
           </Text>
           <Button 
-            colorScheme="brand" 
+            colorScheme="accent" 
             size="lg"
             as={RouterLink}
             to="/hikaye-olustur"

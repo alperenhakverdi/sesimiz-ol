@@ -4,6 +4,8 @@ import helmet from 'helmet';
 import { PrismaClient } from '@prisma/client';
 import userRoutes from './routes/users.js';
 import storyRoutes from './routes/stories.js';
+import authRoutes from './routes/auth.js';
+import uploadRoutes from './routes/upload.js';
 
 const app = express();
 const prisma = new PrismaClient();
@@ -14,7 +16,7 @@ app.use(helmet());
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
     ? ['https://sesimiz-ol.netlify.app'] // Production frontend URL
-    : ['http://localhost:5173', 'http://localhost:3000'], // Development URLs
+    : ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:3000'], // Development URLs
   credentials: true
 }));
 app.use(express.json({ limit: '10mb' }));
@@ -33,19 +35,33 @@ app.get('/health', (req, res) => {
 app.get('/api', (req, res) => {
   res.json({ 
     message: 'Sesimiz Ol API Server',
-    version: '1.0.0',
+    version: '2.0.0',
     endpoints: [
+      // Authentication
+      'POST /api/auth/register - Register new user',
+      'POST /api/auth/login - Login user',
+      'POST /api/auth/refresh - Refresh token',
+      'GET /api/auth/profile - Get user profile',
+      'PUT /api/auth/profile - Update profile',
+      'PUT /api/auth/password - Change password',
+      // Stories
       'GET /api/stories - List all stories',
       'GET /api/stories/:id - Get story details',
+      'POST /api/stories/:id/view - Increment view count',
       'POST /api/stories - Create new story',
+      // Upload
+      'POST /api/upload/avatar - Upload avatar',
+      'GET /uploads/avatars/:filename - Get avatar file',
+      // Legacy
       'POST /api/users - Create user',
-      'GET /api/users/:id - Get user profile',
-      'GET /api/users/:id/stories - Get user stories'
+      'GET /api/users/:id - Get user profile'
     ]
   });
 });
 
 // Mount routes
+app.use('/api/auth', authRoutes);
+app.use('/api/upload', uploadRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/stories', storyRoutes);
 

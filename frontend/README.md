@@ -1,12 +1,45 @@
-# React + Vite
+# Sesimiz Ol - Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Kadınlar için anonim hikaye paylaşım platformu
 
-Currently, two official plugins are available:
+## Proje Hakkında
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+**Sesimiz Ol**, kadınların deneyimlerini anonim olarak paylaşabilecekleri güvenli bir platform. Bu proje, kadınların seslerini duyurabilecekleri, hikayelerini paylaşabilecekleri ve birbirlerinden destek alabilecekleri modern bir web uygulaması.
 
-## Expanding the ESLint configuration
+## Teknolojiler
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- **React 18** - Modern UI framework
+- **Vite** - Hızlı geliştirme ve build aracı
+- **Chakra UI** - Modern ve erişilebilir UI bileşenleri
+- **React Router** - Sayfa yönlendirme
+- **Date-fns** - Tarih işlemleri
+- **Axios** - HTTP istekleri
+
+## Geliştirme
+
+```bash
+# Bağımlılıkları yükle
+npm install
+
+# Geliştirme sunucusunu başlat
+npm run dev
+
+# Production build
+npm run build
+
+# Linting
+npm run lint
+```
+
+## Özellikler
+
+- ✅ Anonim giriş sistemi
+- ✅ Hikaye paylaşımı ve okuma
+- ✅ Yorum sistemi
+- ✅ Responsive tasarım
+- ✅ Erişilebilir UI
+- ✅ Modern renk sistemi
+
+## UI Rehberi
+
+Proje renkli ve tutarlı bir tasarım sistemi kullanmaktadır. Detaylar için `UI_GUIDE.md` dosyasına bakınız.

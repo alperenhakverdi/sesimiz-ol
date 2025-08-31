@@ -25,6 +25,18 @@ const colors = {
     700: '#F57C00',
     800: '#EF6C00',
     900: '#E65100'
+  },
+  neutral: {
+    50: '#F8F9FA',   // Modern neutral - En açık
+    100: '#F1F3F4', 
+    200: '#E8EAED',  // Badge backgrounds - Daha belirgin
+    300: '#DADCE0',  // Borders - Net
+    400: '#BDC1C6',  // Button borders - Görünür
+    500: '#9AA0A6',  // Secondary text
+    600: '#80868B',  // Meta info
+    700: '#5F6368',  // Body text - Okunabilir
+    800: '#3C4043',  // Headings - Koyu ve net
+    900: '#202124'   // En koyu - Max kontrast
   }
 };
 
@@ -48,7 +60,7 @@ const fonts = {
 const components = {
   Button: {
     defaultProps: {
-      colorScheme: 'brand',
+      colorScheme: 'accent', // Default to orange for actions
     },
     variants: {
       solid: {
@@ -57,14 +69,25 @@ const components = {
           transform: 'translateY(-2px)',
           boxShadow: 'lg',
         },
+        _active: {
+          transform: 'scale(0.95)',
+        },
         transition: 'all 0.2s ease-in-out',
       },
       outline: {
         borderRadius: 'md',
         borderWidth: '2px',
+        borderColor: 'neutral.400',  // Daha net border
+        color: 'neutral.800',        // Daha koyu text
+        bg: 'transparent',
         _hover: {
+          borderColor: 'accent.500',
+          color: 'accent.600',
           transform: 'translateY(-2px)',
           boxShadow: 'md',
+        },
+        _active: {
+          transform: 'scale(0.95)',
         },
         transition: 'all 0.2s ease-in-out',
       }
@@ -75,9 +98,13 @@ const components = {
       container: {
         borderRadius: 'lg',
         boxShadow: 'sm',
+        bg: 'white',
+        borderWidth: '1px',
+        borderColor: 'neutral.300',
         _hover: {
           transform: 'translateY(-2px)',
-          boxShadow: 'md',
+          boxShadow: 'lg',
+          borderColor: 'neutral.300', // Neutral hover, not purple
         },
         transition: 'all 0.2s ease-in-out',
       }
@@ -85,15 +112,16 @@ const components = {
   },
   Input: {
     defaultProps: {
-      focusBorderColor: 'brand.400',
+      focusBorderColor: 'accent.500', // Orange focus
     },
     variants: {
       outline: {
         field: {
           borderRadius: 'md',
+          borderColor: 'neutral.300',
           _focus: {
-            borderColor: 'brand.400',
-            boxShadow: '0 0 0 1px #AB47BC',
+            borderColor: 'accent.500',
+            boxShadow: '0 0 0 1px #F57C00', // Orange shadow
           },
         },
       },
@@ -101,17 +129,36 @@ const components = {
   },
   Textarea: {
     defaultProps: {
-      focusBorderColor: 'brand.400',
+      focusBorderColor: 'accent.500', // Orange focus
     },
     variants: {
       outline: {
         borderRadius: 'md',
+        borderColor: 'neutral.300',
         _focus: {
-          borderColor: 'brand.400',
-          boxShadow: '0 0 0 1px #AB47BC',
+          borderColor: 'accent.500',
+          boxShadow: '0 0 0 1px #F57C00', // Orange shadow
         },
       },
     },
+  },
+  Badge: {
+    variants: {
+      soft: {
+        bg: 'neutral.200',    // Daha belirgin background
+        color: 'neutral.800', // Daha koyu, net text
+        fontWeight: 'medium',
+      },
+      warm: {
+        bg: 'orange.50',
+        color: 'orange.700',
+        fontWeight: 'medium',
+      },
+      subtle: {
+        bg: 'neutral.200',    // Konsistent neutral
+        color: 'neutral.800',
+      }
+    }
   },
 };
 
@@ -119,8 +166,8 @@ const components = {
 const styles = {
   global: {
     body: {
-      bg: 'gray.50',
-      color: 'gray.800',
+      bg: 'neutral.50',
+      color: 'neutral.800',
     },
   },
 };

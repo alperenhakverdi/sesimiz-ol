@@ -44,7 +44,7 @@ const StoryCard = ({ story }) => {
     >
       <CardHeader pb={2}>
         <VStack align="start" spacing={3}>
-          <Heading size="md" color="brand.500" noOfLines={2}>
+          <Heading size="md" color="neutral.800" noOfLines={2}>
             {story.title}
           </Heading>
           
@@ -58,24 +58,15 @@ const StoryCard = ({ story }) => {
                 color="brand.500"
               />
               <VStack align="start" spacing={0}>
-                <Text fontSize="sm" fontWeight="medium" color="gray.700">
+                <Text fontSize="sm" fontWeight="medium" color="neutral.700">
                   @{story.author.nickname}
                 </Text>
-                <Text fontSize="xs" color="gray.500">
+                <Text fontSize="xs" color="neutral.500">
                   {timeAgo}
                 </Text>
               </VStack>
             </HStack>
             
-            <Badge 
-              colorScheme="brand" 
-              variant="subtle"
-              fontSize="2xs"
-              px={2}
-              py={1}
-            >
-              Hikâye
-            </Badge>
           </HStack>
         </VStack>
       </CardHeader>
@@ -83,7 +74,7 @@ const StoryCard = ({ story }) => {
       <CardBody pt={0}>
         <VStack align="start" spacing={4}>
           <Text 
-            color="gray.700" 
+            color="neutral.700" 
             fontSize="sm"
             lineHeight="tall"
             noOfLines={4}
@@ -93,7 +84,7 @@ const StoryCard = ({ story }) => {
           
           <Button 
             variant="link" 
-            colorScheme="brand" 
+            colorScheme="accent" 
             size="sm"
             alignSelf="flex-start"
             p={0}

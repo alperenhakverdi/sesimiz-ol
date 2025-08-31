@@ -6,8 +6,7 @@ const prisma = new PrismaClient();
 // Validation schemas
 const createStorySchema = Joi.object({
   title: Joi.string().min(5).max(200).required(),
-  content: Joi.string().min(50).max(10000).required(),
-  authorId: Joi.number().integer().positive().required()
+  content: Joi.string().min(50).max(10000).required()
 });
 
 const updateStorySchema = Joi.object({
@@ -30,6 +29,7 @@ export const getAllStories = async (req, res) => {
           id: true,
           title: true,
           content: true,
+          viewCount: true,
           createdAt: true,
           author: {
             select: {
@@ -93,6 +93,7 @@ export const getStoryById = async (req, res) => {
         id: true,
         title: true,
         content: true,
+        viewCount: true,
         createdAt: true,
         updatedAt: true,
         author: {
@@ -146,22 +147,8 @@ export const createStory = async (req, res) => {
       });
     }
 
-    const { title, content, authorId } = value;
-
-    // Check if author exists
-    const author = await prisma.user.findUnique({
-      where: { id: authorId }
-    });
-
-    if (!author) {
-      return res.status(404).json({
-        success: false,
-        error: {
-          code: 'AUTHOR_NOT_FOUND',
-          message: 'Yazar bulunamadı'
-        }
-      });
-    }
+    const { title, content } = value;
+    const authorId = req.user.id; // From JWT authentication middleware
 
     // Create story
     const story = await prisma.story.create({
@@ -202,7 +189,7 @@ export const createStory = async (req, res) => {
 export const updateStory = async (req, res) => {
   try {
     const storyId = parseInt(req.params.id);
-    const authorId = parseInt(req.body.authorId); // In real app, this would come from JWT token
+    const authorId = req.user.id; // From JWT authentication middleware
     
     if (isNaN(storyId)) {
       return res.status(400).json({
@@ -259,6 +246,7 @@ export const updateStory = async (req, res) => {
         id: true,
         title: true,
         content: true,
+        viewCount: true,
         createdAt: true,
         updatedAt: true,
         author: {
@@ -292,7 +280,7 @@ export const updateStory = async (req, res) => {
 export const deleteStory = async (req, res) => {
   try {
     const storyId = parseInt(req.params.id);
-    const authorId = parseInt(req.body.authorId); // In real app, this would come from JWT token
+    const authorId = req.user.id; // From JWT authentication middleware
     
     if (isNaN(storyId)) {
       return res.status(400).json({
@@ -345,6 +333,71 @@ export const deleteStory = async (req, res) => {
       error: {
         code: 'INTERNAL_SERVER_ERROR',
         message: 'Hikâye silinirken bir hata oluştu'
+      }
+    });
+  }
+};
+
+// Increment view count
+export const incrementViewCount = async (req, res) => {
+  try {
+    const storyId = parseInt(req.params.id);
+    
+    if (isNaN(storyId)) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_STORY_ID',
+          message: 'Geçersiz hikâye ID'
+        }
+      });
+    }
+
+    // Check if story exists
+    const existingStory = await prisma.story.findUnique({
+      where: { id: storyId },
+      select: { id: true, viewCount: true }
+    });
+
+    if (!existingStory) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: 'STORY_NOT_FOUND',
+          message: 'Hikâye bulunamadı'
+        }
+      });
+    }
+
+    // Increment view count
+    const updatedStory = await prisma.story.update({
+      where: { id: storyId },
+      data: {
+        viewCount: {
+          increment: 1
+        }
+      },
+      select: {
+        id: true,
+        viewCount: true
+      }
+    });
+
+    res.json({
+      success: true,
+      data: {
+        id: updatedStory.id,
+        viewCount: updatedStory.viewCount
+      },
+      message: 'Görüntülenme sayısı güncellendi'
+    });
+  } catch (error) {
+    console.error('Increment view count error:', error);
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Görüntülenme sayısı güncellenirken bir hata oluştu'
       }
     });
   }

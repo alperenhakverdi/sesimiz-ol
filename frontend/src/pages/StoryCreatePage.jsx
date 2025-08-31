@@ -19,12 +19,13 @@ import {
 } from '@chakra-ui/react'
 import { Link as RouterLink, useNavigate } from 'react-router-dom'
 import { ArrowBackIcon } from '@chakra-ui/icons'
-import { storyAPI, userAPI } from '../services/api'
+import { storyAPI } from '../services/api'
+import ProtectedRoute from '../components/auth/ProtectedRoute'
+import { useAuth } from '../contexts/AuthContext'
 
 const StoryCreatePage = () => {
+  const { user } = useAuth()
   const [formData, setFormData] = useState({
-    nickname: '',
-    avatar: '',
     title: '',
     content: ''
   })
@@ -37,14 +38,6 @@ const StoryCreatePage = () => {
   // Form validation
   const validateForm = () => {
     const newErrors = {}
-    
-    if (!formData.nickname.trim()) {
-      newErrors.nickname = 'Takma ad gereklidir'
-    } else if (formData.nickname.length < 2) {
-      newErrors.nickname = 'Takma ad en az 2 karakter olmalıdır'
-    } else if (formData.nickname.length > 50) {
-      newErrors.nickname = 'Takma ad en fazla 50 karakter olabilir'
-    }
     
     if (!formData.title.trim()) {
       newErrors.title = 'Başlık gereklidir'
@@ -62,21 +55,8 @@ const StoryCreatePage = () => {
       newErrors.content = 'Hikâye en fazla 10.000 karakter olabilir'
     }
     
-    if (formData.avatar && !isValidUrl(formData.avatar)) {
-      newErrors.avatar = 'Geçerli bir URL giriniz'
-    }
-    
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
-  }
-
-  const isValidUrl = (string) => {
-    try {
-      new URL(string)
-      return true
-    } catch (_) {
-      return false
-    }
   }
 
   const handleInputChange = (e) => {
@@ -105,24 +85,10 @@ const StoryCreatePage = () => {
     setIsSubmitting(true)
     
     try {
-      // First create/get user
-      let user
-      try {
-        user = await userAPI.create({
-          nickname: formData.nickname.trim(),
-          avatar: formData.avatar.trim() || undefined
-        })
-      } catch (userError) {
-        // If nickname exists, this is expected behavior
-        // In a real app, we'd handle user authentication properly
-        throw new Error('Bu takma ad zaten kullanılıyor. Farklı bir takma ad deneyin.')
-      }
-
-      // Then create story
+      // Create story using authenticated user
       const story = await storyAPI.create({
         title: formData.title.trim(),
-        content: formData.content.trim(),
-        authorId: user.data.id
+        content: formData.content.trim()
       })
 
       toast({
@@ -139,7 +105,7 @@ const StoryCreatePage = () => {
     } catch (error) {
       toast({
         title: 'Hata oluştu',
-        description: error.message,
+        description: error.response?.data?.error?.message || error.message || 'Bir hata oluştu',
         status: 'error',
         duration: 5000,
         isClosable: true,
@@ -150,10 +116,11 @@ const StoryCreatePage = () => {
   }
 
   return (
-    <Container maxW="container.md" py={8}>
-      <VStack spacing={8} align="stretch">
-        {/* Back Button */}
-        <Box>
+    <ProtectedRoute>
+      <Container maxW="container.md" py={8}>
+          <VStack spacing={8} align="stretch">
+            {/* Back Button */}
+            <Box>
           <Button 
             leftIcon={<ArrowBackIcon />} 
             variant="ghost" 
@@ -172,7 +139,7 @@ const StoryCreatePage = () => {
             Hikâyeni Paylaş
           </Heading>
           <Text color="gray.600" maxW="lg">
-            Hikâyen tamamen anonim olacak. Sadece seçeceğin takma isim görünecek.
+            Merhaba {user?.nickname}! Hikâyeni burada paylaşabilirsin.
           </Text>
         </VStack>
 
@@ -184,8 +151,8 @@ const StoryCreatePage = () => {
               Gizlilik Güvencesi
             </Text>
             <Text fontSize="sm">
-              Kişisel bilgilerin alınmaz. Sadece takma isim ile hikâye paylaşırsın.
-              Kimliğin gizli kalır ve hiçbir şekilde paylaşılmaz.
+              Hikâyen "{user?.nickname}" kullanıcı adıyla paylaşılacak. 
+              Kişisel bilgilerin güvende kalır ve hiçbir şekilde paylaşılmaz.
             </Text>
           </VStack>
         </Alert>
@@ -194,44 +161,6 @@ const StoryCreatePage = () => {
         <Box bg="white" p={8} borderRadius="lg" shadow="sm">
           <form onSubmit={handleSubmit}>
             <VStack spacing={6} align="stretch">
-              {/* Nickname Field */}
-              <FormControl isRequired isInvalid={!!errors.nickname}>
-                <FormLabel>Takma Adın</FormLabel>
-                <Input 
-                  name="nickname"
-                  value={formData.nickname}
-                  onChange={handleInputChange}
-                  placeholder="Örnek: GizliYazar, AnonimSes, BenimHikayem"
-                  size="lg"
-                />
-                {errors.nickname ? (
-                  <FormErrorMessage>{errors.nickname}</FormErrorMessage>
-                ) : (
-                  <FormHelperText>
-                    Sadece sen bileceksin. Gerçek adın asla paylaşılmayacak.
-                  </FormHelperText>
-                )}
-              </FormControl>
-
-              {/* Avatar Field (Optional) */}
-              <FormControl isInvalid={!!errors.avatar}>
-                <FormLabel>Avatar (Opsiyonel)</FormLabel>
-                <Input 
-                  name="avatar"
-                  value={formData.avatar}
-                  onChange={handleInputChange}
-                  placeholder="https://example.com/avatar.jpg"
-                  size="lg"
-                />
-                {errors.avatar ? (
-                  <FormErrorMessage>{errors.avatar}</FormErrorMessage>
-                ) : (
-                  <FormHelperText>
-                    İsteğe bağlı. Profil resmi URL'si ekleyebilirsin.
-                  </FormHelperText>
-                )}
-              </FormControl>
-
               {/* Title Field */}
               <FormControl isRequired isInvalid={!!errors.title}>
                 <FormLabel>Hikâye Başlığı</FormLabel>
@@ -306,6 +235,7 @@ const StoryCreatePage = () => {
         </Alert>
       </VStack>
     </Container>
+    </ProtectedRoute>
   )
 }
 
