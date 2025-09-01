@@ -1,11 +1,9 @@
-# Railway deployment configuration for backend service only
-# Deploy backend and frontend separately
-
+# Railway deployment configuration
 [build]
 builder = "nixpacks"
 
 [deploy]
-startCommand = "cd backend && npm run start:production"
+startCommand = "npm start"
 healthcheckPath = "/health"
 restartPolicyType = "always"
 
@@ -15,7 +13,7 @@ DATABASE_URL = "${{DATABASE_URL}}"
 JWT_SECRET = "${{JWT_SECRET}}"
 JWT_REFRESH_SECRET = "${{JWT_REFRESH_SECRET}}"
 
-# Volume for file uploads
+# Volume for file uploads  
 [[volumes]]
 name = "uploads"
 mountPath = "/app/backend/uploads"

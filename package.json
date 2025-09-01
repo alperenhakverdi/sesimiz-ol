@@ -1,0 +1,19 @@
+{
+  "name": "sesimiz-ol-monorepo",
+  "version": "1.0.0",
+  "description": "Voice communication platform monorepo",
+  "private": true,
+  "workspaces": ["backend", "frontend"],
+  "scripts": {
+    "build": "cd backend && npm run build",
+    "start": "cd backend && npm run start:production",
+    "dev": "concurrently \"cd backend && npm run dev\" \"cd frontend && npm run dev\"",
+    "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

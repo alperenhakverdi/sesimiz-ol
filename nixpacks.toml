@@ -1,0 +1,12 @@
+# Nixpacks configuration for Railway
+[phases.build]
+cmds = [
+  "cd backend && npm ci",
+  "cd backend && npm run build"
+]
+
+[phases.start]
+cmd = "cd backend && npm run start:production"
+
+[variables]
+NODE_ENV = "production"
