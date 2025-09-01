@@ -18,7 +18,11 @@ app.use(helmet({
 }));
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? ['https://sesimiz-ol.netlify.app'] // Production frontend URL
+    ? [
+        'https://sesimiz-ol.up.railway.app', // Railway production URL
+        'https://sesimiz-ol.netlify.app',    // Netlify frontend (if used)
+        /\.railway\.app$/                    // Allow any Railway subdomain
+      ]
     : ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:3000'], // Development URLs
   credentials: true
 }));
@@ -63,7 +67,8 @@ app.get('/api', (req, res) => {
 });
 
 // Static file serving with CORS headers
-app.use('/uploads', cors(), express.static('uploads', {
+const uploadsPath = process.env.NODE_ENV === 'production' ? '/app/uploads' : 'uploads';
+app.use('/uploads', cors(), express.static(uploadsPath, {
   setHeaders: (res, path) => {
     // Set CORS headers for static files
     res.setHeader('Access-Control-Allow-Origin', 

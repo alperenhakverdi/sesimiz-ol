@@ -1,299 +1,326 @@
-# Sesimiz Ol - Kadın Hikayesi Paylaşım Platformu
+# Sesimiz Ol - Voice Communication Platform
 
-Kadınların deneyimlerini anonim bir şekilde paylaştıkları, güvenli bir topluluk platformu.
+**Sesimiz Ol** (Let Our Voice Be Heard) is a modern, secure voice communication platform that enables users to create channels, share voice messages, and engage in real-time conversations.
 
-## 🌟 Özellikler
+## 🚀 Live Demo
 
-### Kullanıcı Sistemi
-- **Güvenli Kayıt ve Giriş**: JWT tabanlı authentication sistemi
-- **Profil Fotoğrafı**: Drag & drop dosya yükleme ile profil fotoğrafı ekleme
-- **Şifre Güvenliği**: bcrypt ile hash'lenen şifreler
-- **Token Yenileme**: Otomatik access token yenileme sistemi
+- **Frontend**: [https://sesimiz-ol.up.railway.app](https://sesimiz-ol.up.railway.app)
+- **Backend API**: [https://sesimiz-ol-backend.up.railway.app](https://sesimiz-ol-backend.up.railway.app)
 
-### Hikaye Paylaşımı
-- **Korumalı Paylaşım**: Sadece giriş yapmış kullanıcılar hikaye paylaşabilir
-- **Güvenli İçerik**: Express-validator ile giriş doğrulama
-- **CRUD İşlemleri**: Hikaye oluşturma, okuma, güncelleme ve silme
+## ✨ Features
 
-### Güvenlik
-- **Rate Limiting**: API isteklerine hız limiti (Authentication: 5/15dk, Genel: 100/15dk)
-- **File Upload Güvenliği**: Dosya tipi ve boyut kontrolü (max 5MB)
-- **JWT Security**: Access token (15dk) ve refresh token (7 gün) sistemi
-- **Password Policy**: Güçlü şifre gereksinimleri
+- **Voice Messaging**: Record and share voice messages in channels
+- **Real-time Communication**: Join conversations with instant updates
+- **User Management**: Secure authentication with JWT tokens
+- **Profile Customization**: Upload avatars and manage personal settings
+- **Channel Management**: Create and manage communication channels
+- **Responsive Design**: Modern UI built with Chakra UI
 
-### UI/UX
-- **Modern Animasyonlar**: Framer Motion ile professional geçişler
-- **Responsive Design**: Mobile-first tasarım yaklaşımı
-- **Accessibility**: WCAG uyumlu arayüz
-- **Turkish Language**: Tam Türkçe dil desteği
-
-## 🚀 Teknolojiler
-
-### Backend
-- **Node.js + Express**: RESTful API
-- **Prisma ORM**: SQLite veritabanı yönetimi
-- **JWT**: Authentication ve authorization
-- **bcryptjs**: Şifre hash'leme
-- **Multer + Sharp**: Dosya yükleme ve resim işleme
-- **express-rate-limit**: Rate limiting
-- **express-validator**: Giriş doğrulama
+## 🛠️ Tech Stack
 
 ### Frontend
-- **React 18**: Modern component yaklaşımı
-- **Chakra UI**: Erişilebilir UI bileşenleri
-- **React Router**: Client-side routing
-- **Axios**: HTTP client ile interceptors
-- **Framer Motion**: Animasyonlar ve geçişler
+- **React 18** - Modern UI library with hooks
+- **Chakra UI** - Component library and design system
+- **React Router** - Client-side routing
+- **Axios** - HTTP client for API communication
+- **React Audio Recorder** - Voice recording functionality
 
-## 📁 Proje Yapısı
+### Backend
+- **Node.js** - JavaScript runtime
+- **Express.js** - Web application framework
+- **Prisma** - Modern database toolkit
+- **PostgreSQL** - Relational database
+- **JWT** - Authentication tokens
+- **Multer & Sharp** - File upload and image processing
+- **Helmet** - Security middleware
+
+### Infrastructure
+- **Railway** - Cloud deployment platform
+- **Docker** - Containerization for local development
+
+## 📦 Quick Start
+
+### Option 1: Docker (Recommended)
+
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd sesimiz-ol
+   ```
+
+2. **Environment setup**
+   ```bash
+   # Backend environment
+   cp backend/.env.example backend/.env
+   
+   # Frontend environment  
+   cp frontend/.env.example frontend/.env
+   ```
+
+3. **Start with Docker**
+   ```bash
+   docker-compose up -d
+   ```
+
+4. **Setup database**
+   ```bash
+   # Run database migrations
+   docker-compose exec backend npm run prisma:migrate
+   
+   # (Optional) Seed sample data
+   docker-compose exec backend npm run prisma:seed
+   ```
+
+5. **Access the application**
+   - Frontend: http://localhost:5173
+   - Backend API: http://localhost:5000
+   - Database Admin: http://localhost:5555 (Prisma Studio)
+
+### Option 2: Manual Setup
+
+1. **Prerequisites**
+   - Node.js 18+ 
+   - PostgreSQL 14+ (for local development)
+   - npm or yarn
+
+2. **Clone and install**
+   ```bash
+   git clone <repository-url>
+   cd sesimiz-ol
+   
+   # Install backend dependencies
+   cd backend
+   npm install
+   
+   # Install frontend dependencies
+   cd ../frontend
+   npm install
+   ```
+
+3. **Database setup**
+   ```bash
+   # Create PostgreSQL database
+   createdb sesimiz_ol
+   
+   # Configure backend/.env
+   DATABASE_URL="postgresql://username:password@localhost:5432/sesimiz_ol"
+   JWT_SECRET="your-super-secret-jwt-key"
+   JWT_REFRESH_SECRET="your-refresh-secret-key"
+   
+   # Run migrations
+   cd backend
+   npm run prisma:migrate
+   npm run prisma:generate
+   ```
+
+4. **Start development servers**
+   ```bash
+   # Terminal 1 - Backend
+   cd backend
+   npm run dev
+   
+   # Terminal 2 - Frontend
+   cd frontend
+   npm run dev
+   ```
+
+## 🔧 Environment Variables
+
+### Backend (.env)
+```env
+# Database (PostgreSQL)
+DATABASE_URL="postgresql://username:password@localhost:5432/sesimiz_ol"
+
+# JWT Authentication
+JWT_SECRET="your-super-secret-jwt-key-min-32-chars"
+JWT_REFRESH_SECRET="your-refresh-secret-key-min-32-chars"
+
+# Server Configuration
+PORT=3001
+NODE_ENV="development"
+
+# File Upload
+UPLOAD_DIR="uploads"
+MAX_FILE_SIZE=5242880
+```
+
+### Frontend (.env)
+```env
+# API Configuration
+VITE_API_URL="http://localhost:3001/api"
+
+# Development
+VITE_PORT=5173
+```
+
+## 🐳 Docker Configuration
+
+The project includes comprehensive Docker support:
+
+- **docker-compose.yml** - Multi-service orchestration
+- **backend/Dockerfile** - Node.js backend container
+- **frontend/Dockerfile** - React frontend container with Nginx
+- **Health checks** and **volume mounts** for development
+
+### Docker Services
+
+- **PostgreSQL** - Database server (port 5432)
+- **Backend** - Express.js API (port 3001)
+- **Frontend** - React app with Nginx (port 5173)
+- **Prisma Studio** - Database management UI (port 5555)
+
+## 🚢 Deployment
+
+### Railway Deployment
+
+This project is configured for Railway's full-stack deployment:
+
+1. **Fork the repository**
+2. **Connect to Railway**
+   - Import your GitHub repository
+   - Railway will auto-detect the monorepo structure
+3. **Environment variables** are automatically set from railway.toml
+4. **Database** is provisioned automatically
+5. **File uploads** use Railway's persistent volumes
+
+### Manual Railway Setup
+
+```bash
+# Install Railway CLI
+npm install -g @railway/cli
+
+# Login and deploy
+railway login
+railway link <your-project-id>
+railway up
+```
+
+## 📁 Project Structure
 
 ```
 sesimiz-ol/
-├── backend/
+├── backend/                 # Express.js API server
 │   ├── src/
-│   │   ├── controllers/      # İş mantığı
-│   │   ├── middleware/       # Auth ve upload middleware'leri
-│   │   ├── routes/          # API endpoint'leri
-│   │   └── app.js          # Ana server dosyası
-│   ├── prisma/
-│   │   ├── schema.prisma   # Veritabanı şeması
-│   │   └── migrations/     # Veritabanı migration'ları
-│   └── uploads/            # Yüklenen dosyalar
-│       └── avatars/        # Profil fotoğrafları
+│   │   ├── controllers/     # Route handlers
+│   │   ├── middleware/      # Custom middleware
+│   │   ├── routes/          # API routes
+│   │   └── utils/           # Helper functions
+│   ├── prisma/             # Database schema and migrations
+│   ├── uploads/            # File upload directory
+│   └── package.json
 │
-└── frontend/
-    ├── src/
-    │   ├── components/     # UI bileşenleri
-    │   │   ├── animations/ # Animasyon bileşenleri
-    │   │   ├── auth/       # Authentication bileşenleri
-    │   │   ├── common/     # Ortak bileşenler
-    │   │   └── layout/     # Layout bileşenleri
-    │   ├── contexts/       # React Context'leri
-    │   ├── pages/         # Sayfa bileşenleri
-    │   └── App.jsx        # Ana uygulama
-    └── public/            # Statik dosyalar
+├── frontend/               # React application
+│   ├── src/
+│   │   ├── components/     # Reusable UI components
+│   │   ├── contexts/       # React contexts
+│   │   ├── pages/          # Page components
+│   │   ├── services/       # API service functions
+│   │   └── utils/          # Helper utilities
+│   └── package.json
+│
+├── docker-compose.yml      # Docker orchestration
+├── railway.toml           # Railway deployment config
+└── README.md
 ```
 
-## ⚙️ Kurulum
+## 🔐 Security Features
 
-### Ön Gereksinimler
-- Node.js 18+
-- npm veya yarn
+- **JWT Authentication** with refresh tokens
+- **Password hashing** with bcrypt
+- **CORS protection** for API endpoints
+- **Helmet security** headers
+- **Input validation** and sanitization
+- **File upload restrictions** and validation
 
-### Backend Kurulumu
-```bash
-cd backend
-npm install
-npx prisma migrate deploy
-npm start
-```
+## 🎨 UI Features
 
-### Frontend Kurulumu
-```bash
-cd frontend
-npm install
-npm run dev
-```
+- **Modern Design** with Chakra UI components
+- **Responsive Layout** for all device sizes
+- **Progressive Loading** animations
+- **Dark/Light Mode** theme support
+- **Accessibility** compliant components
+- **Custom Icons** and visual elements
 
-## 🌐 API Endpoints
-
-### Authentication
-- `POST /api/auth/register` - Kullanıcı kaydı (multipart/form-data ile avatar)
-- `POST /api/auth/login` - Kullanıcı girişi
-- `POST /api/auth/refresh` - Token yenileme
-- `GET /api/auth/profile` - Profil bilgileri
-- `PUT /api/auth/profile` - Profil güncelleme
-- `PUT /api/auth/password` - Şifre değişikliği
-- `DELETE /api/auth/account` - Hesap deaktivasyonu
-
-### Stories
-- `GET /api/stories` - Hikaye listesi (public)
-- `GET /api/stories/:id` - Hikaye detayı
-- `POST /api/stories` - Yeni hikaye (protected)
-- `PUT /api/stories/:id` - Hikaye güncelleme (author only)
-- `DELETE /api/stories/:id` - Hikaye silme (author only)
-
-### Upload
-- `POST /api/upload/avatar` - Avatar yükleme
-- `GET /api/upload/avatars/:filename` - Avatar dosyası
-- `GET /api/upload/info` - Upload limitleri
-
-## 🔒 Güvenlik Önlemleri
-
-### Authentication
-- JWT access token (15 dakika geçerlilik)
-- JWT refresh token (7 gün geçerlilik)
-- Otomatik token yenileme sistemi
-- bcrypt ile şifre hash'leme (salt rounds: 12)
-
-### Input Validation
-- express-validator ile tüm girişler doğrulanır
-- SQL injection koruması (Prisma ORM)
-- XSS koruması (Helmet middleware)
-
-### Rate Limiting
-- Authentication endpoints: 5 istek/15dk
-- Upload endpoints: 10 istek/15dk  
-- Genel API: 100 istek/15dk
-
-### File Upload
-- Sadece image/jpeg, image/png, image/webp
-- Maksimum dosya boyutu: 5MB
-- Sharp ile otomatik resize (300x300)
-- WebP format'a dönüştürme
-
-## 🎨 UI/UX Özellikleri
-
-### Animasyonlar
-- Page transitions (fade in/out)
-- Button hover/click micro-interactions
-- Smooth form transitions
-- Loading states
-
-### Responsive Design
-- Mobile-first approach
-- Breakpoint-based layouts
-- Touch-friendly interactions
-- Optimized typography
-
-### Accessibility
-- ARIA labels ve attributes
-- Keyboard navigation
-- Screen reader uyumlu
-- High contrast support
-
-## 📱 Sayfa Yapısı
-
-### Public Pages
-- **Ana Sayfa**: Platform tanıtımı ve hikaye preview'ları
-- **Hikayeler**: Tüm hikayelerin listelendiği sayfa
-- **Hikaye Detayı**: Tek hikaye görüntüleme
-- **Hakkında**: Platform hakkında bilgi
-- **Gizlilik**: Gizlilik politikası
-
-### Protected Pages
-- **Kayıt Ol**: Kullanıcı kaydı sayfası
-- **Hikaye Oluştur**: Yeni hikaye paylaşma
-- **Ayarlar**: Profil ve hesap yönetimi
-
-### Authentication Flow
-- **Login Modal**: Mevcut kullanıcılar için giriş
-- **Register Page**: Yeni kullanıcı kaydı
-- **Protected Routes**: Authentication gerektiren sayfalar
-- **Auto Login**: Token'lar varsa otomatik giriş
-
-## 🔧 Konfigürasyon
-
-### Environment Variables
-
-#### Backend (.env)
-```
-PORT=3001
-DATABASE_URL="file:./dev.db"
-JWT_SECRET="your-super-secret-jwt-key"
-JWT_EXPIRE="15m"
-JWT_REFRESH_SECRET="your-super-secret-refresh-key"
-JWT_REFRESH_EXPIRE="7d"
-MAX_FILE_SIZE=5242880
-NODE_ENV="development"
-```
-
-#### Frontend (.env)
-```
-REACT_APP_API_URL="http://localhost:3001"
-```
-
-## 📊 Veritabanı Şeması
-
-### User Table
-- `id`: Primary key
-- `nickname`: Kullanıcı adı (unique, 2-20 karakter)
-- `email`: Email adresi (optional, unique)
-- `password`: Hash'lenmiş şifre
-- `avatar`: Profil fotoğrafı URL'i
-- `isActive`: Hesap durumu
-- `createdAt`: Oluşturulma tarihi
-- `updatedAt`: Güncellenme tarihi
-
-### Story Table
-- `id`: Primary key
-- `title`: Hikaye başlığı (5-200 karakter)
-- `content`: Hikaye içeriği (50-10000 karakter)
-- `authorId`: Foreign key (User)
-- `createdAt`: Oluşturulma tarihi
-- `updatedAt`: Güncellenme tarihi
-
-## 🚀 Deployment
-
-### Production Build
-```bash
-# Backend
-cd backend
-npm run build
-npm start
-
-# Frontend  
-cd frontend
-npm run build
-```
-
-### Docker Support (İsteğe bağlı)
-```dockerfile
-# Backend Dockerfile örneği
-FROM node:18-alpine
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci --only=production
-COPY . .
-EXPOSE 3001
-CMD ["npm", "start"]
-```
-
-## 📈 Performans Optimizasyonları
+## 🧪 Development Scripts
 
 ### Backend
-- Connection pooling (Prisma)
-- Response caching headers
-- Gzip compression
-- Rate limiting
+```bash
+npm run dev          # Start development server
+npm run start        # Start production server
+npm run prisma:generate  # Generate Prisma client
+npm run prisma:migrate   # Run database migrations
+npm run prisma:studio    # Open database admin UI
+```
 
-### Frontend
-- React.lazy() ile code splitting
-- Axios interceptors ile request/response optimization
-- Framer Motion ile optimized animations
-- Image optimization (WebP format)
+### Frontend  
+```bash
+npm run dev          # Start development server
+npm run build        # Build for production
+npm run preview      # Preview production build
+npm run lint         # Run ESLint
+```
 
-## 🤝 Katkıda Bulunma
+## 📋 API Documentation
 
-1. Bu repository'yi fork edin
-2. Feature branch oluşturun (`git checkout -b feature/amazing-feature`)
-3. Değişikliklerinizi commit edin (`git commit -m 'Add amazing feature'`)
-4. Branch'inizi push edin (`git push origin feature/amazing-feature`)
-5. Pull Request oluşturun
+### Authentication Endpoints
+- `POST /api/auth/register` - User registration
+- `POST /api/auth/login` - User login
+- `POST /api/auth/refresh` - Refresh JWT token
+- `POST /api/auth/logout` - User logout
 
-## 📝 Lisans
+### User Endpoints
+- `GET /api/users/profile` - Get user profile
+- `PUT /api/users/profile` - Update user profile
+- `POST /api/users/avatar` - Upload user avatar
+- `PUT /api/users/password` - Change password
 
-Bu proje MIT lisansı altında lisanslanmıştır. Detaylar için `LICENSE` dosyasına bakınız.
+### Channel Endpoints
+- `GET /api/channels` - Get all channels
+- `POST /api/channels` - Create new channel
+- `GET /api/channels/:id` - Get channel details
+- `POST /api/channels/:id/messages` - Send voice message
 
-## 👥 Geliştirici Notları
+## 🐛 Troubleshooting
 
-### Kod Kalitesi
-- ESLint ve Prettier kullanımı önerilir
-- Commit message'ları anlamlı olmalıdır
-- Her feature için ayrı branch kullanılmalıdır
+### Common Issues
 
-### Test Coverage
-- Backend için unit testler yazılmalıdır
-- Frontend için component testleri eklenmelidir
-- E2E testler critical path'leri kapsamalıdır
+**CORS Errors**
+- Ensure backend CORS is configured for your frontend URL
+- Check that both servers are running on expected ports
 
-### Güvenlik Updates
-- Dependency'leri düzenli olarak güncelleyin
-- Security audit'leri düzenli yapın (`npm audit`)
-- JWT secret'ları güçlü ve unique tutun
+**Database Connection**
+- Verify PostgreSQL is running
+- Check DATABASE_URL format in .env file
+- Run `npm run prisma:generate` after schema changes
+
+**File Upload Issues**
+- Ensure uploads directory exists and has write permissions
+- Check file size limits in environment variables
+- Verify multer configuration matches frontend expectations
+
+**Build Errors**
+- Clear node_modules and package-lock.json, then reinstall
+- Ensure all environment variables are set correctly
+- Check for TypeScript or ESLint errors
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- Built with modern web technologies
+- Inspired by real-time communication needs
+- Designed for scalable, secure voice sharing
 
 ---
 
-**Sesimiz Ol** - Kadınların güvenli bir şekilde deneyimlerini paylaştıkları platform.
-
-Soru ve önerileriniz için issue açabilir veya pull request gönderebilirsiniz. 💜
+**Made with ❤️ for seamless voice communication**

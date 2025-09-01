@@ -8,7 +8,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Create uploads directory if it doesn't exist
-const uploadDir = path.join(__dirname, '../../uploads');
+// Use Railway persistent volume in production, local path in development
+const uploadDir = process.env.NODE_ENV === 'production' 
+  ? '/app/uploads' 
+  : path.join(__dirname, '../../uploads');
 const avatarDir = path.join(uploadDir, 'avatars');
 
 await fs.mkdir(uploadDir, { recursive: true });

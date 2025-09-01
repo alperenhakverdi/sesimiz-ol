@@ -611,11 +611,10 @@ const SettingsPage = () => {
                         shadow="sm"
                       >
                         <Text 
-                          fontSize="xl" 
-                          fontWeight="semibold" 
+                          fontSize="lg" 
+                          fontWeight="medium" 
                           color="primary.800" 
                           mb={5}
-                          letterSpacing="-0.025em"
                         >
                           Hesap Bilgileri
                         </Text>
@@ -623,20 +622,17 @@ const SettingsPage = () => {
                         <VStack align="start" spacing={4}>
                           <Box>
                             <Text 
-                              fontSize="xs" 
+                              fontSize="sm" 
                               fontWeight="medium" 
-                              color="neutral.500" 
+                              color="neutral.600" 
                               mb={1}
-                              textTransform="uppercase"
-                              letterSpacing="0.05em"
                             >
                               Kullanıcı Adı
                             </Text>
                             <Text 
-                              fontSize="lg" 
-                              fontWeight="semibold" 
+                              fontSize="md" 
+                              fontWeight="normal" 
                               color="primary.800"
-                              letterSpacing="-0.025em"
                             >
                               @{user?.nickname}
                             </Text>
@@ -644,18 +640,16 @@ const SettingsPage = () => {
                           
                           <Box>
                             <Text 
-                              fontSize="xs" 
+                              fontSize="sm" 
                               fontWeight="medium" 
-                              color="neutral.500" 
+                              color="neutral.600" 
                               mb={1}
-                              textTransform="uppercase"
-                              letterSpacing="0.05em"
                             >
                               E-posta Adresi
                             </Text>
                             <Text 
                               fontSize="md" 
-                              fontWeight="medium" 
+                              fontWeight="normal" 
                               color="primary.700"
                             >
                               {user?.email || 'Belirtilmemiş'}
@@ -664,18 +658,16 @@ const SettingsPage = () => {
                           
                           <Box>
                             <Text 
-                              fontSize="xs" 
+                              fontSize="sm" 
                               fontWeight="medium" 
-                              color="neutral.500" 
+                              color="neutral.600" 
                               mb={1}
-                              textTransform="uppercase"
-                              letterSpacing="0.05em"
                             >
                               Üyelik Tarihi
                             </Text>
                             <Text 
                               fontSize="md" 
-                              fontWeight="medium" 
+                              fontWeight="normal" 
                               color="primary.700"
                             >
                               {user?.createdAt ? new Date(user.createdAt).toLocaleDateString('tr-TR') : 'Bilinmiyor'}

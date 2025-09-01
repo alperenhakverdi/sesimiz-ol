@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  database:
+    image: postgres:15-alpine
+    container_name: sesimizol-db
+    restart: always
+    environment:
+      POSTGRES_DB: sesimizol
+      POSTGRES_USER: sesimizol
+      POSTGRES_PASSWORD: password123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/prisma/migrations:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sesimizol -d sesimizol"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: sesimizol-backend
+    restart: always
+    depends_on:
+      database:
+        condition: service_healthy
+    environment:
+      NODE_ENV: development
+      PORT: 3001
+      DATABASE_URL: "postgresql://sesimizol:password123@database:5432/sesimizol?schema=public"
+      JWT_SECRET: "local-development-jwt-secret-key"
+      JWT_REFRESH_SECRET: "local-development-refresh-secret-key"
+      MAX_FILE_SIZE: "5242880"
+    ports:
+      - "3001:3001"
+    volumes:
+      - uploads_data:/app/uploads
+      - ./backend:/app
+      - /app/node_modules
+    command: npm run dev
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: sesimizol-frontend
+    restart: always
+    depends_on:
+      - backend
+    environment:
+      VITE_API_URL: "http://localhost:3001"
+      VITE_API_BASE_URL: "http://localhost:3001/api"
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: npm run dev
+
+volumes:
+  postgres_data:
+  uploads_data:

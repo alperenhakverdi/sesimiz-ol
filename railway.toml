@@ -1,0 +1,33 @@
+[build]
+builder = "nixpacks"
+
+[deploy]
+startCommand = "npm run start:production"
+healthcheckPath = "/health"
+healthcheckTimeout = 300
+restartPolicyType = "always"
+
+[[services]]
+name = "backend"
+source = "backend"
+
+[services.variables]
+NODE_ENV = "production"
+PORT = "${{RAILWAY_TCP_PROXY_PORT}}"
+DATABASE_URL = "${{DATABASE_URL}}"
+JWT_SECRET = "${{JWT_SECRET}}"
+JWT_REFRESH_SECRET = "${{JWT_REFRESH_SECRET}}"
+VITE_API_BASE_URL = "${{RAILWAY_STATIC_URL}}"
+
+[[services]]
+name = "frontend" 
+source = "frontend"
+
+[services.variables]
+VITE_API_URL = "${{BACKEND_URL}}"
+VITE_API_BASE_URL = "${{BACKEND_URL}}/api"
+
+# Persistent disk for file uploads
+[[volumes]]
+name = "uploads"
+path = "/app/uploads"
