@@ -1,19 +1,14 @@
 {
-  "name": "sesimiz-ol-monorepo",
+  "name": "sesimiz-ol-backend-deploy",
   "version": "1.0.0",
-  "description": "Voice communication platform monorepo",
+  "description": "Backend deployment for Railway",
   "private": true,
-  "workspaces": ["backend", "frontend"],
   "scripts": {
     "build": "cd backend && npm run build",
-    "start": "cd backend && npm run start:production",
-    "dev": "concurrently \"cd backend && npm run dev\" \"cd frontend && npm run dev\"",
-    "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install"
-  },
-  "devDependencies": {
-    "concurrently": "^8.2.2"
+    "start": "cd backend && npm run start:production"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
   }
 }
