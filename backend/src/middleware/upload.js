@@ -8,14 +8,17 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Create uploads directory if it doesn't exist
-// Use Railway persistent volume in production, local path in development
-const uploadDir = process.env.NODE_ENV === 'production' 
-  ? '/app/uploads' 
-  : path.join(__dirname, '../../uploads');
+// Use local relative path for both development and production (Render compatible)
+const uploadDir = path.join(__dirname, '../../uploads');
 const avatarDir = path.join(uploadDir, 'avatars');
 
-await fs.mkdir(uploadDir, { recursive: true });
-await fs.mkdir(avatarDir, { recursive: true });
+try {
+  await fs.mkdir(uploadDir, { recursive: true });
+  await fs.mkdir(avatarDir, { recursive: true });
+  console.log('Upload directories created successfully');
+} catch (error) {
+  console.error('Failed to create upload directories:', error);
+}
 
 // File filter for images only
 const imageFilter = (req, file, cb) => {
