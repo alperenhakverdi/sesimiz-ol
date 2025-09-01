@@ -19,7 +19,7 @@ app.use(helmet({
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
     ? [
-        'https://sesimiz-ol.up.railway.app', // Railway production URL
+        'https://sesimiz-ol.vercel.app', // Railway production URL
         'https://sesimiz-ol.netlify.app',    // Netlify frontend (if used)
         /\.railway\.app$/                    // Allow any Railway subdomain
       ]
