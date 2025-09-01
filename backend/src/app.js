@@ -19,9 +19,10 @@ app.use(helmet({
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
     ? [
-        'https://sesimiz-ol.up.railway.app', // Railway production URL
-        'https://sesimiz-ol.netlify.app',    // Netlify frontend (if used)
-        /\.railway\.app$/                    // Allow any Railway subdomain
+        'https://sesimiz-ol.vercel.app',     // Vercel frontend
+        'https://sesimiz-ol.netlify.app',    // Netlify frontend (if used)  
+        /\.vercel\.app$/,                    // Allow any Vercel subdomain
+        /\.netlify\.app$/                    // Allow any Netlify subdomain
       ]
     : ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:3000'], // Development URLs
   credentials: true
@@ -76,7 +77,7 @@ app.use('/uploads', cors(), express.static(uploadsPath, {
     // Set CORS headers for static files
     res.setHeader('Access-Control-Allow-Origin', 
       process.env.NODE_ENV === 'production' 
-        ? 'https://sesimiz-ol.netlify.app'
+        ? 'https://sesimiz-ol.vercel.app'
         : '*'
     );
     res.setHeader('Access-Control-Allow-Methods', 'GET');
