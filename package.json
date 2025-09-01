@@ -1,14 +1,14 @@
 {
-  "name": "sesimiz-ol-backend-deploy",
+  "name": "sesimiz-ol",
   "version": "1.0.0",
-  "description": "Backend deployment for Railway",
+  "description": "Voice communication platform",
   "private": true,
   "scripts": {
-    "build": "cd backend && npm run build",
-    "start": "cd backend && npm run start:production"
+    "dev": "concurrently \"cd backend && npm run dev\" \"cd frontend && npm run dev\"",
+    "build": "cd backend && npm run build && cd ../frontend && npm run build",
+    "start": "cd backend && npm start"
   },
-  "engines": {
-    "node": ">=18.0.0",
-    "npm": ">=8.0.0"
+  "devDependencies": {
+    "concurrently": "^8.2.2"
   }
 }
