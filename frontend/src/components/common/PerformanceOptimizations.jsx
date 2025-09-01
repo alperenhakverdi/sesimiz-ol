@@ -216,7 +216,7 @@ export const usePerformanceMonitor = (componentName) => {
       const endTime = performance.now()
       const renderTime = endTime - startTime
       
-      if (typeof process !== 'undefined' && process.env.NODE_ENV === 'development') {
+      if (import.meta.env.DEV) {
         console.log(`${componentName} render time: ${renderTime.toFixed(2)}ms`)
         
         // Log slow renders (>16ms for 60fps)

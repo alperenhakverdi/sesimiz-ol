@@ -31,7 +31,7 @@ class ErrorBoundary extends React.Component {
     })
     
     // Log to console in development
-    if (typeof process !== 'undefined' && process.env.NODE_ENV === 'development') {
+    if (import.meta.env.DEV) {
       console.error('ErrorBoundary caught an error:', error, errorInfo)
     }
     
@@ -196,7 +196,7 @@ export const useErrorHandler = () => {
     setError({ error, errorInfo })
     
     // Log to console in development
-    if (typeof process !== 'undefined' && process.env.NODE_ENV === 'development') {
+    if (import.meta.env.DEV) {
       console.error('Captured error:', error, errorInfo)
     }
   }

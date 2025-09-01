@@ -10,7 +10,11 @@ import {
   Alert,
   AlertIcon,
   Spinner,
-  Center
+  Center,
+  HStack,
+  Stat,
+  StatLabel,
+  StatNumber
 } from '@chakra-ui/react'
 import { Link as RouterLink } from 'react-router-dom'
 import { AddIcon } from '@chakra-ui/icons'
@@ -29,7 +33,7 @@ const HomePage = () => {
     const fetchStories = async () => {
       try {
         setLoading(true)
-        const response = await storyAPI.getAll(1, 10) // Fixed to 10 latest stories
+        const response = await storyAPI.getAll(1, 3) // Show only 3 latest stories
         setStories(response.data.stories)
       } catch (err) {
         setError(err.message)
@@ -134,6 +138,30 @@ const HomePage = () => {
           </VStack>
         </ProgressiveLoader>
 
+        {/* Impact Metrics - Minimal */}
+        <ProgressiveLoader delay={300} type="fade">
+          <HStack 
+            spacing={8} 
+            justify="center" 
+            flexWrap="wrap"
+            py={6}
+            opacity={0.7}
+          >
+            <Stat textAlign="center" minW="auto">
+              <StatNumber fontSize="2xl" color="accent.500" fontWeight="bold">250+</StatNumber>
+              <StatLabel fontSize="sm" color="primary.600">Paylaşılan Hikâye</StatLabel>
+            </Stat>
+            <Stat textAlign="center" minW="auto">
+              <StatNumber fontSize="2xl" color="accent.500" fontWeight="bold">1,200+</StatNumber>
+              <StatLabel fontSize="sm" color="primary.600">Destekleyen Kadın</StatLabel>
+            </Stat>
+            <Stat textAlign="center" minW="auto">
+              <StatNumber fontSize="2xl" color="accent.500" fontWeight="bold">%95</StatNumber>
+              <StatLabel fontSize="sm" color="primary.600">Güvenlik Memnuniyeti</StatLabel>
+            </Stat>
+          </HStack>
+        </ProgressiveLoader>
+
         {/* Stories Section */}
         <ProgressiveLoader delay={400} type="fade">
           <Box w="full">
@@ -177,7 +205,7 @@ const HomePage = () => {
                   </SimpleGrid>
 
                   {/* View More Stories Link */}
-                  {stories.length === 10 && (
+                  {stories.length === 3 && (
                     <ProgressiveLoader delay={900} type="fade">
                       <Box textAlign="center" pt={8}>
                         <Text color="primary.600" fontSize="sm" mb={4}>
@@ -201,24 +229,6 @@ const HomePage = () => {
           </Box>
         </ProgressiveLoader>
 
-        {/* Call to Action */}
-        <ProgressiveLoader delay={1000} type="fade">
-          <VStack spacing={6} textAlign="center" py={8}>
-            <Text fontSize="lg" color="primary.600">
-              Sen de hikâyeni paylaşmak istiyor musun?
-            </Text>
-            <AnimatedButton 
-              colorScheme="accent" 
-              variant="outline"
-              size="lg"
-              as={RouterLink}
-              to="/hikaye-olustur"
-              animation="bounce"
-            >
-              Hikâyeni Paylaş
-            </AnimatedButton>
-          </VStack>
-        </ProgressiveLoader>
       </VStack>
     </Container>
   )

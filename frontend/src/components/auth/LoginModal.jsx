@@ -75,7 +75,17 @@ const LoginModal = ({ isOpen, onClose }) => {
       onClose()
       
     } catch (err) {
-      setError(err.message)
+      // More user-friendly error messages
+      const errorMessage = err.message || 'Giriş işlemi başarısız'
+      
+      if (errorMessage.includes('401') || errorMessage.includes('Unauthorized') || 
+          errorMessage.includes('invalid') || errorMessage.includes('wrong')) {
+        setError('Kullanıcı adı veya şifre hatalı. Lütfen tekrar deneyin.')
+      } else if (errorMessage.includes('network') || errorMessage.includes('Network')) {
+        setError('Bağlantı hatası. Lütfen internet bağlantınızı kontrol edin.')
+      } else {
+        setError(errorMessage)
+      }
     } finally {
       setIsLoading(false)
     }

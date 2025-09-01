@@ -12,7 +12,10 @@ const prisma = new PrismaClient();
 const PORT = process.env.PORT || 3001;
 
 // Middleware
-app.use(helmet());
+app.use(helmet({
+  crossOriginResourcePolicy: false, // Disable to allow cross-origin requests
+  crossOriginOpenerPolicy: false   // Disable to allow cross-origin requests
+}));
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
     ? ['https://sesimiz-ol.netlify.app'] // Production frontend URL
@@ -58,6 +61,32 @@ app.get('/api', (req, res) => {
     ]
   });
 });
+
+// Static file serving with CORS headers
+app.use('/uploads', cors(), express.static('uploads', {
+  setHeaders: (res, path) => {
+    // Set CORS headers for static files
+    res.setHeader('Access-Control-Allow-Origin', 
+      process.env.NODE_ENV === 'production' 
+        ? 'https://sesimiz-ol.netlify.app'
+        : '*'
+    );
+    res.setHeader('Access-Control-Allow-Methods', 'GET');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    
+    // Set appropriate content type for images
+    if (path.endsWith('.webp')) {
+      res.setHeader('Content-Type', 'image/webp');
+    } else if (path.endsWith('.jpg') || path.endsWith('.jpeg')) {
+      res.setHeader('Content-Type', 'image/jpeg');
+    } else if (path.endsWith('.png')) {
+      res.setHeader('Content-Type', 'image/png');
+    }
+    
+    // Cache headers
+    res.setHeader('Cache-Control', 'public, max-age=31536000'); // 1 year cache
+  }
+}));
 
 // Mount routes
 app.use('/api/auth', authRoutes);

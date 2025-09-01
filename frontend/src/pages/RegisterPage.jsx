@@ -22,7 +22,8 @@ import {
   Link as ChakraLink,
   Divider,
   Stack,
-  Badge
+  Badge,
+  SimpleGrid
 } from '@chakra-ui/react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ViewIcon, ViewOffIcon, CloseIcon, AddIcon, EmailIcon, LockIcon, AtSignIcon } from '@chakra-ui/icons'
@@ -50,8 +51,7 @@ const RegisterPage = () => {
   const [avatarPreview, setAvatarPreview] = useState(null)
   const [dragActive, setDragActive] = useState(false)
   const [error, setError] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [showPasswords, setShowPasswords] = useState(false)
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
@@ -230,17 +230,20 @@ const RegisterPage = () => {
               )}
 
               {/* Registration Form */}
-              <Box w="full" bg="white" p={{ base: 8, md: 10, lg: 12 }} borderRadius="xl" shadow="md" border="1px" borderColor="neutral.200">
+              <Box w="full" bg="white" p={{ base: 6, md: 8, lg: 10 }} borderRadius="xl" shadow="md" border="1px" borderColor="neutral.200">
                 <form onSubmit={handleSubmit}>
-                  <VStack spacing={10}>
-                    {/* Avatar Upload Section */}
-                    <FormControl>
-                      <FormLabel fontSize="md" color="primary.700" fontWeight="medium">
-                        Profil Fotoğrafı 
-                        <Badge ml={3} colorScheme="accent" variant="subtle" fontSize="xs" px={2} py={1}>
-                          İsteğe bağlı
-                        </Badge>
-                      </FormLabel>
+                  <VStack spacing={8}>
+                    {/* Two Column Layout for Desktop */}
+                    <SimpleGrid columns={{ base: 1, lg: 2 }} spacing={{ base: 8, lg: 12 }} w="full">
+                      {/* Left Column - Avatar Upload */}
+                      <VStack spacing={6} align="stretch">
+                        <FormControl>
+                          <FormLabel fontSize="md" color="primary.700" fontWeight="medium">
+                            Profil Fotoğrafı 
+                            <Badge ml={3} colorScheme="accent" variant="subtle" fontSize="xs" px={2} py={1}>
+                              İsteğe bağlı
+                            </Badge>
+                          </FormLabel>
                       
                       <Box
                         border="2px"
@@ -257,11 +260,8 @@ const RegisterPage = () => {
                         onDragLeave={handleDrag}
                         onDragOver={handleDrag}
                         onDrop={handleDrop}
-                        onClick={(e) => {
-                          e.preventDefault()
-                          if (!avatarPreview) {
-                            fileInputRef.current?.click()
-                          }
+                        onClick={() => {
+                          fileInputRef.current?.click()
                         }}
                       >
                         {avatarPreview ? (
@@ -284,7 +284,6 @@ const RegisterPage = () => {
                                 boxSize="24px"
                                 minW="24px"
                                 onClick={(e) => {
-                                  e.preventDefault()
                                   e.stopPropagation()
                                   removeAvatar()
                                 }}
@@ -298,7 +297,6 @@ const RegisterPage = () => {
                               textAlign="center"
                               cursor="pointer"
                               onClick={(e) => {
-                                e.preventDefault()
                                 e.stopPropagation()
                                 fileInputRef.current?.click()
                               }}
@@ -333,137 +331,139 @@ const RegisterPage = () => {
                           onChange={handleFileInputChange}
                           style={{ 
                             position: 'absolute', 
-                            top: 0,
-                            left: 0, 
+                            top: '-9999px',
+                            left: '-9999px', 
                             width: '1px', 
                             height: '1px', 
-                            opacity: 0,
-                            pointerEvents: 'none'
+                            opacity: 0
                           }}
                         />
                       </Box>
-                    </FormControl>
+                        </FormControl>
+                      </VStack>
 
-                    <Divider />
+                      {/* Right Column - Form Fields */}
+                      <VStack spacing={6} align="stretch">
+                        {/* Username Field */}
+                        <FormControl isRequired>
+                          <FormLabel fontSize="md" color="primary.700" fontWeight="medium">
+                            Kullanıcı Adı
+                          </FormLabel>
+                          <InputGroup>
+                            <Input
+                              name="nickname"
+                              value={formData.nickname}
+                              onChange={handleInputChange}
+                              placeholder="Kullanıcı adınız"
+                              maxLength={20}
+                              focusBorderColor="accent.500"
+                              bg="neutral.25"
+                              borderColor="neutral.300"
+                              borderRadius="lg"
+                              h={12}
+                              fontSize="md"
+                              _hover={{ bg: "white", borderColor: "accent.300" }}
+                              _focus={{ bg: "white", borderColor: "accent.500", shadow: "0 0 0 3px rgba(159, 122, 234, 0.1)" }}
+                            />
+                          </InputGroup>
+                        </FormControl>
 
-                    {/* Username Field */}
-                    <FormControl isRequired>
-                      <FormLabel fontSize="md" color="primary.700" fontWeight="medium">
-                        Kullanıcı Adı
-                      </FormLabel>
-                      <InputGroup>
-                        <Input
-                          name="nickname"
-                          value={formData.nickname}
-                          onChange={handleInputChange}
-                          placeholder="Kullanıcı adınız"
-                          maxLength={20}
-                          focusBorderColor="accent.500"
-                          bg="neutral.25"
-                          borderColor="neutral.300"
-                          borderRadius="lg"
-                          h={12}
-                          fontSize="md"
-                          _hover={{ bg: "white", borderColor: "accent.300" }}
-                          _focus={{ bg: "white", borderColor: "accent.500", shadow: "0 0 0 3px rgba(159, 122, 234, 0.1)" }}
-                        />
-                      </InputGroup>
-                    </FormControl>
+                        {/* Email Field */}
+                        <FormControl>
+                          <FormLabel fontSize="md" color="primary.700" fontWeight="medium">
+                            E-posta 
+                            <Badge ml={3} colorScheme="accent" variant="subtle" fontSize="xs" px={2} py={1}>
+                              İsteğe bağlı
+                            </Badge>
+                          </FormLabel>
+                          <InputGroup>
+                            <Input
+                              name="email"
+                              type="email"
+                              value={formData.email}
+                              onChange={handleInputChange}
+                              placeholder="ornek@email.com"
+                              focusBorderColor="accent.500"
+                              bg="neutral.25"
+                              borderColor="neutral.300"
+                              borderRadius="lg"
+                              h={12}
+                              fontSize="md"
+                              _hover={{ bg: "white", borderColor: "accent.300" }}
+                              _focus={{ bg: "white", borderColor: "accent.500", shadow: "0 0 0 3px rgba(159, 122, 234, 0.1)" }}
+                            />
+                          </InputGroup>
+                        </FormControl>
 
-                    {/* Email Field */}
-                    <FormControl>
-                      <FormLabel fontSize="md" color="primary.700" fontWeight="medium">
-                        E-posta 
-                        <Badge ml={3} colorScheme="accent" variant="subtle" fontSize="xs" px={2} py={1}>
-                          İsteğe bağlı
-                        </Badge>
-                      </FormLabel>
-                      <InputGroup>
-                        <Input
-                          name="email"
-                          type="email"
-                          value={formData.email}
-                          onChange={handleInputChange}
-                          placeholder="ornek@email.com"
-                          focusBorderColor="accent.500"
-                          bg="neutral.25"
-                          borderColor="neutral.300"
-                          borderRadius="lg"
-                          h={12}
-                          fontSize="md"
-                          _hover={{ bg: "white", borderColor: "accent.300" }}
-                          _focus={{ bg: "white", borderColor: "accent.500", shadow: "0 0 0 3px rgba(159, 122, 234, 0.1)" }}
-                        />
-                      </InputGroup>
-                    </FormControl>
+                        {/* Password Field */}
+                        <FormControl isRequired>
+                          <FormLabel fontSize="md" color="primary.700" fontWeight="medium">
+                            Şifre
+                          </FormLabel>
+                          <InputGroup>
+                            <Input
+                              name="password"
+                              type={showPasswords ? 'text' : 'password'}
+                              value={formData.password}
+                              onChange={handleInputChange}
+                              placeholder="Şifreniz"
+                              focusBorderColor="accent.500"
+                              bg="neutral.25"
+                              borderColor="neutral.300"
+                              borderRadius="lg"
+                              h={12}
+                              fontSize="md"
+                              _hover={{ bg: "white", borderColor: "accent.300" }}
+                              _focus={{ bg: "white", borderColor: "accent.500", shadow: "0 0 0 3px rgba(159, 122, 234, 0.1)" }}
+                            />
+                            <InputRightElement>
+                              <IconButton
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setShowPasswords(!showPasswords)}
+                                icon={showPasswords ? <ViewOffIcon /> : <ViewIcon />}
+                                aria-label={showPasswords ? 'Hide password' : 'Show password'}
+                              />
+                            </InputRightElement>
+                          </InputGroup>
+                        </FormControl>
 
-                    {/* Password Field */}
-                    <FormControl isRequired>
-                      <FormLabel fontSize="md" color="primary.700" fontWeight="medium">
-                        Şifre
-                      </FormLabel>
-                      <InputGroup>
-                        <Input
-                          name="password"
-                          type={showPassword ? 'text' : 'password'}
-                          value={formData.password}
-                          onChange={handleInputChange}
-                          placeholder="Şifreniz"
-                          focusBorderColor="accent.500"
-                          bg="neutral.25"
-                          borderColor="neutral.300"
-                          borderRadius="lg"
-                          h={12}
-                          fontSize="md"
-                          _hover={{ bg: "white", borderColor: "accent.300" }}
-                          _focus={{ bg: "white", borderColor: "accent.500", shadow: "0 0 0 3px rgba(159, 122, 234, 0.1)" }}
-                        />
-                        <InputRightElement>
-                          <IconButton
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setShowPassword(!showPassword)}
-                            icon={showPassword ? <ViewOffIcon /> : <ViewIcon />}
-                            aria-label={showPassword ? 'Hide password' : 'Show password'}
-                          />
-                        </InputRightElement>
-                      </InputGroup>
-                    </FormControl>
+                        {/* Confirm Password Field */}
+                        <FormControl isRequired>
+                          <FormLabel fontSize="md" color="primary.700" fontWeight="medium">
+                            Şifre Tekrarı
+                          </FormLabel>
+                          <InputGroup>
+                            <Input
+                              name="confirmPassword"
+                              type={showPasswords ? 'text' : 'password'}
+                              value={formData.confirmPassword}
+                              onChange={handleInputChange}
+                              placeholder="Şifrenizi tekrar girin"
+                              focusBorderColor="accent.500"
+                              bg="neutral.25"
+                              borderColor="neutral.300"
+                              borderRadius="lg"
+                              h={12}
+                              fontSize="md"
+                              _hover={{ bg: "white", borderColor: "accent.300" }}
+                              _focus={{ bg: "white", borderColor: "accent.500", shadow: "0 0 0 3px rgba(159, 122, 234, 0.1)" }}
+                            />
+                            <InputRightElement>
+                              <IconButton
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setShowPasswords(!showPasswords)}
+                                icon={showPasswords ? <ViewOffIcon /> : <ViewIcon />}
+                                aria-label={showPasswords ? 'Hide password' : 'Show password'}
+                              />
+                            </InputRightElement>
+                          </InputGroup>
+                        </FormControl>
+                      </VStack>
+                    </SimpleGrid>
 
-                    {/* Confirm Password Field */}
-                    <FormControl isRequired>
-                      <FormLabel fontSize="md" color="primary.700" fontWeight="medium">
-                        Şifre Tekrarı
-                      </FormLabel>
-                      <InputGroup>
-                        <Input
-                          name="confirmPassword"
-                          type={showConfirmPassword ? 'text' : 'password'}
-                          value={formData.confirmPassword}
-                          onChange={handleInputChange}
-                          placeholder="Şifrenizi tekrar girin"
-                          focusBorderColor="accent.500"
-                          bg="neutral.25"
-                          borderColor="neutral.300"
-                          borderRadius="lg"
-                          h={12}
-                          fontSize="md"
-                          _hover={{ bg: "white", borderColor: "accent.300" }}
-                          _focus={{ bg: "white", borderColor: "accent.500", shadow: "0 0 0 3px rgba(159, 122, 234, 0.1)" }}
-                        />
-                        <InputRightElement>
-                          <IconButton
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                            icon={showConfirmPassword ? <ViewOffIcon /> : <ViewIcon />}
-                            aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
-                          />
-                        </InputRightElement>
-                      </InputGroup>
-                    </FormControl>
-
-                    {/* Password Requirements */}
+                    {/* Password Requirements - Full Width */}
                     <Box w="full" p={4} bg="accent.25" borderRadius="lg" border="1px" borderColor="accent.200">
                       <Text fontSize="sm" color="accent.700" mb={2} fontWeight="medium">
                         Şifre gereksinimleri:

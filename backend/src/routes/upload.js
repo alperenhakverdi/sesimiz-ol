@@ -93,59 +93,10 @@ router.get('/info', (req, res) => {
   });
 });
 
-// Serve uploaded files
-router.use('/files', express.static(path.join(__dirname, '../../uploads')));
+// Note: Static files are now served at /uploads/* from app.js with proper CORS headers
 
-// GET /uploads/* - Serve uploaded files with proper headers
-router.get('/avatars/:filename', async (req, res) => {
-  try {
-    const { filename } = req.params;
-    
-    // Validate filename to prevent directory traversal
-    if (!filename || filename.includes('..') || filename.includes('/')) {
-      return res.status(400).json({
-        success: false,
-        error: {
-          code: 'INVALID_FILENAME',
-          message: 'Geçersiz dosya adı'
-        }
-      });
-    }
-
-    const filePath = path.join(__dirname, '../../uploads/avatars', filename);
-    
-    // Check if file exists
-    try {
-      await fs.access(filePath);
-    } catch {
-      return res.status(404).json({
-        success: false,
-        error: {
-          code: 'FILE_NOT_FOUND',
-          message: 'Dosya bulunamadı'
-        }
-      });
-    }
-
-    // Set appropriate headers
-    res.setHeader('Content-Type', 'image/webp');
-    res.setHeader('Cache-Control', 'public, max-age=31536000'); // 1 year cache
-    res.setHeader('Last-Modified', new Date().toUTCString());
-    
-    // Send file
-    res.sendFile(filePath);
-
-  } catch (error) {
-    console.error('File serve error:', error);
-    res.status(500).json({
-      success: false,
-      error: {
-        code: 'FILE_SERVE_ERROR',
-        message: 'Dosya gönderilemedi'
-      }
-    });
-  }
-});
+// Note: Avatar files are now served directly at /uploads/avatars/:filename from app.js
+// This provides better performance and proper CORS handling
 
 // DELETE /api/upload/avatar/:filename - Delete uploaded avatar (admin only)
 router.delete('/avatar/:filename', 

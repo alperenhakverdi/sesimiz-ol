@@ -21,6 +21,7 @@ import {
 } from '@chakra-ui/react'
 import { Link as RouterLink } from 'react-router-dom'
 import { PhoneIcon } from '@chakra-ui/icons'
+import ProgressiveLoader from '../components/animations/ProgressiveLoader'
 
 const SupportPage = () => {
   const emergencyNumbers = [
@@ -73,7 +74,8 @@ const SupportPage = () => {
     <Container maxW="container.lg" py={8}>
       <VStack spacing={8} align="stretch">
         {/* Hero Section */}
-        <VStack spacing={4} textAlign="center">
+        <ProgressiveLoader delay={200} type="fade">
+          <VStack spacing={4} textAlign="center">
           <Heading as="h1" size="xl" color="neutral.800">
             Destek Merkezi
           </Heading>
@@ -81,24 +83,35 @@ const SupportPage = () => {
             Size yardımcı olmak için buradayız. Platform kullanımı ve acil durumlarda 
             ihtiyaç duyacağınız tüm bilgiler aşağıda yer alıyor.
           </Text>
-        </VStack>
+          </VStack>
+        </ProgressiveLoader>
 
         {/* Emergency Alert */}
-        <Alert status="error" borderRadius="lg" py={4}>
-          <AlertIcon />
-          <VStack align="start" spacing={2} flex="1">
-            <Text fontWeight="bold" color="red.800">
-              Acil Durum!
-            </Text>
-            <Text fontSize="sm" color="red.700">
-              Hayatınız tehlikede ise derhal <strong>112</strong>'yi arayın. 
-              Şiddet yaşıyorsanız güvenli bir yerden aşağıdaki destek hatlarını kullanın.
-            </Text>
-          </VStack>
-        </Alert>
+        <ProgressiveLoader delay={400} type="fade">
+          <Alert 
+            status="warning" 
+            borderRadius="lg" 
+            py={4}
+            bg="accent.50"
+            borderColor="accent.200"
+            borderWidth="1px"
+          >
+            <AlertIcon color="accent.500" />
+            <VStack align="start" spacing={2} flex="1">
+              <Text fontWeight="bold" color="accent.700">
+                Acil Durum!
+              </Text>
+              <Text fontSize="sm" color="accent.600">
+                Hayatınız tehlikede ise derhal <strong>112</strong>'yi arayın. 
+                Şiddet yaşıyorsanız güvenli bir yerden aşağıdaki destek hatlarını kullanın.
+              </Text>
+            </VStack>
+          </Alert>
+        </ProgressiveLoader>
 
         {/* Emergency Numbers */}
-        <Box bg="neutral.50" p={6} borderRadius="lg">
+        <ProgressiveLoader delay={600} type="fade">
+          <Box bg="neutral.50" p={6} borderRadius="lg">
           <VStack spacing={4} align="start">
             <Heading as="h2" size="lg" color="neutral.800">
               Acil Destek Hatları
@@ -122,9 +135,10 @@ const SupportPage = () => {
                       <PhoneIcon boxSize={3} />
                       <Link
                         href={`tel:${contact.number}`}
-                        color="blue.600"
+                        color="accent.600"
                         fontWeight="bold"
                         fontSize="lg"
+                        _hover={{ color: "accent.500" }}
                       >
                         {contact.number}
                       </Link>
@@ -137,10 +151,12 @@ const SupportPage = () => {
               ))}
             </SimpleGrid>
           </VStack>
-        </Box>
+          </Box>
+        </ProgressiveLoader>
 
         {/* FAQ Section */}
-        <Box bg="white" p={6} borderRadius="lg" borderWidth="1px" borderColor="neutral.200">
+        <ProgressiveLoader delay={800} type="fade">
+          <Box bg="white" p={6} borderRadius="lg" borderWidth="1px" borderColor="neutral.200">
           <VStack spacing={4} align="start">
             <Heading as="h2" size="lg" color="neutral.800">
               Sık Sorulan Sorular
@@ -164,10 +180,12 @@ const SupportPage = () => {
               ))}
             </Accordion>
           </VStack>
-        </Box>
+          </Box>
+        </ProgressiveLoader>
 
         {/* Community Guidelines */}
-        <Box bg="neutral.50" p={6} borderRadius="lg">
+        <ProgressiveLoader delay={1000} type="fade">
+          <Box bg="neutral.50" p={6} borderRadius="lg">
           <VStack spacing={4} align="start">
             <Heading as="h2" size="lg" color="neutral.800">
               Topluluk Kuralları
@@ -206,12 +224,14 @@ const SupportPage = () => {
               </Text>
             </Box>
           </VStack>
-        </Box>
+          </Box>
+        </ProgressiveLoader>
 
         <Divider />
 
         {/* Back to Home */}
-        <VStack spacing={4} textAlign="center">
+        <ProgressiveLoader delay={1200} type="fade">
+          <VStack spacing={4} textAlign="center">
           <Text fontSize="sm" color="neutral.500">
             Aradığınız yanıtı bulamadınız mı?
           </Text>
@@ -235,7 +255,8 @@ const SupportPage = () => {
               Hikâyeleri Görüntüle
             </Button>
           </HStack>
-        </VStack>
+          </VStack>
+        </ProgressiveLoader>
       </VStack>
     </Container>
   )

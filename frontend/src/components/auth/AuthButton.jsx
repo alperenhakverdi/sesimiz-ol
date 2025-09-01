@@ -26,7 +26,7 @@ const AuthButton = ({ size = "md", variant = "outline" }) => {
   const getAvatarUrl = (avatarPath) => {
     if (!avatarPath) return null
     if (avatarPath.startsWith('http')) return avatarPath
-    return `${process.env.REACT_APP_API_URL || 'http://localhost:3001'}${avatarPath}`
+    return `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}${avatarPath}`
   }
 
   if (!isAuthenticated) {

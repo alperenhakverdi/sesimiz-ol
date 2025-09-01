@@ -94,15 +94,13 @@ api.interceptors.response.use(
           return api(originalRequest)
         } catch (refreshError) {
           processQueue(refreshError, null)
-          removeTokens()
-          window.location.href = '/'
+          logout()
           return Promise.reject(refreshError)
         } finally {
           isRefreshing = false
         }
       } else {
-        removeTokens()
-        window.location.href = '/'
+        logout()
         return Promise.reject(error)
       }
     }
