@@ -17,11 +17,11 @@ app.use(helmet({
   crossOriginOpenerPolicy: false   // Disable to allow cross-origin requests
 }));
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
+  origin: process.env.NODE_ENV === 'production'
     ? [
-        'https://sesimiz-ol.vercel.app', // Railway production URL
-        'https://sesimiz-ol.netlify.app',    // Netlify frontend (if used)
-        /\.railway\.app$/                    // Allow any Railway subdomain
+        'https://sesimiz-ol.vercel.app',     // Main Vercel domain
+        /\.vercel\.app$/,                    // Allow any Vercel subdomain (previews)
+        /alperen-hakverdis-projects\.vercel\.app$/ // Allow user subdomain
       ]
     : ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:3000'], // Development URLs
   credentials: true
