@@ -61,6 +61,31 @@ app.get('/health', (req, res) => {
   });
 });
 
+// Seed database endpoint for free tier deployment
+app.get('/seed-database', async (req, res) => {
+  try {
+    console.log('🌱 Seed database başlatıldı...');
+    
+    // Import and run seed function
+    const { execSync } = await import('child_process');
+    execSync('node src/seedDatabase.js', { stdio: 'inherit' });
+    
+    res.status(200).json({
+      success: true,
+      message: 'Veritabanı başarıyla dolduruldu!',
+      timestamp: new Date().toISOString()
+    });
+    
+  } catch (error) {
+    console.error('❌ Seed hatası:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Seed işlemi başarısız',
+      error: error.message
+    });
+  }
+});
+
 // API Routes
 app.get('/api', (req, res) => {
   res.json({ 
