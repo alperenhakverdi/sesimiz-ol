@@ -22,13 +22,30 @@ app.use(helmet({
   crossOriginResourcePolicy: false, // Disable to allow cross-origin requests
   crossOriginOpenerPolicy: false   // Disable to allow cross-origin requests
 }));
+// Enhanced CORS configuration for all environments
 app.use(cors({
-  origin: '*', // Allow all origins for production deployment
+  origin: function(origin, callback) {
+    // Allow all origins including localhost for development
+    callback(null, true);
+  },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-  optionsSuccessStatus: 200
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: [
+    'Origin',
+    'X-Requested-With', 
+    'Content-Type', 
+    'Accept',
+    'Authorization',
+    'Cache-Control',
+    'X-HTTP-Method-Override'
+  ],
+  exposedHeaders: ['Content-Length', 'X-Requested-With'],
+  optionsSuccessStatus: 200,
+  preflightContinue: false
 }));
+
+// Handle preflight requests explicitly
+app.options('*', cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
