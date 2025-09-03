@@ -1,7 +1,13 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { PrismaClient } from '@prisma/client';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 import userRoutes from './routes/users.js';
 import storyRoutes from './routes/stories.js';
 import authRoutes from './routes/auth.js';
@@ -17,15 +23,11 @@ app.use(helmet({
   crossOriginOpenerPolicy: false   // Disable to allow cross-origin requests
 }));
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? [
-        'https://sesimiz-ol.vercel.app',     // Vercel frontend
-        'https://sesimiz-ol.netlify.app',    // Netlify frontend (if used)  
-        /\.vercel\.app$/,                    // Allow any Vercel subdomain
-        /\.netlify\.app$/                    // Allow any Netlify subdomain
-      ]
-    : ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:3000'], // Development URLs
-  credentials: true
+  origin: '*', // Allow all origins for production deployment
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  optionsSuccessStatus: 200
 }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
@@ -71,15 +73,11 @@ app.get('/api', (req, res) => {
 });
 
 // Static file serving with CORS headers
-const uploadsPath = process.env.NODE_ENV === 'production' ? '/app/uploads' : 'uploads';
+const uploadsPath = path.join(__dirname, '../uploads');
 app.use('/uploads', cors(), express.static(uploadsPath, {
   setHeaders: (res, path) => {
     // Set CORS headers for static files
-    res.setHeader('Access-Control-Allow-Origin', 
-      process.env.NODE_ENV === 'production' 
-        ? 'https://sesimiz-ol.vercel.app'
-        : '*'
-    );
+    res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
     
