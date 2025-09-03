@@ -8,6 +8,7 @@
     "dev": "node --watch src/app.js",
     "start": "node src/app.js",
     "start:production": "npm run prisma:deploy && node src/app.js",
+    "seed": "node src/seedDatabase.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:deploy": "prisma migrate deploy",
