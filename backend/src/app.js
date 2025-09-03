@@ -14,7 +14,13 @@ import authRoutes from './routes/auth.js';
 import uploadRoutes from './routes/upload.js';
 
 const app = express();
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({
+  datasources: {
+    db: {
+      url: process.env.DATABASE_URL || 'file:./database.db'
+    }
+  }
+});
 const PORT = process.env.PORT || 3001;
 
 // Middleware
@@ -48,6 +54,13 @@ app.use(cors({
 app.options('*', cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
+
+// Request timeout middleware
+app.use((req, res, next) => {
+  req.setTimeout(30000); // 30 second timeout
+  res.setTimeout(30000);
+  next();
+});
 
 // Health check endpoint (simple version for debugging)
 app.get('/health', (req, res) => {
