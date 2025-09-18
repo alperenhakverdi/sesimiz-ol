@@ -33,9 +33,13 @@ const HomePage = () => {
     const fetchStories = async () => {
       try {
         setLoading(true)
+        console.log('🔄 Fetching stories from API...')
         const response = await storyAPI.getAll(1, 3) // Show only 3 latest stories
+        console.log('✅ API Response:', response)
+        console.log('📚 Stories data:', response.data.stories)
         setStories(response.data.stories)
       } catch (err) {
+        console.error('❌ API Error:', err)
         setError(err.message)
       } finally {
         setLoading(false)

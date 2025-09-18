@@ -25,7 +25,11 @@ const AuthButton = ({ size = "md", variant = "outline" }) => {
   
   const getAvatarUrl = (avatarPath) => {
     if (!avatarPath) return null
+    // Handle base64 data URLs directly
+    if (avatarPath.startsWith('data:image/')) return avatarPath
+    // Handle HTTP URLs directly  
     if (avatarPath.startsWith('http')) return avatarPath
+    // Handle relative paths
     return `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}${avatarPath}`
   }
 

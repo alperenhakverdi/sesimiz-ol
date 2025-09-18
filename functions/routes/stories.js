@@ -1,13 +1,13 @@
-import express from 'express';
-import { 
+const express = require('express');
+const { 
   getAllStories, 
   getStoryById, 
   createStory, 
   updateStory, 
   deleteStory,
   incrementViewCount 
-} from '../controllers/storyFirebaseController.js';
-import { authenticateToken } from '../middleware/auth.js';
+} = require('../storyFirebaseController.js');
+// const { authenticateToken } = require('../middleware/auth.js');
 
 const router = express.Router();
 

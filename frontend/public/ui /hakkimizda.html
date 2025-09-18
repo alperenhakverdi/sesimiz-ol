@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="tr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sesimiz Ol - Hakkımızda</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#8A2BE2",
+                        "background-light": "#F8F7FA",
+                        "background-dark": "#121212",
+                        "card-light": "#FFFFFF",
+                        "card-dark": "#1E1E1E",
+                        "text-light": "#1A202C",
+                        "text-dark": "#E2E8F0",
+                        "subtext-light": "#718096",
+                        "subtext-dark": "#A0AEC0",
+                    },
+                    fontFamily: {
+                        display: ["Inter", "sans-serif"],
+                    },
+                    borderRadius: {
+                        DEFAULT: "1rem",
+                    },
+                },
+            },
+        };
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark transition-colors duration-300">
+<div id="root">
+<header class="bg-background-light dark:bg-background-dark py-4 px-6 md:px-16 shadow-sm">
+<div class="container mx-auto flex justify-between items-center">
+<h1 class="text-2xl font-bold text-primary">Sesimiz Ol</h1>
+<nav class="hidden md:flex items-center space-x-6">
+<a class="text-subtext-light dark:text-subtext-dark hover:text-primary dark:hover:text-primary transition-colors" href="#">Ana Sayfa</a>
+<a class="text-subtext-light dark:text-subtext-dark hover:text-primary dark:hover:text-primary transition-colors" href="#">Hikayeler</a>
+<a class="text-text-light dark:text-text-dark font-semibold" href="#">Hakkında</a>
+</nav>
+<div class="flex items-center space-x-4">
+<button class="flex items-center space-x-2 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 text-subtext-light dark:text-subtext-dark hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+<span class="material-icons text-lg">login</span>
+<span>Giriş Yap</span>
+</button>
+<button class="bg-primary text-white flex items-center space-x-2 rounded-lg px-4 py-2 hover:opacity-90 transition-opacity">
+<span class="material-icons text-lg">add</span>
+<span>Hikayeni Paylaş</span>
+</button>
+</div>
+</div>
+</header>
+<main class="py-16 md:py-24">
+<section class="text-center px-6 md:px-16">
+<div class="container mx-auto max-w-3xl">
+<h2 class="text-4xl md:text-5xl font-bold text-text-light dark:text-text-dark mb-4">Hakkımızda</h2>
+<p class="text-lg md:text-xl text-subtext-light dark:text-subtext-dark">
+                        "Sesimiz Ol", kadınların hikâyelerini güvenle paylaşabilecekleri anonim bir dijital platformdur.
+                    </p>
+</div>
+</section>
+<section class="mt-20 px-6 md:px-16">
+<div class="container mx-auto max-w-4xl bg-card-light dark:bg-card-dark p-8 md:p-12 rounded-lg shadow-lg">
+<h3 class="text-3xl font-bold text-text-light dark:text-text-dark mb-4">Misyonumuz</h3>
+<p class="text-subtext-light dark:text-subtext-dark leading-relaxed">
+                        Türkiye'de kadınların yaşadığı deneyimlerin sesini duyurmak, hikâyelerini paylaşmaya çekindikleri konularda güvenli bir alan oluşturmak. Platform üzerinde paylaşılan hikâyeler anonimdir ve kişisel bilgiler korunur. Amacımız, kadınları güçlendirmek ve dayanışmayı artırmaktır.
+                    </p>
+</div>
+</section>
+<section class="py-20 md:py-24 px-6 md:px-16">
+<div class="container mx-auto">
+<h2 class="text-3xl md:text-4xl font-bold text-center mb-12 text-text-light dark:text-text-dark">Platform Özellikleri</h2>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+<div class="bg-card-light dark:bg-card-dark p-8 rounded-lg shadow-md text-center border-t-4 border-primary">
+<span class="inline-block bg-primary/10 text-primary p-3 rounded-full mb-4">
+<span class="material-icons">visibility_off</span>
+</span>
+<h4 class="text-xl font-semibold mb-2 text-text-light dark:text-text-dark">Güvenli Paylaşım</h4>
+<p class="text-subtext-light dark:text-subtext-dark">Sadece takma isim ile kayıt, kişisel bilgi alınmaz.</p>
+</div>
+<div class="bg-card-light dark:bg-card-dark p-8 rounded-lg shadow-md text-center border-t-4 border-primary">
+<span class="inline-block bg-primary/10 text-primary p-3 rounded-full mb-4">
+<span class="material-icons">groups</span>
+</span>
+<h4 class="text-xl font-semibold mb-2 text-text-light dark:text-text-dark">Dayanışma</h4>
+<p class="text-subtext-light dark:text-subtext-dark">Benzer deneyimleri olan kadınlarla bağlantı kurma.</p>
+</div>
+<div class="bg-card-light dark:bg-card-dark p-8 rounded-lg shadow-md text-center border-t-4 border-primary">
+<span class="inline-block bg-primary/10 text-primary p-3 rounded-full mb-4">
+<span class="material-icons">lock</span>
+</span>
+<h4 class="text-xl font-semibold mb-2 text-text-light dark:text-text-dark">Gizlilik</h4>
+<p class="text-subtext-light dark:text-subtext-dark">KVKK uyumlu, veriler 3. taraflarla paylaşılmaz.</p>
+</div>
+</div>
+</div>
+</section>
+<section class="bg-primary/5 dark:bg-primary/10 py-20 md:py-24 px-6 md:px-16">
+<div class="container mx-auto">
+<div class="text-center max-w-2xl mx-auto">
+<h2 class="text-3xl md:text-4xl font-bold mb-4 text-text-light dark:text-text-dark">Destek Hatları</h2>
+<p class="text-subtext-light dark:text-subtext-dark mb-12">Profesyonel yardıma ihtiyacınız varsa aşağıdaki destek hatlarından yararlanabilirsiniz</p>
+</div>
+<div class="space-y-6 max-w-3xl mx-auto">
+<div class="bg-card-light dark:bg-card-dark p-6 rounded-lg shadow-sm flex items-start space-x-4">
+<span class="material-icons text-primary mt-1">phone</span>
+<div>
+<h4 class="font-semibold text-text-light dark:text-text-dark">ALO 183 Aile Danışma Hattı</h4>
+<p class="text-lg font-medium text-primary">183</p>
+<p class="text-subtext-light dark:text-subtext-dark text-sm">7/24 aile danışmanlığı ve kadın destek hattı.</p>
+</div>
+</div>
+<div class="bg-card-light dark:bg-card-dark p-6 rounded-lg shadow-sm flex items-start space-x-4">
+<span class="material-icons text-primary mt-1">phone</span>
+<div>
+<h4 class="font-semibold text-text-light dark:text-text-dark">Mor Çatı Kadın Danışma Merkezi</h4>
+<p class="text-lg font-medium text-primary">0212 292 52 31</p>
+<p class="text-subtext-light dark:text-subtext-dark text-sm">Kadına yönelik şiddet danışma hattı.</p>
+</div>
+</div>
+<div class="bg-card-light dark:bg-card-dark p-6 rounded-lg shadow-sm flex items-start space-x-4">
+<span class="material-icons text-primary mt-1">phone</span>
+<div>
+<h4 class="font-semibold text-text-light dark:text-text-dark">Kadın Dayanışma Vakfı</h4>
+<p class="text-lg font-medium text-primary">0212 256 13 59</p>
+<p class="text-subtext-light dark:text-subtext-dark text-sm">Hukuki ve psikolojik destek hattı.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="py-16 px-6 md:px-16">
+<div class="container mx-auto max-w-4xl bg-card-light dark:bg-card-dark p-8 rounded-lg shadow-lg flex items-center space-x-6">
+<span class="material-icons text-primary text-4xl">verified_user</span>
+<div>
+<h3 class="text-2xl font-bold text-text-light dark:text-text-dark">Gizlilik Taahhüdü</h3>
+<p class="text-subtext-light dark:text-subtext-dark mt-2">
+                           Bu platformda paylaşılan tüm hikayeler anonimdir. Kişisel verileriniz korunur ve hiçbir şekilde 3. taraflarla paylaşılmaz. Güvenliğiniz bizim önceliğimizdir.
+                        </p>
+</div>
+</div>
+</section>
+</main>
+<footer class="bg-gray-800 dark:bg-black text-gray-400 py-12 px-6 md:px-16">
+<div class="container mx-auto">
+<div class="flex flex-col md:flex-row justify-between items-center text-center md:text-left">
+<div class="mb-6 md:mb-0">
+<h2 class="text-2xl font-bold text-white mb-2">Sesimiz Ol</h2>
+<p class="max-w-sm">Kadınların hikâyelerini güvenle paylaşabilecekleri anonim platform. Sesimiz birleşsin, hikâyelerimiz duyulsun.</p>
+</div>
+<div class="flex space-x-6">
+<a class="hover:text-white transition-colors" href="#">Hakkında</a>
+<a class="hover:text-white transition-colors" href="#">Gizlilik</a>
+<a class="hover:text-white transition-colors" href="#">Destek</a>
+<a class="hover:text-white transition-colors" href="#">İletişim</a>
+</div>
+</div>
+<div class="border-t border-gray-700 mt-8 pt-8 text-center text-sm">
+<p>© 2025 Sesimiz Ol. Tüm hakları saklıdır.</p>
+<p class="mt-1">Bu platform kadınların güvenle hikayelerini paylaşmaları için tasarlanmıştır.</p>
+</div>
+</div>
+</footer>
+</div>
+
+</body></html>

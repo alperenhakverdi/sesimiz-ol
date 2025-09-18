@@ -131,6 +131,7 @@ export const generateCommentsForStory = (storyId, commentCount = null) => {
       id: `${storyId}-comment-${i + 1}`,
       storyId: storyId,
       authorNickname: supportiveNicknames[nicknameIndex],
+      authorAvatar: `https://i.pravatar.cc/150?u=${nicknameIndex + 20}`, // Different range for comments
       content: supportiveComments[commentIndex],
       createdAt: getRandomPastTime()
     })

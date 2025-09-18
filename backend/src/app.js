@@ -3,7 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { PrismaClient } from '@prisma/client';
+// Firebase kullanıyoruz artık
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -14,13 +14,6 @@ import authRoutes from './routes/auth.js';
 import uploadRoutes from './routes/upload.js';
 
 const app = express();
-const prisma = new PrismaClient({
-  datasources: {
-    db: {
-      url: process.env.DATABASE_URL || 'file:./database.db'
-    }
-  }
-});
 const PORT = process.env.PORT || 3001;
 
 // Middleware
@@ -183,7 +176,6 @@ app.use('*', (req, res) => {
 // Graceful shutdown
 process.on('SIGINT', async () => {
   console.log('Shutting down gracefully...');
-  await prisma.$disconnect();
   process.exit(0);
 });
 

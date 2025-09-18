@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import {
   Box,
   VStack,
@@ -29,10 +29,33 @@ const pulse = keyframes`
 const EnhancedStoryCard = ({ story }) => {
   const [localViewCount, setLocalViewCount] = useState(story.viewCount || 0)
   
-  const timeAgo = formatDistanceToNow(new Date(story.createdAt), { 
-    addSuffix: true, 
-    locale: tr 
-  })
+  const timeAgo = useMemo(() => {
+    try {
+      // Handle both Firebase timestamp format and ISO string format
+      let date
+      if (story.createdAt?.seconds) {
+        // Firebase timestamp format
+        date = new Date(story.createdAt.seconds * 1000)
+      } else if (typeof story.createdAt === 'string') {
+        // ISO string format from API
+        date = new Date(story.createdAt)
+      } else if (story.createdAt instanceof Date) {
+        // Already a Date object
+        date = story.createdAt
+      } else {
+        return 'Tarih belirtilmemiş'
+      }
+      
+      if (isNaN(date.getTime())) {
+        return 'Tarih belirtilmemiş'
+      }
+      
+      return formatDistanceToNow(date, { addSuffix: true, locale: tr })
+    } catch (error) {
+      console.error('Date parsing error:', error, story.createdAt)
+      return 'Tarih belirtilmemiş'
+    }
+  }, [story.createdAt])
 
   const handleViewIncrement = async () => {
     try {
@@ -144,8 +167,8 @@ const EnhancedStoryCard = ({ story }) => {
             <HStack spacing={3}>
               <Avatar 
                 size="sm" 
-                name={story.author.nickname}
-                src={story.author.avatar}
+                name={story.authorNickname || story.author?.nickname}
+                src={story.authorAvatar || story.author?.avatar}
                 bg="brand.100"
                 color="brand.500"
                 transition="transform 0.2s ease"
@@ -155,7 +178,7 @@ const EnhancedStoryCard = ({ story }) => {
               />
               <VStack align="start" spacing={0}>
                 <Text fontSize="sm" fontWeight="medium" color="neutral.700">
-                  @{story.author.nickname}
+                  @{story.authorNickname || story.author?.nickname}
                 </Text>
                 <Text fontSize="xs" color="neutral.500">
                   {timeAgo}

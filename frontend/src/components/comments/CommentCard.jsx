@@ -71,6 +71,7 @@ const CommentCard = ({
             <Avatar 
               size="sm" 
               name={comment.authorNickname}
+              src={comment.authorAvatar}
               bg="brand.100"
               color="brand.500"
             />

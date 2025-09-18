@@ -77,16 +77,75 @@ const RegisterPage = () => {
     return true
   }
 
-  const handleFileSelect = (file) => {
+  const compressImage = (file, maxSizeKB = 200) => {
+    return new Promise((resolve, reject) => {
+      const canvas = document.createElement('canvas')
+      const ctx = canvas.getContext('2d')
+      const img = new Image()
+      
+      img.onload = () => {
+        // Calculate new dimensions to keep aspect ratio
+        const maxSize = 300 // Max width/height
+        let { width, height } = img
+        
+        if (width > height) {
+          if (width > maxSize) {
+            height = height * (maxSize / width)
+            width = maxSize
+          }
+        } else {
+          if (height > maxSize) {
+            width = width * (maxSize / height)
+            height = maxSize
+          }
+        }
+        
+        canvas.width = width
+        canvas.height = height
+        
+        // Draw and compress
+        ctx.drawImage(img, 0, 0, width, height)
+        
+        // Try different quality levels until under size limit
+        let quality = 0.8
+        const tryCompress = () => {
+          canvas.toBlob((blob) => {
+            if (blob && blob.size <= maxSizeKB * 1024) {
+              resolve(blob)
+            } else if (quality > 0.1) {
+              quality -= 0.1
+              tryCompress()
+            } else {
+              resolve(blob) // Give up, return what we have
+            }
+          }, 'image/jpeg', quality)
+        }
+        tryCompress()
+      }
+      
+      img.onerror = reject
+      img.src = URL.createObjectURL(file)
+    })
+  }
+
+  const handleFileSelect = async (file) => {
     try {
       validateFile(file)
-      setAvatar(file)
+      
+      // Compress the image
+      const compressedBlob = await compressImage(file, 200) // 200KB limit
+      const compressedFile = new File([compressedBlob], file.name, { 
+        type: 'image/jpeg',
+        lastModified: Date.now()
+      })
+      
+      setAvatar(compressedFile)
       
       const reader = new FileReader()
       reader.onloadend = () => {
         setAvatarPreview(reader.result)
       }
-      reader.readAsDataURL(file)
+      reader.readAsDataURL(compressedFile)
       setError('')
     } catch (error) {
       setError(error.message)

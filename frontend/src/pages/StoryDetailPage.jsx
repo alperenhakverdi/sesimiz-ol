@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useParams } from 'react-router-dom'
 import {
   Container,
@@ -31,12 +31,44 @@ const StoryDetailPage = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
+  // useMemo must be called before any conditional returns
+  const timeAgo = useMemo(() => {
+    if (!story) return 'Tarih belirtilmemiş'
+    
+    try {
+      // Handle both Firebase timestamp format and ISO string format
+      let date
+      if (story.createdAt?.seconds) {
+        // Firebase timestamp format
+        date = new Date(story.createdAt.seconds * 1000)
+      } else if (typeof story.createdAt === 'string') {
+        // ISO string format from API
+        date = new Date(story.createdAt)
+      } else if (story.createdAt instanceof Date) {
+        // Already a Date object
+        date = story.createdAt
+      } else {
+        return 'Tarih belirtilmemiş'
+      }
+      
+      if (isNaN(date.getTime())) {
+        return 'Tarih belirtilmemiş'
+      }
+      
+      return formatDistanceToNow(date, { addSuffix: true, locale: tr })
+    } catch (error) {
+      console.error('Date parsing error:', error, story.createdAt)
+      return 'Tarih belirtilmemiş'
+    }
+  }, [story, story?.createdAt])
+
   useEffect(() => {
     const fetchStory = async () => {
       try {
         setLoading(true)
         const response = await storyAPI.getById(id)
-        setStory(response.data)
+        console.log('✅ Story loaded:', response.data.story.title)
+        setStory(response.data.story)
       } catch (err) {
         setError(err.message)
       } finally {
@@ -79,11 +111,6 @@ const StoryDetailPage = () => {
     )
   }
 
-  const timeAgo = formatDistanceToNow(new Date(story.createdAt), { 
-    addSuffix: true, 
-    locale: tr 
-  })
-
   return (
     <Container maxW="container.lg" py={8}>
       <VStack spacing={8} align="stretch">
@@ -114,14 +141,14 @@ const StoryDetailPage = () => {
                 <HStack spacing={3}>
                   <Avatar 
                     size="md" 
-                    name={story.author.nickname}
-                    src={story.author.avatar}
+                    name={story.authorNickname || story.author?.nickname}
+                    src={story.authorAvatar || story.author?.avatar}
                     bg="brand.100"
                     color="brand.500"
                   />
                   <VStack align="start" spacing={0}>
                     <Text fontWeight="medium" color="neutral.700">
-                      @{story.author.nickname}
+                      @{story.authorNickname || story.author?.nickname}
                     </Text>
                     <Text fontSize="sm" color="neutral.500">
                       {timeAgo}
@@ -159,10 +186,42 @@ const StoryDetailPage = () => {
             {/* Story Footer */}
             <HStack justify="space-between" align="center">
               <Text fontSize="sm" color="neutral.500">
-                Paylaşım tarihi: {new Date(story.createdAt).toLocaleDateString('tr-TR')}
-                {story.updatedAt !== story.createdAt && (
+                Paylaşım tarihi: {(() => {
+                  try {
+                    let date
+                    if (story.createdAt?.seconds) {
+                      date = new Date(story.createdAt.seconds * 1000)
+                    } else if (typeof story.createdAt === 'string') {
+                      date = new Date(story.createdAt)
+                    } else if (story.createdAt instanceof Date) {
+                      date = story.createdAt
+                    } else {
+                      return 'Tarih belirtilmemiş'
+                    }
+                    return isNaN(date.getTime()) ? 'Tarih belirtilmemiş' : date.toLocaleDateString('tr-TR')
+                  } catch (error) {
+                    return 'Tarih belirtilmemiş'
+                  }
+                })()}
+                {story.updatedAt && story.updatedAt !== story.createdAt && (
                   <Text as="span" ml={2}>
-                    (Düzenlendi: {new Date(story.updatedAt).toLocaleDateString('tr-TR')})
+                    (Düzenlendi: {(() => {
+                      try {
+                        let date
+                        if (story.updatedAt?.seconds) {
+                          date = new Date(story.updatedAt.seconds * 1000)
+                        } else if (typeof story.updatedAt === 'string') {
+                          date = new Date(story.updatedAt)
+                        } else if (story.updatedAt instanceof Date) {
+                          date = story.updatedAt
+                        } else {
+                          return 'Tarih belirtilmemiş'
+                        }
+                        return isNaN(date.getTime()) ? 'Tarih belirtilmemiş' : date.toLocaleDateString('tr-TR')
+                      } catch (error) {
+                        return 'Tarih belirtilmemiş'
+                      }
+                    })()})
                   </Text>
                 )}
               </Text>

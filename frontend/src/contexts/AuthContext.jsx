@@ -6,7 +6,7 @@ const AuthContext = createContext({})
 // Axios instance configuration
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api',
-  timeout: 10000,
+  timeout: 30000, // Increased to 30 seconds for Cold Function starts
 })
 
 // Token storage helpers
@@ -147,34 +147,42 @@ export const AuthProvider = ({ children }) => {
   // Register function
   const register = async (userData) => {
     try {
+      console.log('🔄 Starting registration with data:', userData)
       setIsLoading(true)
-      const formData = new FormData()
       
-      formData.append('nickname', userData.nickname)
-      formData.append('password', userData.password)
-      
-      if (userData.email) {
-        formData.append('email', userData.email)
+      const requestData = {
+        nickname: userData.nickname,
+        email: userData.email || ''
       }
       
-      if (userData.avatar) {
-        formData.append('avatar', userData.avatar)
+      // Convert avatar file to base64 if provided
+      if (userData.avatar && userData.avatar instanceof File) {
+        console.log('🖼️ Converting avatar to base64...')
+        requestData.avatar = await new Promise((resolve, reject) => {
+          const reader = new FileReader()
+          reader.onload = () => resolve(reader.result)
+          reader.onerror = reject
+          reader.readAsDataURL(userData.avatar)
+        })
+        console.log('✅ Avatar converted to base64')
       }
       
-      const response = await api.post('/auth/register', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      })
+      console.log('📤 Sending request to API with data:', requestData)
+      const response = await api.post('/auth/register', requestData)
+      console.log('📥 API Response:', response)
       
-      const { user: newUser, tokens } = response.data.data
+      const { user: newUser, token } = response.data.data
       
       setUser(newUser)
-      setTokens(tokens)
+      // Backend returns single token, convert to tokens object format
+      setTokens({ accessToken: token, refreshToken: token })
       localStorage.setItem('sesimizol_user', JSON.stringify(newUser))
       
       return newUser
     } catch (error) {
+      console.error('❌ Registration error:', error)
+      console.error('❌ Error response:', error.response)
+      console.error('❌ Error data:', error.response?.data)
       throw new Error(error.response?.data?.error?.message || 'Kayıt işlemi başarısız')
     } finally {
       setIsLoading(false)
@@ -186,14 +194,14 @@ export const AuthProvider = ({ children }) => {
     try {
       setIsLoading(true)
       const response = await api.post('/auth/login', {
-        identifier,
-        password
+        nickname: identifier
       })
       
-      const { user: loggedInUser, tokens } = response.data.data
+      const { user: loggedInUser, token } = response.data.data
       
       setUser(loggedInUser)
-      setTokens(tokens)
+      // Backend returns single token, convert to tokens object format
+      setTokens({ accessToken: token, refreshToken: token })
       localStorage.setItem('sesimizol_user', JSON.stringify(loggedInUser))
       
       return loggedInUser
