@@ -38,7 +38,6 @@ const LoginModal = ({ isOpen, onClose }) => {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
-  const [activeTab, setActiveTab] = useState(0)
   const { login } = useAuth()
   const toast = useToast()
 
@@ -96,7 +95,6 @@ const LoginModal = ({ isOpen, onClose }) => {
     setPassword('')
     setError('')
     setShowPassword(false)
-    setActiveTab(0)
     onClose()
   }
 
@@ -197,6 +195,14 @@ const LoginModal = ({ isOpen, onClose }) => {
                   </InputRightElement>
                 </InputGroup>
               </FormControl>
+
+              <Box w="full" textAlign="right">
+                <Link to="/sifremi-unuttum" onClick={handleClose}>
+                  <Text as="span" color="accent.500" fontSize="sm" fontWeight="medium" _hover={{ textDecoration: 'underline' }}>
+                    Şifreni mi unuttun?
+                  </Text>
+                </Link>
+              </Box>
 
               <Divider />
 

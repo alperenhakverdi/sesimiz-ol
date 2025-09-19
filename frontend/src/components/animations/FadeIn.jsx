@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { motion as Motion } from 'framer-motion'
 
 const fadeInVariants = {
   hidden: {
@@ -28,19 +28,19 @@ const staggerContainer = {
 const FadeIn = ({ children, delay = 0, stagger = false, ...props }) => {
   if (stagger) {
     return (
-      <motion.div
+      <Motion.div
         initial="hidden"
         animate="visible"
         variants={staggerContainer}
         {...props}
       >
         {children}
-      </motion.div>
+      </Motion.div>
     )
   }
 
   return (
-    <motion.div
+    <Motion.div
       initial="hidden"
       animate="visible"
       variants={fadeInVariants}
@@ -54,15 +54,15 @@ const FadeIn = ({ children, delay = 0, stagger = false, ...props }) => {
       {...props}
     >
       {children}
-    </motion.div>
+    </Motion.div>
   )
 }
 
 export const FadeInItem = ({ children, ...props }) => {
   return (
-    <motion.div variants={fadeInVariants} {...props}>
+    <Motion.div variants={fadeInVariants} {...props}>
       {children}
-    </motion.div>
+    </Motion.div>
   )
 }
 

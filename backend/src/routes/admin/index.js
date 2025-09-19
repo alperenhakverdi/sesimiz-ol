@@ -11,6 +11,12 @@ import {
   updateAdminUserValidation,
   updateUserRoleValidation
 } from '../../controllers/adminUserController.js';
+import {
+  listFeatureFlagsValidation,
+  listFeatureFlagsController,
+  updateFeatureFlagValidation,
+  updateFeatureFlagController
+} from '../../controllers/featureFlagController.js';
 
 const router = express.Router();
 
@@ -22,5 +28,8 @@ router.post('/users', createAdminUserValidation, createAdminUser);
 router.put('/users/:id', updateAdminUserValidation, updateAdminUser);
 router.post('/users/:id/ban', toggleUserBan);
 router.post('/users/:id/role', updateUserRoleValidation, updateUserRole);
+
+router.get('/feature-flags', listFeatureFlagsValidation, listFeatureFlagsController);
+router.patch('/feature-flags/:key', updateFeatureFlagValidation, updateFeatureFlagController);
 
 export default router;

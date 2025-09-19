@@ -34,6 +34,9 @@ _Last updated: Phase 2 pre-flight_
 - **Security Logging**: successes/failures go through `SECURITY_EVENT_LOG_CHANNEL` for monitoring/alerting.
 
 ## Password Reset
+
+> Not: Yeni OTP tabanlı şifre sıfırlama akışı `passwordResetV2` feature flag’i ile yönetilir. Flag kapatıldığında bu uçlar devre dışı kalır.
+
 1. `POST /api/auth/forgot-password`
    - Validates rate limit (per email and global).
    - Generates 6 digit OTP + random reset token; stores hashed values in `password_reset_tokens` with TTL `PASSWORD_RESET_TOKEN_TTL_MINUTES`.

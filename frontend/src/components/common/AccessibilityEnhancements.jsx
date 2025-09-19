@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import {
   Box,
   Button,
@@ -5,7 +6,7 @@ import {
   VisuallyHidden,
   Text
 } from '@chakra-ui/react'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 
 // Skip to main content link
 export const SkipToMain = () => {
@@ -58,22 +59,24 @@ export const useKeyboardNavigation = (refs = [], options = {}) => {
 
       switch (event.key) {
         case 'ArrowDown':
-        case 'ArrowRight':
+        case 'ArrowRight': {
           event.preventDefault()
           const nextIndex = currentIndex === refs.length - 1 
             ? (loop ? 0 : currentIndex)
             : currentIndex + 1
           refs[nextIndex]?.current?.focus()
           break
+        }
 
         case 'ArrowUp':
-        case 'ArrowLeft':
+        case 'ArrowLeft': {
           event.preventDefault()
           const prevIndex = currentIndex === 0 
             ? (loop ? refs.length - 1 : 0)
             : currentIndex - 1
           refs[prevIndex]?.current?.focus()
           break
+        }
 
         case 'Escape':
           if (onEscape) {
@@ -83,12 +86,13 @@ export const useKeyboardNavigation = (refs = [], options = {}) => {
           break
 
         case 'Enter':
-        case ' ':
+        case ' ': {
           if (onEnter && currentIndex >= 0) {
             event.preventDefault()
             onEnter(currentIndex, refs[currentIndex])
           }
           break
+        }
 
         default:
           break
@@ -104,17 +108,17 @@ export const useKeyboardNavigation = (refs = [], options = {}) => {
 export const useFocusManagement = () => {
   const previousFocusRef = useRef(null)
 
-  const storeFocus = () => {
+  const storeFocus = useCallback(() => {
     previousFocusRef.current = document.activeElement
-  }
+  }, [])
 
-  const restoreFocus = () => {
+  const restoreFocus = useCallback(() => {
     if (previousFocusRef.current && previousFocusRef.current.focus) {
       previousFocusRef.current.focus()
     }
-  }
+  }, [])
 
-  const focusFirst = (containerRef) => {
+  const focusFirst = useCallback((containerRef) => {
     if (!containerRef.current) return
 
     const focusableElements = containerRef.current.querySelectorAll(
@@ -124,7 +128,7 @@ export const useFocusManagement = () => {
     if (focusableElements.length > 0) {
       focusableElements[0].focus()
     }
-  }
+  }, [])
 
   return {
     storeFocus,
@@ -186,7 +190,7 @@ export const AccessibleModal = ({
         restoreFocus()
       }
     }
-  }, [isOpen])
+  }, [isOpen, storeFocus, restoreFocus, focusFirst])
 
   if (!isOpen) return null
 

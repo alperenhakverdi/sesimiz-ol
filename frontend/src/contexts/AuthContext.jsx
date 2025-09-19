@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useEffect, useCallback } from 'react'
 import axios from 'axios'
 
@@ -113,7 +114,7 @@ export const AuthProvider = ({ children }) => {
   const initialize = useCallback(async () => {
     try {
       await fetchProfile()
-    } catch (error) {
+    } catch {
       // Ignore; user is not authenticated
     } finally {
       setIsLoading(false)

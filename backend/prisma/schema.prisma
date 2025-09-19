@@ -51,6 +51,7 @@ model User {
   notifications  Notification[]
   announcements  Announcement[]         @relation("AnnouncementAuthor")
   organizations  OrganizationMember[]
+  featureFlagsChanged FeatureFlag[]     @relation("FeatureFlagLastChangedBy")
 
   @@map("users")
 }
@@ -99,10 +100,11 @@ model PasswordResetToken {
   id           Int       @id @default(autoincrement())
   userId       Int
   tokenHash    String
-  otpCode      String
+  otpHash      String
   expiresAt    DateTime
   consumedAt   DateTime?
   attemptCount Int       @default(0)
+  verifiedAt   DateTime?
   metadata     Json?
   createdAt    DateTime  @default(now())
 
@@ -179,4 +181,22 @@ model Announcement {
   @@index([visibility])
   @@index([startsAt])
   @@index([endsAt])
+}
+
+model FeatureFlag {
+  id              Int       @id @default(autoincrement())
+  key             String    @unique
+  name            String?
+  description     String?
+  enabled         Boolean   @default(false)
+  rolloutStatus   String?
+  metadata        Json?
+  lastChangedById Int?
+  lastChangedAt   DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  lastChangedBy   User?     @relation("FeatureFlagLastChangedBy", fields: [lastChangedById], references: [id], onDelete: SetNull)
+
+  @@map("feature_flags")
 }

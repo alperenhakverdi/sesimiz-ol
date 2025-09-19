@@ -60,7 +60,7 @@ const StoryDetailPage = () => {
       console.error('Date parsing error:', error, story.createdAt)
       return 'Tarih belirtilmemiş'
     }
-  }, [story, story?.createdAt])
+  }, [story])
 
   useEffect(() => {
     const fetchStory = async () => {
@@ -199,7 +199,7 @@ const StoryDetailPage = () => {
                       return 'Tarih belirtilmemiş'
                     }
                     return isNaN(date.getTime()) ? 'Tarih belirtilmemiş' : date.toLocaleDateString('tr-TR')
-                  } catch (error) {
+                  } catch {
                     return 'Tarih belirtilmemiş'
                   }
                 })()}
@@ -218,8 +218,8 @@ const StoryDetailPage = () => {
                           return 'Tarih belirtilmemiş'
                         }
                         return isNaN(date.getTime()) ? 'Tarih belirtilmemiş' : date.toLocaleDateString('tr-TR')
-                      } catch (error) {
-                        return 'Tarih belirtilmemiş'
+                      } catch {
+                    return 'Tarih belirtilmemiş'
                       }
                     })()})
                   </Text>

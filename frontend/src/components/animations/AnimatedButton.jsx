@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { motion as Motion } from 'framer-motion'
 import { Button } from '@chakra-ui/react'
 
 const buttonVariants = {
@@ -22,7 +22,7 @@ const buttonVariants = {
 
 const AnimatedButton = ({ children, ...props }) => {
   return (
-    <motion.div
+    <Motion.div
       variants={buttonVariants}
       whileHover="hover"
       whileTap="tap"
@@ -31,7 +31,7 @@ const AnimatedButton = ({ children, ...props }) => {
       <Button {...props}>
         {children}
       </Button>
-    </motion.div>
+    </Motion.div>
   )
 }
 

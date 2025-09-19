@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { motion as Motion } from 'framer-motion'
 
 const slideVariants = {
   fromLeft: {
@@ -39,7 +39,7 @@ const SlideIn = ({ children, direction = "fromBottom", delay = 0, ...props }) =>
   const variants = slideVariants[direction] || slideVariants.fromBottom
 
   return (
-    <motion.div
+    <Motion.div
       initial="hidden"
       animate="visible"
       variants={{
@@ -55,7 +55,7 @@ const SlideIn = ({ children, direction = "fromBottom", delay = 0, ...props }) =>
       {...props}
     >
       {children}
-    </motion.div>
+    </Motion.div>
   )
 }
 

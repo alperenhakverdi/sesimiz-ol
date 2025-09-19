@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { memo, useMemo, useCallback, Suspense, useState, useEffect, useRef } from 'react'
 import {
   Box,
@@ -10,7 +11,7 @@ import {
 // Note: These will be imported from their respective files when used
 export const createMemoizedStoryCard = (StoryCard) => memo(({ story, ...props }) => {
   // Only re-render if story data changes
-  return <StoryCard story={story} {...props} />
+  return React.createElement(StoryCard, { story, ...props })
 }, (prevProps, nextProps) => {
   return (
     prevProps.story.id === nextProps.story.id &&
@@ -19,7 +20,7 @@ export const createMemoizedStoryCard = (StoryCard) => memo(({ story, ...props })
 })
 
 export const createMemoizedCommentCard = (CommentCard) => memo(({ comment, ...props }) => {
-  return <CommentCard comment={comment} {...props} />
+  return React.createElement(CommentCard, { comment, ...props })
 }, (prevProps, nextProps) => {
   return (
     prevProps.comment.id === nextProps.comment.id &&

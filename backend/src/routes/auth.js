@@ -19,6 +19,7 @@ import {
   authenticateToken, 
   refreshTokenMiddleware 
 } from '../middleware/auth.js';
+import { requireFeature } from '../middleware/authorization.js';
 import { 
   avatarUpload, 
   processAvatar, 
@@ -26,6 +27,7 @@ import {
 } from '../middleware/upload.js';
 import { authRateLimiter, generalRateLimiter } from '../config/rateLimit.js';
 import { csrfMiddleware } from '../utils/csrf.js';
+import { forgotPassword, forgotPasswordValidation, verifyOtp, verifyOtpValidation, resetPassword, resetPasswordValidation } from '../controllers/passwordResetController.js';
 
 const router = express.Router();
 
@@ -47,6 +49,30 @@ router.post('/login',
   authRateLimiter,
   loginValidation,
   login
+);
+
+// POST /api/auth/forgot-password - Initiate password reset flow
+router.post('/forgot-password',
+  requireFeature('passwordResetV2'),
+  authRateLimiter,
+  forgotPasswordValidation,
+  forgotPassword
+);
+
+// POST /api/auth/verify-otp - Verify reset OTP and issue reset session token
+router.post('/verify-otp',
+  requireFeature('passwordResetV2'),
+  authRateLimiter,
+  verifyOtpValidation,
+  verifyOtp
+);
+
+// POST /api/auth/reset-password - Complete password reset with verified token
+router.post('/reset-password',
+  requireFeature('passwordResetV2'),
+  authRateLimiter,
+  resetPasswordValidation,
+  resetPassword
 );
 
 // GET /api/auth/csrf - Issue CSRF token (placeholder; real logic in Phase 2.1.6)

@@ -3,7 +3,7 @@ import { Navigate, useLocation } from 'react-router-dom'
 import { Spinner, Center, Text } from '@chakra-ui/react'
 
 const ProtectedRoute = ({ children, redirectTo = '/' }) => {
-  const { user, isLoading, isAuthenticated } = useAuth()
+  const { isLoading, isAuthenticated } = useAuth()
   const location = useLocation()
 
   // Show loading spinner while checking authentication

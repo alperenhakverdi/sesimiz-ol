@@ -55,6 +55,19 @@ export const userAPI = {
   },
 };
 
+// Auth API functions
+export const authAPI = {
+  forgotPassword: async (email) => {
+    return await api.post('/auth/forgot-password', { email });
+  },
+  verifyOtp: async ({ token, otp }) => {
+    return await api.post('/auth/verify-otp', { token, otp });
+  },
+  resetPassword: async ({ resetToken, password }) => {
+    return await api.post('/auth/reset-password', { resetToken, password });
+  }
+};
+
 // Story API functions
 export const storyAPI = {
   // Get all stories with pagination

@@ -15,6 +15,7 @@ import authRoutes from './routes/auth.js';
 import uploadRoutes from './routes/upload.js';
 import adminRoutes from './routes/admin/index.js';
 import { recordSecurityMetric } from './services/metrics.js';
+import { refreshFeatureFlags } from './services/featureFlags.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -469,6 +470,10 @@ app.use('*', (req, res) => {
 process.on('SIGINT', async () => {
   console.log('Shutting down gracefully...');
   process.exit(0);
+});
+
+refreshFeatureFlags({ force: true }).catch((error) => {
+  console.error('Failed to load feature flags', error);
 });
 
 app.listen(PORT, () => {

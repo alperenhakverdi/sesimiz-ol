@@ -14,6 +14,8 @@ import SupportPage from './pages/SupportPage'
 import ContactPage from './pages/ContactPage'
 import RegisterPage from './pages/RegisterPage'
 import SettingsPage from './pages/SettingsPage'
+import ForgotPasswordPage from './pages/ForgotPasswordPage'
+import ResetPasswordPage from './pages/ResetPasswordPage'
 import AdminDashboardPage from './pages/AdminDashboardPage'
 import ErrorBoundary from './components/common/ErrorBoundary'
 import { SkipToMain } from './components/common/AccessibilityEnhancements'
@@ -43,6 +45,8 @@ function App() {
               <Route path="/destek" element={<SupportPage />} />
               <Route path="/iletisim" element={<ContactPage />} />
               <Route path="/kayit-ol" element={<RegisterPage />} />
+              <Route path="/sifremi-unuttum" element={<ForgotPasswordPage />} />
+              <Route path="/reset-password" element={<ResetPasswordPage />} />
               <Route path="/ayarlar" element={<SettingsPage />} />
               <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
             </Routes>
