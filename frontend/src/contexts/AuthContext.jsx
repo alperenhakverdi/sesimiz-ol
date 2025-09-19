@@ -110,18 +110,20 @@ export const AuthProvider = ({ children }) => {
 
   const fetchProfile = useCallback(async () => {
     try {
-      const response = await api.get('/auth/profile')
-      const profile = response.data?.data?.user || null
-      setUser(profile)
-      try {
-        const csrfResponse = await api.get('/auth/csrf')
-        const token = csrfResponse.data?.data?.csrfToken
-        if (token) {
-          applyCsrfToken(token)
-        }
-      } catch (csrfError) {
-        console.warn('CSRF token fetch failed:', csrfError)
+      const response = await api.get('/auth/session')
+      const data = response.data?.data || {}
+
+      if (data?.csrfToken) {
+        applyCsrfToken(data.csrfToken)
       }
+
+      if (!data?.authenticated) {
+        setUser(null)
+        return null
+      }
+
+      const profile = data.user || null
+      setUser(profile)
       return profile
     } catch (error) {
       setUser(null)
