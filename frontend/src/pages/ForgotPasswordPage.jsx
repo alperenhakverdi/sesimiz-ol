@@ -18,7 +18,7 @@ import {
   Divider
 } from '@chakra-ui/react'
 import { EmailIcon, CheckCircleIcon, ArrowBackIcon } from '@chakra-ui/icons'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import PageTransition from '../components/animations/PageTransition'
 import FadeIn from '../components/animations/FadeIn'
 import { authAPI } from '../services/api'
@@ -28,6 +28,7 @@ const ForgotPasswordPage = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const toast = useToast()
+  const navigate = useNavigate()
 
   const handleSubmit = async (event) => {
     event.preventDefault()
@@ -42,10 +43,10 @@ const ForgotPasswordPage = () => {
       })
       return
     }
-
     setIsLoading(true)
     try {
-      await authAPI.forgotPassword(trimmedEmail)
+      const result = await authAPI.forgotPassword(trimmedEmail)
+      const resetToken = result?.data?.resetToken
       setSubmitted(true)
       toast({
         title: 'Talep alındı',
@@ -54,6 +55,9 @@ const ForgotPasswordPage = () => {
         duration: 5000,
         isClosable: true
       })
+      if (resetToken) {
+        navigate(`/reset-password?token=${encodeURIComponent(resetToken)}`)
+      }
     } catch (error) {
       toast({
         title: 'İşlem başarısız',

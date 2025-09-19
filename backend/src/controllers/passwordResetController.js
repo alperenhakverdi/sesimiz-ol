@@ -1,5 +1,6 @@
 import { body, validationResult } from 'express-validator';
 import { PrismaClient } from '@prisma/client';
+import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import {
   createPasswordResetRequest,
@@ -9,7 +10,7 @@ import {
   issueResetSessionToken,
   verifyResetSessionToken,
   getResetSessionTtlMinutes,
-  buildPasswordResetServiceError
+  buildPasswordResetServiceError,
 } from '../services/passwordResetService.js';
 import { sendPasswordResetEmail } from '../services/passwordResetEmail.js';
 import logSecurityEvent from '../services/securityLogger.js';
@@ -22,20 +23,17 @@ export const forgotPasswordValidation = [
   body('email')
     .isEmail()
     .withMessage('Geçerli bir email adresi giriniz')
-    .normalizeEmail()
+    .normalizeEmail(),
 ];
 
 export const verifyOtpValidation = [
-  body('token')
-    .trim()
-    .notEmpty()
-    .withMessage('Token gereklidir'),
+  body('token').trim().notEmpty().withMessage('Token gereklidir'),
   body('otp')
     .trim()
     .isLength({ min: 6, max: 6 })
     .withMessage('Doğrulama kodu 6 haneli olmalıdır')
     .matches(/^[0-9]+$/)
-    .withMessage('Doğrulama kodu yalnızca rakamlardan oluşmalıdır')
+    .withMessage('Doğrulama kodu yalnızca rakamlardan oluşmalıdır'),
 ];
 
 export const resetPasswordValidation = [
@@ -43,7 +41,7 @@ export const resetPasswordValidation = [
     .trim()
     .notEmpty()
     .withMessage('Şifre sıfırlama oturumu gereklidir'),
-  passwordValidator('password')
+  passwordValidator('password'),
 ];
 
 const respondValidationError = (res, errors) =>
@@ -52,17 +50,19 @@ const respondValidationError = (res, errors) =>
     error: {
       code: 'VALIDATION_ERROR',
       message: 'Girilen bilgiler geçersiz',
-      details: errors.array()
-    }
+      details: errors.array(),
+    },
   });
 
-const genericSuccessPayload = () => ({
+const buildGenericSuccessPayload = resetToken => ({
   success: true,
-  message: 'Eğer kayıtlı bir hesabımızda bulunduysanız, sıfırlama talimatları e-posta adresinize gönderildi.',
+  message:
+    'Eğer kayıtlı bir hesabımızda bulunduysanız, sıfırlama talimatları e-posta adresinize gönderildi.',
   data: {
     expiresInMinutes: getPasswordResetTtlMinutes(),
-    maxAttempts: getPasswordResetMaxAttempts()
-  }
+    maxAttempts: getPasswordResetMaxAttempts(),
+    resetToken,
+  },
 });
 
 const handleServiceError = (error, res) => {
@@ -71,8 +71,9 @@ const handleServiceError = (error, res) => {
       success: false,
       error: {
         code: 'PASSWORD_RESET_FAILED',
-        message: 'Şu anda şifre sıfırlama isteği işlenemiyor. Lütfen daha sonra tekrar deneyin.'
-      }
+        message:
+          'Şu anda şifre sıfırlama isteği işlenemiyor. Lütfen daha sonra tekrar deneyin.',
+      },
     });
   }
 
@@ -80,8 +81,8 @@ const handleServiceError = (error, res) => {
     success: false,
     error: {
       code: error.code,
-      message: error.message
-    }
+      message: error.message,
+    },
   };
 
   if (error.retryAfter) {
@@ -100,6 +101,8 @@ export const forgotPassword = async (req, res) => {
   const email = req.body.email;
   const ip = req.ip;
   const userAgent = req.get('user-agent');
+  const randomFallbackToken = () => crypto.randomBytes(64).toString('hex');
+  let resetTokenForResponse = randomFallbackToken();
 
   let user;
 
@@ -111,8 +114,8 @@ export const forgotPassword = async (req, res) => {
         email: true,
         nickname: true,
         isActive: true,
-        isBanned: true
-      }
+        isBanned: true,
+      },
     });
   } catch (error) {
     console.error('Password reset lookup failed', error);
@@ -120,8 +123,9 @@ export const forgotPassword = async (req, res) => {
       success: false,
       error: {
         code: 'PASSWORD_RESET_FAILED',
-        message: 'Şu anda şifre sıfırlama isteği işlenemiyor. Lütfen daha sonra tekrar deneyin.'
-      }
+        message:
+          'Şu anda şifre sıfırlama isteği işlenemiyor. Lütfen daha sonra tekrar deneyin.',
+      },
     });
   }
 
@@ -132,12 +136,12 @@ export const forgotPassword = async (req, res) => {
         userId: user.id,
         ip,
         meta: {
-          reason: user.isBanned ? 'user_banned' : 'user_inactive'
-        }
+          reason: user.isBanned ? 'user_banned' : 'user_inactive',
+        },
       });
     }
 
-    return res.json(genericSuccessPayload());
+    return res.json(buildGenericSuccessPayload(resetTokenForResponse));
   }
 
   try {
@@ -145,15 +149,17 @@ export const forgotPassword = async (req, res) => {
       userId: user.id,
       email: user.email,
       ip,
-      userAgent
+      userAgent,
     });
+
+    resetTokenForResponse = resetRequest.token;
 
     await sendPasswordResetEmail({
       email: user.email,
       nickname: user.nickname,
       otp: resetRequest.otp,
       token: resetRequest.token,
-      expiresAt: resetRequest.expiresAt
+      expiresAt: resetRequest.expiresAt,
     });
 
     logSecurityEvent({
@@ -162,11 +168,11 @@ export const forgotPassword = async (req, res) => {
       ip,
       meta: {
         resetId: resetRequest.id,
-        expiresAt: resetRequest.expiresAt.toISOString()
-      }
+        expiresAt: resetRequest.expiresAt.toISOString(),
+      },
     });
 
-    return res.json(genericSuccessPayload());
+    return res.json(buildGenericSuccessPayload(resetTokenForResponse));
   } catch (error) {
     if (error?.name === 'PasswordResetServiceError') {
       return handleServiceError(error, res);
@@ -179,12 +185,12 @@ export const forgotPassword = async (req, res) => {
       userId: user.id,
       ip,
       meta: {
-        error: error.message
-      }
+        error: error.message,
+      },
     });
 
     // To avoid revealing internal state, respond with generic success even if email fails.
-    return res.json(genericSuccessPayload());
+    return res.json(buildGenericSuccessPayload(resetTokenForResponse));
   }
 };
 
@@ -203,7 +209,7 @@ export const verifyOtp = async (req, res) => {
 
     const resetToken = issueResetSessionToken({
       resetRequestId: record.id,
-      userId: record.userId
+      userId: record.userId,
     });
 
     logSecurityEvent({
@@ -212,16 +218,16 @@ export const verifyOtp = async (req, res) => {
       ip,
       meta: {
         resetId: record.id,
-        expiresAt: record.expiresAt?.toISOString?.() || record.expiresAt
-      }
+        expiresAt: record.expiresAt?.toISOString?.() || record.expiresAt,
+      },
     });
 
     return res.json({
       success: true,
       data: {
         resetToken,
-        expiresInMinutes: getResetSessionTtlMinutes()
-      }
+        expiresInMinutes: getResetSessionTtlMinutes(),
+      },
     });
   } catch (error) {
     if (error?.name === 'PasswordResetServiceError') {
@@ -234,8 +240,9 @@ export const verifyOtp = async (req, res) => {
       success: false,
       error: {
         code: 'PASSWORD_RESET_FAILED',
-        message: 'Şu anda şifre sıfırlama isteği işlenemiyor. Lütfen daha sonra tekrar deneyin.'
-      }
+        message:
+          'Şu anda şifre sıfırlama isteği işlenemiyor. Lütfen daha sonra tekrar deneyin.',
+      },
     });
   }
 };
@@ -261,8 +268,9 @@ export const resetPassword = async (req, res) => {
       success: false,
       error: {
         code: 'PASSWORD_RESET_FAILED',
-        message: 'Şu anda şifre sıfırlama isteği işlenemiyor. Lütfen daha sonra tekrar deneyin.'
-      }
+        message:
+          'Şu anda şifre sıfırlama isteği işlenemiyor. Lütfen daha sonra tekrar deneyin.',
+      },
     });
   }
 
@@ -284,7 +292,7 @@ export const resetPassword = async (req, res) => {
 
   try {
     resetRequest = await prisma.passwordResetToken.findUnique({
-      where: { id: resetRequestId }
+      where: { id: resetRequestId },
     });
   } catch (error) {
     console.error('Password reset lookup failed', error);
@@ -292,8 +300,9 @@ export const resetPassword = async (req, res) => {
       success: false,
       error: {
         code: 'PASSWORD_RESET_FAILED',
-        message: 'Şu anda şifre sıfırlama isteği işlenemiyor. Lütfen daha sonra tekrar deneyin.'
-      }
+        message:
+          'Şu anda şifre sıfırlama isteği işlenemiyor. Lütfen daha sonra tekrar deneyin.',
+      },
     });
   }
 
@@ -348,15 +357,15 @@ export const resetPassword = async (req, res) => {
   const completedAt = new Date();
 
   try {
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async tx => {
       await tx.user.update({
         where: { id: resetRequest.userId },
         data: {
           password: hashedPassword,
           failedLoginCount: 0,
           lastFailedLoginAt: null,
-          lockedUntil: null
-        }
+          lockedUntil: null,
+        },
       });
 
       await tx.passwordResetToken.update({
@@ -367,9 +376,9 @@ export const resetPassword = async (req, res) => {
             ...(resetRequest.metadata ?? {}),
             completedAt: completedAt.toISOString(),
             completedIp: ip || null,
-            completedUserAgent: userAgent || null
-          }
-        }
+            completedUserAgent: userAgent || null,
+          },
+        },
       });
     });
   } catch (error) {
@@ -378,8 +387,9 @@ export const resetPassword = async (req, res) => {
       success: false,
       error: {
         code: 'PASSWORD_RESET_FAILED',
-        message: 'Şifre sıfırlama işlemi gerçekleştirilemedi. Lütfen daha sonra tekrar deneyin.'
-      }
+        message:
+          'Şifre sıfırlama işlemi gerçekleştirilemedi. Lütfen daha sonra tekrar deneyin.',
+      },
     });
   }
 
@@ -389,15 +399,14 @@ export const resetPassword = async (req, res) => {
     event: 'PASSWORD_RESET_COMPLETED',
     userId: resetRequest.userId,
     ip,
-    meta: { resetId: resetRequest.id }
+    meta: { resetId: resetRequest.id },
   });
 
   return res.json({
     success: true,
-    message: 'Şifreniz başarıyla güncellendi. Şimdi giriş yapabilirsiniz.'
+    message: 'Şifreniz başarıyla güncellendi. Şimdi giriş yapabilirsiniz.',
   });
 };
-
 
 export default {
   forgotPassword,
@@ -405,5 +414,5 @@ export default {
   verifyOtp,
   verifyOtpValidation,
   resetPassword,
-  resetPasswordValidation
+  resetPasswordValidation,
 };
