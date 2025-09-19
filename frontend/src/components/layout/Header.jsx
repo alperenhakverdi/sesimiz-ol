@@ -32,7 +32,7 @@ import AnimatedButton from '../animations/AnimatedButton'
 const Header = () => {
   const { isOpen, onOpen, onClose } = useDisclosure()
   const { isOpen: isLoginOpen, onOpen: onLoginOpen, onClose: onLoginClose } = useLoginDisclosure()
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, isAdmin } = useAuth()
   const isMobile = useBreakpointValue({ base: true, md: false })
   
   const handleShareClick = () => {
@@ -52,6 +52,11 @@ const Header = () => {
       <Link as={RouterLink} to="/hakkinda" color="neutral.800" _hover={{ color: 'accent.600', textDecoration: 'underline' }}>
         Hakkında
       </Link>
+      {isAdmin && (
+        <Link as={RouterLink} to="/admin/dashboard" color="neutral.800" _hover={{ color: 'accent.600', textDecoration: 'underline' }}>
+          Admin Paneli
+        </Link>
+      )}
     </>
   )
 
@@ -165,6 +170,19 @@ const Header = () => {
                     >
                       Hakkında
                     </Link>
+                    {isAdmin && (
+                      <Link 
+                        as={RouterLink} 
+                        to="/admin/dashboard" 
+                        fontSize="lg"
+                        fontWeight="medium"
+                        color="neutral.800"
+                        _hover={{ color: 'accent.600', textDecoration: 'underline' }}
+                        onClick={onClose}
+                      >
+                        Admin Paneli
+                      </Link>
+                    )}
                   </VStack>
                   
                   <Box pt={4} borderTopWidth="1px">

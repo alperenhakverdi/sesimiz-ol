@@ -13,6 +13,7 @@ import userRoutes from './routes/users.js';
 import storyRoutes from './routes/stories.js';
 import authRoutes from './routes/auth.js';
 import uploadRoutes from './routes/upload.js';
+import adminRoutes from './routes/admin/index.js';
 import { recordSecurityMetric } from './services/metrics.js';
 
 const app = express();
@@ -403,6 +404,7 @@ const mountApiRoutes = (router) => {
   router.use('/upload', uploadRoutes);
   router.use('/users', userRoutes);
   router.use('/stories', storyRoutes);
+  router.use('/admin', adminRoutes);
   return router;
 };
 
