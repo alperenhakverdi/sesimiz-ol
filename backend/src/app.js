@@ -15,94 +15,250 @@ import uploadRoutes from './routes/upload.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+const currentEnvironment = (process.env.NODE_ENV || 'development').toLowerCase();
 
-// Security Headers - Phase 1.1: Enhanced security configuration
-app.use(helmet({
-  // Content Security Policy
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-      scriptSrc: ["'self'"],
-      imgSrc: ["'self'", "data:", "https:", "blob:"],
-      fontSrc: ["'self'", "https://fonts.gstatic.com"],
-      connectSrc: ["'self'", "https://sesimiz-ol.firebaseapp.com"],
-      frameSrc: ["'none'"],
-      objectSrc: ["'none'"],
-      mediaSrc: ["'self'"],
-      workerSrc: ["'self'", "blob:"],
+const parseList = value =>
+  value
+    .split(',')
+    .map(entry => entry.trim())
+    .filter(Boolean);
+
+const buildRegexList = value =>
+  parseList(value).reduce((patterns, rawPattern) => {
+    try {
+      patterns.push(new RegExp(rawPattern));
+    } catch (error) {
+      console.error(`Invalid CORS origin regex pattern skipped: ${rawPattern}`, error);
+    }
+    return patterns;
+  }, []);
+
+const unique = values => Array.from(new Set(values.filter(Boolean)));
+
+const toOrigin = value => {
+  if (!value) return null;
+  try {
+    return new URL(value).origin;
+  } catch (error) {
+    return value;
+  }
+};
+
+const normalizeTrustProxyValue = value => {
+  if (!value) return undefined;
+  const trimmed = value.trim();
+  const lower = trimmed.toLowerCase();
+
+  if (lower === 'false') return false;
+  if (lower === 'true') return 1;
+  if (lower === 'loopback' || lower === 'localhost') return lower;
+
+  const numeric = Number.parseInt(trimmed, 10);
+  if (Number.isFinite(numeric)) {
+    return numeric;
+  }
+
+  return trimmed;
+};
+
+const defaultOriginsByEnvironment = {
+  development: [
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+    'http://localhost:4173'
+  ],
+  test: ['http://localhost:4173'],
+  production: [
+    'https://sesimiz-ol.com',
+    'https://www.sesimiz-ol.com',
+    'https://sesimiz-ol.firebaseapp.com',
+    'https://sesimiz-ol.web.app'
+  ]
+};
+
+const baseOrigins = process.env.CORS_ALLOWED_ORIGINS
+  ? parseList(process.env.CORS_ALLOWED_ORIGINS)
+  : [];
+
+const environmentOrigins = (() => {
+  const key = `CORS_ALLOWED_ORIGINS_${currentEnvironment.toUpperCase()}`;
+  return process.env[key] ? parseList(process.env[key]) : [];
+})();
+
+const explicitOrigins = Array.from(
+  new Set([
+    ...(defaultOriginsByEnvironment[currentEnvironment] || []),
+    ...baseOrigins,
+    ...environmentOrigins
+  ])
+);
+
+const regexOrigins = process.env.CORS_ALLOWED_ORIGIN_REGEX
+  ? buildRegexList(process.env.CORS_ALLOWED_ORIGIN_REGEX)
+  : [];
+
+const buildCspDirectives = () => {
+  const scriptSrc = ["'self'"].concat(
+    currentEnvironment !== 'production' ? ["'unsafe-inline'", "'unsafe-eval'"] : []
+  );
+
+  const styleSrc = [
+    "'self'",
+    "'unsafe-inline'",
+    'https://fonts.googleapis.com'
+  ];
+
+  const fontSrc = ["'self'", 'https://fonts.gstatic.com'];
+
+  const connectSrc = [
+    "'self'",
+    ...explicitOrigins,
+    toOrigin(process.env.BACKEND_URL),
+    toOrigin(process.env.FRONTEND_URL),
+    toOrigin(process.env.API_BASE_URL)
+  ];
+
+  if (currentEnvironment !== 'production') {
+    connectSrc.push(
+      'http://localhost:3001',
+      'http://127.0.0.1:3001',
+      'http://localhost:5173',
+      'http://127.0.0.1:5173',
+      'ws://localhost:5173',
+      'ws://127.0.0.1:5173'
+    );
+  }
+
+  const directives = {
+    defaultSrc: ["'self'"],
+    baseUri: ["'self'"],
+    frameAncestors: ["'none'"],
+    fontSrc,
+    styleSrc,
+    scriptSrc,
+    imgSrc: ["'self'", 'data:', 'blob:', 'https:'],
+    connectSrc,
+    mediaSrc: ["'self'"],
+    objectSrc: ["'none'"],
+    workerSrc: ["'self'", 'blob:'],
+    frameSrc: ["'none'"],
+    formAction: ["'self'"],
+    childSrc: ["'self'"],
+    manifestSrc: ["'self'"]
+  };
+
+  const applyEnvOverrides = (key, envVar) => {
+    if (process.env[envVar]) {
+      directives[key] = unique([
+        ...directives[key],
+        ...parseList(process.env[envVar])
+      ]);
+    } else {
+      directives[key] = unique(directives[key]);
+    }
+  };
+
+  applyEnvOverrides('scriptSrc', 'SECURITY_CSP_SCRIPT_SRC');
+  applyEnvOverrides('styleSrc', 'SECURITY_CSP_STYLE_SRC');
+  applyEnvOverrides('fontSrc', 'SECURITY_CSP_FONT_SRC');
+  applyEnvOverrides('imgSrc', 'SECURITY_CSP_IMG_SRC');
+  applyEnvOverrides('connectSrc', 'SECURITY_CSP_CONNECT_SRC');
+
+  return directives;
+};
+
+const allowNullOrigin = (() => {
+  if (process.env.CORS_ALLOW_NULL_ORIGIN === 'true') {
+    return true;
+  }
+
+  if (process.env.CORS_ALLOW_NULL_ORIGIN === 'false') {
+    return false;
+  }
+
+  return currentEnvironment !== 'production';
+})();
+
+const credentialsEnabled = (() => {
+  if (process.env.CORS_CREDENTIALS === 'true') return true;
+  if (process.env.CORS_CREDENTIALS === 'false') return false;
+  return true;
+})();
+
+const securityHeadersEnabled = process.env.SECURITY_HEADERS_ENABLED !== 'false';
+const securityHeadersReportOnly = process.env.SECURITY_HEADERS_REPORT_ONLY === 'true';
+const trustProxySetting = normalizeTrustProxyValue(process.env.TRUST_PROXY);
+
+if (typeof trustProxySetting !== 'undefined') {
+  app.set('trust proxy', trustProxySetting);
+} else if (process.env.RATE_LIMIT_ENABLED !== 'false') {
+  app.set('trust proxy', 'loopback');
+}
+
+if (securityHeadersEnabled) {
+  const contentSecurityPolicy = buildCspDirectives();
+  app.use(helmet({
+    contentSecurityPolicy: {
+      directives: contentSecurityPolicy,
+      reportOnly: securityHeadersReportOnly
     },
-  },
+    crossOriginResourcePolicy: {
+      policy: currentEnvironment === 'production' ? 'same-site' : 'cross-origin'
+    },
+    crossOriginOpenerPolicy: {
+      policy: 'same-origin-allow-popups'
+    },
+    crossOriginEmbedderPolicy: false,
+    dnsPrefetchControl: {
+      allow: currentEnvironment !== 'production'
+    },
+    frameguard: {
+      action: 'deny'
+    },
+    hidePoweredBy: true,
+    hsts: currentEnvironment === 'production'
+      ? {
+          maxAge: 31536000,
+          includeSubDomains: true,
+          preload: true
+        }
+      : false,
+    ieNoOpen: true,
+    noSniff: true,
+    originAgentCluster: true,
+    permittedCrossDomainPolicies: {
+      permittedPolicies: 'none'
+    },
+    referrerPolicy: {
+      policy: 'no-referrer'
+    }
+  }));
+} else {
+  console.warn('Security headers are disabled via SECURITY_HEADERS_ENABLED environment flag.');
+}
 
-  // Cross-Origin Resource Policy - Enable with specific values
-  crossOriginResourcePolicy: {
-    policy: process.env.NODE_ENV === 'production' ? "same-site" : "cross-origin"
-  },
-
-  // Cross-Origin Opener Policy - Enable for better security
-  crossOriginOpenerPolicy: {
-    policy: "same-origin-allow-popups"
-  },
-
-  // Cross-Origin Embedder Policy
-  crossOriginEmbedderPolicy: false, // Disable for now to avoid breaking changes
-
-  // DNS Prefetch Control
-  dnsPrefetchControl: { allow: false },
-
-  // Frame Guard (X-Frame-Options)
-  frameguard: { action: 'deny' },
-
-  // Hide Powered By Header
-  hidePoweredBy: true,
-
-  // HTTP Strict Transport Security (HTTPS only)
-  hsts: process.env.NODE_ENV === 'production' ? {
-    maxAge: 31536000, // 1 year
-    includeSubDomains: true,
-    preload: true
-  } : false,
-
-  // IE No Open
-  ieNoOpen: true,
-
-  // No Sniff
-  noSniff: true,
-
-  // Origin Agent Cluster
-  originAgentCluster: true,
-
-  // Permitted Cross Domain Policies
-  permittedCrossDomainPolicies: false,
-
-  // Referrer Policy
-  referrerPolicy: { policy: "no-referrer" },
-
-  // X-XSS-Protection
-  xssFilter: true
-}));
-// Enhanced CORS configuration - Phase 1.1: Environment-based security
 const corsOptions = {
-  origin: function(origin, callback) {
-    // Get allowed origins from environment variables
-    const allowedOrigins = process.env.CORS_ALLOWED_ORIGINS
-      ? process.env.CORS_ALLOWED_ORIGINS.split(',').map(url => url.trim())
-      : ['http://localhost:5173', 'https://sesimiz-ol.firebaseapp.com', 'https://sesimiz-ol.web.app'];
+  origin(origin, callback) {
+    if (!origin) {
+      if (allowNullOrigin) {
+        return callback(null, true);
+      }
 
-    // Allow requests with no origin (mobile apps, Postman, etc.) in development
-    if (!origin && process.env.NODE_ENV === 'development') {
+      return callback(new Error('Origin header is required by CORS policy.'));
+    }
+
+    if (explicitOrigins.includes(origin)) {
       return callback(null, true);
     }
 
-    // Check if origin is in allowed list
-    if (allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      console.warn(`CORS blocked origin: ${origin}`);
-      callback(new Error(`Origin ${origin} not allowed by CORS policy`));
+    if (regexOrigins.some(pattern => pattern.test(origin))) {
+      return callback(null, true);
     }
+
+    console.warn(`CORS blocked origin (${currentEnvironment}): ${origin}`);
+    return callback(new Error(`Origin ${origin} is not allowed by the configured CORS policy.`));
   },
-  credentials: process.env.CORS_CREDENTIALS === 'true' || true,
+  credentials: credentialsEnabled,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: [
     'Origin',
@@ -117,13 +273,13 @@ const corsOptions = {
   exposedHeaders: ['Content-Length', 'X-Requested-With', 'X-CSRF-Token'],
   optionsSuccessStatus: 200,
   preflightContinue: false,
-  maxAge: 86400 // 24 hours preflight cache
+  maxAge: 86400
 };
 
 app.use(cors(corsOptions));
 
 // Handle preflight requests explicitly
-app.options('*', cors());
+app.options('*', cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 

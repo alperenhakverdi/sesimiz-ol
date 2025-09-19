@@ -1,5 +1,4 @@
 import express from 'express';
-import rateLimit from 'express-rate-limit';
 import path from 'path';
 import fs from 'fs/promises';
 import { fileURLToPath } from 'url';
@@ -10,27 +9,15 @@ import {
   handleUploadError 
 } from '../middleware/upload.js';
 import { authenticateToken } from '../middleware/auth.js';
+import { uploadRateLimiter } from '../config/rateLimit.js';
 
 const router = express.Router();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Rate limiting for file uploads
-const uploadLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // limit each IP to 10 uploads per windowMs
-  message: {
-    success: false,
-    error: {
-      code: 'UPLOAD_RATE_LIMIT',
-      message: 'Çok fazla dosya yükleme denemesi. Lütfen 15 dakika sonra tekrar deneyin.'
-    }
-  }
-});
-
 // POST /api/upload/avatar - Upload avatar (standalone)
 router.post('/avatar', 
-  uploadLimiter,
+  uploadRateLimiter,
   authenticateToken,
   avatarUpload.single('avatar'),
   validateFileUpload,

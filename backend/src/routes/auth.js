@@ -1,5 +1,4 @@
 import express from 'express';
-import rateLimit from 'express-rate-limit';
 import { 
   register, 
   login, 
@@ -22,44 +21,16 @@ import {
   processAvatar, 
   handleUploadError 
 } from '../middleware/upload.js';
+import { authRateLimiter, generalRateLimiter } from '../config/rateLimit.js';
 
 const router = express.Router();
 
-// Rate limiting for authentication endpoints
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // limit each IP to 5 requests per windowMs for auth endpoints
-  message: {
-    success: false,
-    error: {
-      code: 'TOO_MANY_ATTEMPTS',
-      message: 'Çok fazla giriş denemesi. Lütfen 15 dakika sonra tekrar deneyin.'
-    }
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
-const generalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
-  message: {
-    success: false,
-    error: {
-      code: 'RATE_LIMIT_EXCEEDED',
-      message: 'Çok fazla istek. Lütfen daha sonra tekrar deneyin.'
-    }
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
 // Apply general rate limiting to all routes
-router.use(generalLimiter);
+router.use(generalRateLimiter);
 
 // POST /api/auth/register - Register new user
 router.post('/register', 
-  authLimiter,
+  authRateLimiter,
   avatarUpload.single('avatar'),
   processAvatar,
   registerValidation,
@@ -69,7 +40,7 @@ router.post('/register',
 
 // POST /api/auth/login - Login user
 router.post('/login', 
-  authLimiter,
+  authRateLimiter,
   loginValidation,
   login
 );
@@ -124,3 +95,4 @@ router.get('/check',
 );
 
 export default router;
+
