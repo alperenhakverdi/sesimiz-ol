@@ -1,8 +1,17 @@
-import firebaseService from '../services/firebase.js'
+import { firebaseService, isFirebaseEnabled } from '../services/firebase.js'
 
 // GET /api/stories - List all stories
 export const getAllStories = async (req, res) => {
   try {
+    if (!isFirebaseEnabled) {
+      return res.status(503).json({
+        success: false,
+        error: {
+          code: 'SERVICE_UNAVAILABLE',
+          message: 'Firebase service is not configured.'
+        }
+      });
+    }
     const page = parseInt(req.query.page) || 1
     const limit = parseInt(req.query.limit) || 10
     
@@ -27,6 +36,15 @@ export const getAllStories = async (req, res) => {
 // GET /api/stories/:id - Get story details
 export const getStoryById = async (req, res) => {
   try {
+    if (!isFirebaseEnabled) {
+      return res.status(503).json({
+        success: false,
+        error: {
+          code: 'SERVICE_UNAVAILABLE',
+          message: 'Firebase service is not configured.'
+        }
+      });
+    }
     const { id } = req.params
     const story = await firebaseService.getStoryById(id)
     
@@ -65,6 +83,15 @@ export const getStoryById = async (req, res) => {
 // POST /api/stories/:id/view - Increment view count
 export const incrementViewCount = async (req, res) => {
   try {
+    if (!isFirebaseEnabled) {
+      return res.status(503).json({
+        success: false,
+        error: {
+          code: 'SERVICE_UNAVAILABLE',
+          message: 'Firebase service is not configured.'
+        }
+      });
+    }
     const { id } = req.params
     await firebaseService.updateStoryViewCount(id)
     
@@ -87,6 +114,15 @@ export const incrementViewCount = async (req, res) => {
 // POST /api/stories - Create new story
 export const createStory = async (req, res) => {
   try {
+    if (!isFirebaseEnabled) {
+      return res.status(503).json({
+        success: false,
+        error: {
+          code: 'SERVICE_UNAVAILABLE',
+          message: 'Firebase service is not configured.'
+        }
+      });
+    }
     const { title, content } = req.body
     const userId = req.user.id
     
