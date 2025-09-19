@@ -10,6 +10,7 @@ import {
 } from '../middleware/upload.js';
 import { authenticateToken } from '../middleware/auth.js';
 import { uploadRateLimiter } from '../config/rateLimit.js';
+import { csrfMiddleware } from '../utils/csrf.js';
 
 const router = express.Router();
 const __filename = fileURLToPath(import.meta.url);
@@ -19,6 +20,7 @@ const __dirname = path.dirname(__filename);
 router.post('/avatar', 
   uploadRateLimiter,
   authenticateToken,
+  csrfMiddleware,
   avatarUpload.single('avatar'),
   validateFileUpload,
   processAvatar,
@@ -88,6 +90,7 @@ router.get('/info', (req, res) => {
 // DELETE /api/upload/avatar/:filename - Delete uploaded avatar (admin only)
 router.delete('/avatar/:filename', 
   authenticateToken,
+  csrfMiddleware,
   async (req, res) => {
     try {
       const { filename } = req.params;

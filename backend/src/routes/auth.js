@@ -10,7 +10,10 @@ import {
   registerValidation,
   loginValidation,
   updateProfileValidation,
-  changePasswordValidation
+  changePasswordValidation,
+  issueCsrfToken,
+  logout,
+  logoutAll
 } from '../controllers/authController.js';
 import { 
   authenticateToken, 
@@ -22,6 +25,7 @@ import {
   handleUploadError 
 } from '../middleware/upload.js';
 import { authRateLimiter, generalRateLimiter } from '../config/rateLimit.js';
+import { csrfMiddleware } from '../utils/csrf.js';
 
 const router = express.Router();
 
@@ -45,6 +49,9 @@ router.post('/login',
   login
 );
 
+// GET /api/auth/csrf - Issue CSRF token (placeholder; real logic in Phase 2.1.6)
+router.get('/csrf', issueCsrfToken);
+
 // POST /api/auth/refresh - Refresh access token
 router.post('/refresh', 
   refreshTokenMiddleware,
@@ -60,6 +67,7 @@ router.get('/profile',
 // PUT /api/auth/profile - Update user profile
 router.put('/profile', 
   authenticateToken,
+  csrfMiddleware,
   avatarUpload.single('avatar'),
   processAvatar,
   updateProfileValidation,
@@ -70,6 +78,7 @@ router.put('/profile',
 // PUT /api/auth/password - Change password
 router.put('/password', 
   authenticateToken,
+  csrfMiddleware,
   changePasswordValidation,
   changePassword
 );
@@ -77,7 +86,22 @@ router.put('/password',
 // DELETE /api/auth/account - Deactivate account
 router.delete('/account', 
   authenticateToken,
+  csrfMiddleware,
   deactivateAccount
+);
+
+// POST /api/auth/logout - Logout current session (placeholder)
+router.post('/logout',
+  authenticateToken,
+  csrfMiddleware,
+  logout
+);
+
+// POST /api/auth/logout-all - Logout all sessions (placeholder)
+router.post('/logout-all',
+  authenticateToken,
+  csrfMiddleware,
+  logoutAll
 );
 
 // GET /api/auth/check - Check if user is authenticated (for frontend)
@@ -95,4 +119,3 @@ router.get('/check',
 );
 
 export default router;
-

@@ -6,22 +6,51 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id        Int      @id @default(autoincrement())
-  nickname  String   @unique
-  email     String?  @unique
-  password  String   // Hashed password with bcrypt
-  avatar    String?  // Avatar file path/URL
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+enum Role {
+  USER
+  MODERATOR
+  ADMIN
+}
 
-  // Relations
-  stories   Story[]
+enum NotificationType {
+  SYSTEM
+  SECURITY
+  ANNOUNCEMENT
+}
+
+enum AnnouncementVisibility {
+  PUBLIC
+  AUTHENTICATED
+  ADMIN
+}
+
+model User {
+  id             Int                    @id @default(autoincrement())
+  nickname       String                 @unique
+  email          String?                @unique
+  password       String
+  avatar         String?
+  role           Role                   @default(USER)
+  isActive       Boolean                @default(true)
+  isBanned       Boolean                @default(false)
+  emailVerified  Boolean                @default(false)
+  lastLoginAt    DateTime?
+  failedLoginCount Int                 @default(0)
+  lastFailedLoginAt DateTime?
+  lockedUntil   DateTime?
+  createdAt      DateTime               @default(now())
+  updatedAt      DateTime               @updatedAt
+
+  stories        Story[]
+  sessions       UserSession[]
+  passwordTokens PasswordResetToken[]
+  notifications  Notification[]
+  announcements  Announcement[]         @relation("AnnouncementAuthor")
+  organizations  OrganizationMember[]
 
   @@map("users")
 }
@@ -35,8 +64,119 @@ model Story {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // Relations
   author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
 
   @@map("stories")
+  @@index([authorId])
+}
+
+model UserSession {
+  id                   Int          @id @default(autoincrement())
+  userId               Int
+  refreshTokenHash     String
+  userAgent            String?
+  ipAddress            String?
+  geolocation          Json?
+  createdAt            DateTime     @default(now())
+  lastSeenAt           DateTime     @default(now())
+  expiresAt            DateTime
+  revokedAt            DateTime?
+  revocationReason     String?
+  replacedBySessionId  Int?
+
+  user                 User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  replacement          UserSession? @relation("SessionReplacement", fields: [replacedBySessionId], references: [id])
+  replacedSessions     UserSession[] @relation("SessionReplacement")
+
+  @@map("user_sessions")
+  @@index([userId])
+  @@index([expiresAt])
+  @@index([revokedAt])
+  @@index([refreshTokenHash])
+}
+
+model PasswordResetToken {
+  id           Int       @id @default(autoincrement())
+  userId       Int
+  tokenHash    String
+  otpCode      String
+  expiresAt    DateTime
+  consumedAt   DateTime?
+  attemptCount Int       @default(0)
+  metadata     Json?
+  createdAt    DateTime  @default(now())
+
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("password_reset_tokens")
+  @@index([userId])
+  @@index([expiresAt])
+  @@index([tokenHash])
+}
+
+model Organization {
+  id          Int                   @id @default(autoincrement())
+  name        String
+  slug        String                @unique
+  description String?
+  website     String?
+  contactEmail String?
+  isActive    Boolean               @default(true)
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
+
+  members     OrganizationMember[]
+
+  @@map("organizations")
+}
+
+model OrganizationMember {
+  id             Int           @id @default(autoincrement())
+  organizationId Int
+  userId         Int
+  role           String        @default("member")
+  createdAt      DateTime      @default(now())
+
+  organization   Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("organization_members")
+  @@unique([organizationId, userId])
+  @@index([userId])
+}
+
+model Notification {
+  id        Int               @id @default(autoincrement())
+  userId    Int
+  type      NotificationType  @default(SYSTEM)
+  title     String
+  body      String
+  data      Json?
+  readAt    DateTime?
+  createdAt DateTime           @default(now())
+
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+  @@index([userId, readAt])
+}
+
+model Announcement {
+  id          Int                      @id @default(autoincrement())
+  title       String
+  body        String
+  visibility  AnnouncementVisibility    @default(PUBLIC)
+  startsAt    DateTime?
+  endsAt      DateTime?
+  isActive    Boolean                   @default(true)
+  createdById Int?
+  createdAt   DateTime                  @default(now())
+  updatedAt   DateTime                  @updatedAt
+
+  createdBy   User?                     @relation("AnnouncementAuthor", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@map("announcements")
+  @@index([visibility])
+  @@index([startsAt])
+  @@index([endsAt])
 }

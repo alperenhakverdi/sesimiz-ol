@@ -1,107 +1,67 @@
-import { createContext, useContext, useState, useEffect } from 'react'
+import { createContext, useContext, useState, useEffect, useCallback } from 'react'
 import axios from 'axios'
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api'
+const REQUEST_TIMEOUT = Number(import.meta.env.VITE_API_TIMEOUT || 30000)
+const CSRF_HEADER_NAME = (import.meta.env.VITE_CSRF_HEADER_NAME || 'x-csrf-token').toLowerCase()
 
 const AuthContext = createContext({})
 
-// Axios instance configuration
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api',
-  timeout: 30000, // Increased to 30 seconds for Cold Function starts
+  baseURL: API_BASE_URL,
+  timeout: REQUEST_TIMEOUT,
+  withCredentials: true
 })
 
-// Token storage helpers
-const getTokens = () => {
-  const tokens = localStorage.getItem('sesimizol_tokens')
-  return tokens ? JSON.parse(tokens) : null
-}
-
-const setTokens = (tokens) => {
-  localStorage.setItem('sesimizol_tokens', JSON.stringify(tokens))
-}
-
-const removeTokens = () => {
-  localStorage.removeItem('sesimizol_tokens')
-  localStorage.removeItem('sesimizol_user')
-}
-
-// Request interceptor to add auth token
-api.interceptors.request.use(
-  (config) => {
-    const tokens = getTokens()
-    if (tokens?.accessToken) {
-      config.headers.Authorization = `Bearer ${tokens.accessToken}`
-    }
-    return config
-  },
-  (error) => Promise.reject(error)
-)
-
-// Response interceptor for token refresh
+let logoutHandler = () => {}
+let csrfTokenHandler = () => {}
 let isRefreshing = false
 let failedQueue = []
 
-const processQueue = (error, token = null) => {
-  failedQueue.forEach(prom => {
+const processQueue = (error) => {
+  failedQueue.forEach(({ reject, resolve }) => {
     if (error) {
-      prom.reject(error)
+      reject(error)
     } else {
-      prom.resolve(token)
+      resolve()
     }
   })
-  
   failedQueue = []
 }
 
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    const originalRequest = error.config
+    const originalRequest = error.config || {}
 
     if (error.response?.status === 401 && !originalRequest._retry) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject })
-        }).then(token => {
-          originalRequest.headers.Authorization = `Bearer ${token}`
-          return api(originalRequest)
-        }).catch(err => {
-          return Promise.reject(err)
-        })
+        }).then(() => api(originalRequest))
       }
 
       originalRequest._retry = true
       isRefreshing = true
 
-      const tokens = getTokens()
-      
-      if (tokens?.refreshToken) {
-        try {
-          const response = await axios.post(
-            `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api'}/auth/refresh`,
-            {},
-            {
-              headers: {
-                Authorization: `Bearer ${tokens.refreshToken}`
-              }
-            }
-          )
-          
-          const newTokens = response.data.data.tokens
-          setTokens(newTokens)
-          processQueue(null, newTokens.accessToken)
-          
-          originalRequest.headers.Authorization = `Bearer ${newTokens.accessToken}`
-          return api(originalRequest)
-        } catch (refreshError) {
-          processQueue(refreshError, null)
-          logout()
-          return Promise.reject(refreshError)
-        } finally {
-          isRefreshing = false
+      try {
+        const refreshResponse = await axios.post(
+          `${API_BASE_URL}/auth/refresh`,
+          {},
+          { withCredentials: true }
+        )
+        const newCsrf = refreshResponse.data?.data?.csrfToken
+        if (newCsrf) {
+          csrfTokenHandler(newCsrf)
         }
-      } else {
-        logout()
-        return Promise.reject(error)
+        processQueue(null)
+        return api(originalRequest)
+      } catch (refreshError) {
+        processQueue(refreshError)
+        await logoutHandler({ skipServer: true })
+        return Promise.reject(refreshError)
+      } finally {
+        isRefreshing = false
       }
     }
 
@@ -120,175 +80,183 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [csrfToken, setCsrfToken] = useState(null)
 
-  // Initialize auth state from localStorage on mount
-  useEffect(() => {
-    const initializeAuth = async () => {
-      const savedUser = localStorage.getItem('sesimizol_user')
-      const tokens = getTokens()
-      
-      if (savedUser && tokens) {
-        try {
-          setUser(JSON.parse(savedUser))
-          // Verify token validity by calling profile endpoint
-          await api.get('/auth/profile')
-        } catch (error) {
-          console.error('Token validation failed:', error)
-          removeTokens()
-          setUser(null)
-        }
-      }
-      setIsLoading(false)
-    }
-    
-    initializeAuth()
+  const applyCsrfToken = useCallback((token) => {
+    if (!token) return
+    setCsrfToken(token)
+    api.defaults.headers.common[CSRF_HEADER_NAME] = token
+    axios.defaults.headers.common[CSRF_HEADER_NAME] = token
   }, [])
 
-  // Register function
-  const register = async (userData) => {
+  const fetchProfile = useCallback(async () => {
     try {
-      console.log('🔄 Starting registration with data:', userData)
-      setIsLoading(true)
-      
-      const requestData = {
-        nickname: userData.nickname,
-        email: userData.email || ''
+      const response = await api.get('/auth/profile')
+      const profile = response.data?.data?.user || null
+      setUser(profile)
+      try {
+        const csrfResponse = await api.get('/auth/csrf')
+        const token = csrfResponse.data?.data?.csrfToken
+        if (token) {
+          applyCsrfToken(token)
+        }
+      } catch (csrfError) {
+        console.warn('CSRF token fetch failed:', csrfError)
       }
-      
-      // Convert avatar file to base64 if provided
-      if (userData.avatar && userData.avatar instanceof File) {
-        console.log('🖼️ Converting avatar to base64...')
-        requestData.avatar = await new Promise((resolve, reject) => {
-          const reader = new FileReader()
-          reader.onload = () => resolve(reader.result)
-          reader.onerror = reject
-          reader.readAsDataURL(userData.avatar)
-        })
-        console.log('✅ Avatar converted to base64')
-      }
-      
-      console.log('📤 Sending request to API with data:', requestData)
-      const response = await api.post('/auth/register', requestData)
-      console.log('📥 API Response:', response)
-      
-      const { user: newUser, token } = response.data.data
-      
-      setUser(newUser)
-      // Backend returns single token, convert to tokens object format
-      setTokens({ accessToken: token, refreshToken: token })
-      localStorage.setItem('sesimizol_user', JSON.stringify(newUser))
-      
-      return newUser
+      return profile
     } catch (error) {
-      console.error('❌ Registration error:', error)
-      console.error('❌ Error response:', error.response)
-      console.error('❌ Error data:', error.response?.data)
-      throw new Error(error.response?.data?.error?.message || 'Kayıt işlemi başarısız')
+      setUser(null)
+      throw error
+    }
+  }, [applyCsrfToken])
+
+  const initialize = useCallback(async () => {
+    try {
+      await fetchProfile()
+    } catch (error) {
+      // Ignore; user is not authenticated
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [fetchProfile])
 
-  // Login function
-  const login = async (identifier, password) => {
-    try {
-      setIsLoading(true)
-      const response = await api.post('/auth/login', {
-        nickname: identifier
-      })
-      
-      const { user: loggedInUser, token } = response.data.data
-      
-      setUser(loggedInUser)
-      // Backend returns single token, convert to tokens object format
-      setTokens({ accessToken: token, refreshToken: token })
-      localStorage.setItem('sesimizol_user', JSON.stringify(loggedInUser))
-      
-      return loggedInUser
-    } catch (error) {
-      throw new Error(error.response?.data?.error?.message || 'Giriş işlemi başarısız')
-    } finally {
-      setIsLoading(false)
+  useEffect(() => {
+    initialize()
+  }, [initialize])
+
+  const forceLogout = useCallback(async ({ skipServer = false } = {}) => {
+    if (!skipServer) {
+      try {
+        await api.post('/auth/logout')
+      } catch (error) {
+        console.warn('Logout request failed:', error)
+      }
     }
-  }
-
-  // Logout function
-  const logout = () => {
     setUser(null)
-    removeTokens()
-  }
+    setCsrfToken(null)
+    delete api.defaults.headers.common[CSRF_HEADER_NAME]
+    delete axios.defaults.headers.common[CSRF_HEADER_NAME]
+  }, [])
 
-  // Update profile function
-  const updateProfile = async (profileData) => {
+  useEffect(() => {
+    logoutHandler = forceLogout
+    csrfTokenHandler = (token) => applyCsrfToken(token)
+  }, [forceLogout, applyCsrfToken])
+
+  const register = useCallback(async (payload) => {
+    const { nickname, email, password, avatar } = payload
+    const requestData = {
+      nickname,
+      email,
+      password
+    }
+
+    if (avatar && avatar instanceof File) {
+      requestData.avatar = await new Promise((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = () => resolve(reader.result)
+        reader.onerror = reject
+        reader.readAsDataURL(avatar)
+      })
+    }
+
+    setIsLoading(true)
     try {
-      setIsLoading(true)
-      const formData = new FormData()
-      
-      if (profileData.nickname) {
-        formData.append('nickname', profileData.nickname)
+      const response = await api.post('/auth/register', requestData)
+      const registeredUser = response.data?.data?.user || null
+      const token = response.data?.data?.csrfToken
+      if (token) {
+        applyCsrfToken(token)
       }
-      
-      if (profileData.email !== undefined) {
-        formData.append('email', profileData.email)
+      setUser(registeredUser)
+      return registeredUser
+    } finally {
+      setIsLoading(false)
+    }
+  }, [applyCsrfToken])
+
+  const login = useCallback(async (identifier, password) => {
+    setIsLoading(true)
+    try {
+      const response = await api.post('/auth/login', {
+        identifier,
+        password
+      })
+
+      const loggedInUser = response.data?.data?.user || null
+      const token = response.data?.data?.csrfToken
+      if (token) {
+        applyCsrfToken(token)
       }
-      
-      if (profileData.avatar) {
-        formData.append('avatar', profileData.avatar)
-      }
-      
+      setUser(loggedInUser)
+      return loggedInUser
+    } finally {
+      setIsLoading(false)
+    }
+  }, [applyCsrfToken])
+
+  const logout = useCallback(async () => {
+    await forceLogout()
+  }, [forceLogout])
+
+  const logoutAll = useCallback(async () => {
+    try {
+      await api.post('/auth/logout-all')
+    } finally {
+      setUser(null)
+    }
+  }, [])
+
+  const updateProfile = useCallback(async (profileData) => {
+    const formData = new FormData()
+
+    if (profileData.nickname !== undefined) {
+      formData.append('nickname', profileData.nickname)
+    }
+
+    if (profileData.email !== undefined) {
+      formData.append('email', profileData.email)
+    }
+
+    if (profileData.avatar) {
+      formData.append('avatar', profileData.avatar)
+    }
+
+    setIsLoading(true)
+    try {
       const response = await api.put('/auth/profile', formData, {
         headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+          'Content-Type': 'multipart/form-data'
+        }
       })
-      
-      const updatedUser = response.data.data.user
-      
+      const updatedUser = response.data?.data?.user || null
       setUser(updatedUser)
-      localStorage.setItem('sesimizol_user', JSON.stringify(updatedUser))
-      
       return updatedUser
-    } catch (error) {
-      throw new Error(error.response?.data?.error?.message || 'Profil güncelleme başarısız')
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [])
 
-  // Change password function
-  const changePassword = async (currentPassword, newPassword) => {
-    try {
-      setIsLoading(true)
-      const response = await api.put('/auth/password', {
-        currentPassword,
-        newPassword
-      })
-      
-      return response.data.message
-    } catch (error) {
-      throw new Error(error.response?.data?.error?.message || 'Şifre değişikliği başarısız')
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  // Check if user is authenticated
-  const isAuthenticated = !!user
-
-  // Get current user nickname
-  const getCurrentNickname = () => user?.nickname || null
+  const changePassword = useCallback(async (currentPassword, newPassword) => {
+    const response = await api.put('/auth/password', {
+      currentPassword,
+      newPassword
+    })
+    return response.data?.message || 'Şifre başarıyla güncellendi'
+  }, [])
 
   const value = {
     user,
     isLoading,
-    isAuthenticated,
     register,
     login,
     logout,
+    logoutAll,
     updateProfile,
     changePassword,
-    getCurrentNickname,
-    api // Export api instance for direct use when needed
+    refreshProfile: fetchProfile,
+    api,
+    csrfToken
   }
 
   return (

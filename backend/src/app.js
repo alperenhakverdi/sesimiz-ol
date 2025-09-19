@@ -3,6 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import cookieParser from 'cookie-parser';
 // Firebase kullanıyoruz artık
 
 const __filename = fileURLToPath(import.meta.url);
@@ -12,6 +13,7 @@ import userRoutes from './routes/users.js';
 import storyRoutes from './routes/stories.js';
 import authRoutes from './routes/auth.js';
 import uploadRoutes from './routes/upload.js';
+import { recordSecurityMetric } from './services/metrics.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -284,6 +286,22 @@ app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+
+app.use((req, res, next) => {
+  const start = process.hrtime.bigint();
+  res.on('finish', () => {
+    const durationMs = Number(process.hrtime.bigint() - start) / 1_000_000;
+    const tags = {
+      method: req.method,
+      status: res.statusCode,
+      route: req.route?.path || req.originalUrl
+    };
+    recordSecurityMetric('http_request_total', 1, tags);
+    recordSecurityMetric('http_request_duration_ms', durationMs, tags);
+  });
+  next();
+});
 
 // Request timeout middleware
 app.use((req, res, next) => {
@@ -380,11 +398,46 @@ app.use('/uploads', cors(), express.static(uploadsPath, {
   }
 }));
 
-// Mount routes
-app.use('/api/auth', authRoutes);
-app.use('/api/upload', uploadRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/stories', storyRoutes);
+const mountApiRoutes = (router) => {
+  router.use('/auth', authRoutes);
+  router.use('/upload', uploadRoutes);
+  router.use('/users', userRoutes);
+  router.use('/stories', storyRoutes);
+  return router;
+};
+
+const apiRouter = mountApiRoutes(express.Router());
+const apiV1Router = mountApiRoutes(express.Router());
+
+app.use('/api', apiRouter);
+app.use('/api/v1', apiV1Router);
+
+app.get(['/api', '/api/v1'], (req, res) => {
+  res.json({ 
+    message: 'Sesimiz Ol API Server',
+    version: '2.0.0',
+    endpoints: [
+      // Authentication
+      'POST /api/v1/auth/register - Register new user',
+      'POST /api/v1/auth/login - Login user',
+      'POST /api/v1/auth/refresh - Refresh token',
+      'GET /api/v1/auth/profile - Get user profile',
+      'PUT /api/v1/auth/profile - Update profile',
+      'PUT /api/v1/auth/password - Change password',
+      // Stories
+      'GET /api/v1/stories - List all stories',
+      'GET /api/v1/stories/:id - Get story details',
+      'POST /api/v1/stories/:id/view - Increment view count',
+      'POST /api/v1/stories - Create new story',
+      // Upload
+      'POST /api/v1/upload/avatar - Upload avatar',
+      'GET /uploads/avatars/:filename - Get avatar file',
+      // Legacy
+      'POST /api/v1/users - Create user',
+      'GET /api/v1/users/:id - Get user profile'
+    ]
+  });
+});
 
 // Error handling middleware
 app.use((err, req, res, next) => {

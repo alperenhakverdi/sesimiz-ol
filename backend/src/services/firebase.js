@@ -1,15 +1,22 @@
 import { initializeApp } from 'firebase/app'
-import { getFirestore, collection, getDocs, doc, getDoc, addDoc, updateDoc, deleteDoc, query, orderBy, limit, startAfter } from 'firebase/firestore'
+import { getFirestore, collection, getDocs, doc, getDoc, addDoc, updateDoc, deleteDoc, query, orderBy, limit } from 'firebase/firestore'
 
-// Firebase config - Phase 1.1: Environment-based configuration
+const requiredEnv = (key) => {
+  const value = process.env[key];
+  if (!value) {
+    throw new Error(`Missing required Firebase environment variable: ${key}`);
+  }
+  return value;
+};
+
 const firebaseConfig = {
-  apiKey: process.env.FIREBASE_API_KEY || "AIzaSyDrwMCxDNhOO_bFImhK7iBElzGoHdgd-88",
-  authDomain: process.env.FIREBASE_AUTH_DOMAIN || "sesimiz-ol.firebaseapp.com",
-  projectId: process.env.FIREBASE_PROJECT_ID || "sesimiz-ol",
-  storageBucket: process.env.FIREBASE_STORAGE_BUCKET || "sesimiz-ol.firebasestorage.app",
-  messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID || "654033076911",
-  appId: process.env.FIREBASE_APP_ID || "1:654033076911:web:d2683450b5fc6389940a5a"
-}
+  apiKey: requiredEnv('FIREBASE_API_KEY'),
+  authDomain: requiredEnv('FIREBASE_AUTH_DOMAIN'),
+  projectId: requiredEnv('FIREBASE_PROJECT_ID'),
+  storageBucket: requiredEnv('FIREBASE_STORAGE_BUCKET'),
+  messagingSenderId: requiredEnv('FIREBASE_MESSAGING_SENDER_ID'),
+  appId: requiredEnv('FIREBASE_APP_ID')
+};
 
 const app = initializeApp(firebaseConfig)
 const db = getFirestore(app)

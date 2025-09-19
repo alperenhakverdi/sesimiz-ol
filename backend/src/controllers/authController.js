@@ -1,31 +1,100 @@
 import bcrypt from 'bcryptjs';
 import { PrismaClient } from '@prisma/client';
-import { generateTokens } from '../middleware/auth.js';
 import { cleanupOldAvatar } from '../middleware/upload.js';
 import { body, validationResult } from 'express-validator';
+import {
+  createSessionWithTokens,
+  findActiveSessionForRefresh,
+  rotateSession,
+  revokeSession,
+  revokeAllSessions,
+  verifyAbsoluteTtl,
+  hasExceededInactivity,
+  pruneExpiredSessions
+} from '../services/sessionService.js';
+import logSecurityEvent from '../services/securityLogger.js';
+import {
+  nicknameValidator,
+  emailValidator,
+  passwordValidator
+} from '../utils/validators.js';
+import { setAuthCookies, clearAuthCookies, getCookieNames } from '../utils/cookies.js';
+import { generateCsrfToken, setCsrfCookie, clearCsrfCookie } from '../utils/csrf.js';
 
 const prisma = new PrismaClient();
 
+const LOGIN_FAILURE_LIMIT = Number(process.env.LOGIN_FAILURE_LIMIT || 5);
+const ACCOUNT_LOCK_MINUTES = Number(process.env.ACCOUNT_LOCK_MINUTES || 30);
+
+const getLockExpiration = () => new Date(Date.now() + ACCOUNT_LOCK_MINUTES * 60 * 1000);
+const remainingLockMinutes = (lockedUntil) => Math.max(0, Math.ceil((new Date(lockedUntil).getTime() - Date.now()) / 60000));
+
+const respondAccountLocked = (res, lockedUntil) => {
+  const minutes = remainingLockMinutes(lockedUntil);
+  return res.status(423).json({
+    success: false,
+    error: {
+      code: 'ACCOUNT_LOCKED',
+      message: `Çok sayıda başarısız giriş denemesi tespit edildi. Lütfen ${minutes || 1} dakika sonra tekrar deneyin.`
+    }
+  });
+};
+
+const recordFailedLogin = async (user, identifier, ip) => {
+  const updated = await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      failedLoginCount: { increment: 1 },
+      lastFailedLoginAt: new Date()
+    },
+    select: {
+      id: true,
+      failedLoginCount: true
+    }
+  });
+
+  logSecurityEvent({
+    event: 'LOGIN_FAILED',
+    userId: user.id,
+    ip,
+    meta: {
+      identifier,
+      failedLoginCount: updated.failedLoginCount,
+      limit: LOGIN_FAILURE_LIMIT
+    }
+  });
+
+  if (updated.failedLoginCount >= LOGIN_FAILURE_LIMIT) {
+    const lockedUntil = getLockExpiration();
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        failedLoginCount: 0,
+        lockedUntil
+      }
+    });
+
+    logSecurityEvent({
+      event: 'LOGIN_ACCOUNT_LOCKED',
+      userId: user.id,
+      ip,
+      meta: {
+        identifier,
+        lockedUntil: lockedUntil.toISOString()
+      }
+    });
+
+    return lockedUntil;
+  }
+
+  return null;
+};
+
 // Validation rules
 export const registerValidation = [
-  body('nickname')
-    .trim()
-    .isLength({ min: 2, max: 20 })
-    .withMessage('Kullanıcı adı 2-20 karakter arası olmalıdır')
-    .matches(/^[a-zA-Z0-9çÇğĞıİöÖşŞüÜ_-]+$/)
-    .withMessage('Kullanıcı adı sadece harf, rakam, _, - karakterleri içerebilir'),
-    
-  body('email')
-    .optional()
-    .isEmail()
-    .withMessage('Geçerli bir email adresi giriniz')
-    .normalizeEmail(),
-    
-  body('password')
-    .isLength({ min: 6, max: 50 })
-    .withMessage('Şifre 6-50 karakter arası olmalıdır')
-    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
-    .withMessage('Şifre en az 1 küçük harf, 1 büyük harf ve 1 rakam içermelidir')
+  nicknameValidator('nickname'),
+  emailValidator('email', false),
+  passwordValidator('password')
 ];
 
 export const loginValidation = [
@@ -33,38 +102,21 @@ export const loginValidation = [
     .trim()
     .notEmpty()
     .withMessage('Kullanıcı adı veya email gereklidir'),
-    
   body('password')
     .notEmpty()
     .withMessage('Şifre gereklidir')
 ];
 
 export const updateProfileValidation = [
-  body('nickname')
-    .optional()
-    .trim()
-    .isLength({ min: 2, max: 20 })
-    .withMessage('Kullanıcı adı 2-20 karakter arası olmalıdır')
-    .matches(/^[a-zA-Z0-9çÇğĞıİöÖşŞüÜ_-]+$/)
-    .withMessage('Kullanıcı adı sadece harf, rakam, _, - karakterleri içerebilir'),
-    
-  body('email')
-    .optional()
-    .isEmail()
-    .withMessage('Geçerli bir email adresi giriniz')
-    .normalizeEmail()
+  nicknameValidator('nickname', false),
+  emailValidator('email', false)
 ];
 
 export const changePasswordValidation = [
   body('currentPassword')
     .notEmpty()
     .withMessage('Mevcut şifre gereklidir'),
-    
-  body('newPassword')
-    .isLength({ min: 6, max: 50 })
-    .withMessage('Yeni şifre 6-50 karakter arası olmalıdır')
-    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
-    .withMessage('Yeni şifre en az 1 küçük harf, 1 büyük harf ve 1 rakam içermelidir')
+  passwordValidator('newPassword')
 ];
 
 // Helper function to check validation errors
@@ -141,21 +193,43 @@ export const register = async (req, res) => {
         nickname: true,
         email: true,
         avatar: true,
+        role: true,
+        isBanned: true,
+        emailVerified: true,
         createdAt: true
       }
     });
 
-    // Generate tokens
-    const { accessToken, refreshToken } = generateTokens(user.id);
+    await pruneExpiredSessions(user.id);
+
+    const { tokens } = await createSessionWithTokens({
+      user,
+      userAgent: req.get('user-agent'),
+      ipAddress: req.ip
+    });
+
+    setAuthCookies(res, tokens);
+    const csrfToken = generateCsrfToken();
+    setCsrfCookie(res, csrfToken);
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { lastLoginAt: new Date() }
+    });
+
+    logSecurityEvent({
+      event: 'REGISTER_SUCCESS',
+      userId: user.id,
+      ip: req.ip,
+      meta: { source: 'api' }
+    });
 
     res.status(201).json({
       success: true,
       data: {
         user,
-        tokens: {
-          accessToken,
-          refreshToken
-        }
+        tokens,
+        csrfToken
       },
       message: 'Hesap başarıyla oluşturuldu'
     });
@@ -192,6 +266,12 @@ export const login = async (req, res) => {
     });
 
     if (!user) {
+      logSecurityEvent({
+        event: 'LOGIN_UNKNOWN_USER',
+        userId: null,
+        ip: req.ip,
+        meta: { identifier }
+      });
       return res.status(401).json({
         success: false,
         error: {
@@ -199,12 +279,37 @@ export const login = async (req, res) => {
           message: 'Kullanıcı adı/email veya şifre hatalı'
         }
       });
+    }
+
+    if (user.isBanned) {
+      return res.status(403).json({
+        success: false,
+        error: {
+          code: 'USER_BANNED',
+          message: 'Kullanıcı hesabı engellenmiştir'
+        }
+      });
+    }
+
+    if (user.lockedUntil && new Date(user.lockedUntil) > new Date()) {
+      logSecurityEvent({
+        event: 'LOGIN_LOCK_ENFORCED',
+        userId: user.id,
+        ip: req.ip,
+        meta: { identifier, lockedUntil: user.lockedUntil }
+      });
+      return respondAccountLocked(res, user.lockedUntil);
     }
 
     // Check password
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
+      const lockedUntil = await recordFailedLogin(user, identifier, req.ip);
+      if (lockedUntil) {
+        return respondAccountLocked(res, lockedUntil);
+      }
+
       return res.status(401).json({
         success: false,
         error: {
@@ -214,20 +319,49 @@ export const login = async (req, res) => {
       });
     }
 
-    // Generate tokens
-    const { accessToken, refreshToken } = generateTokens(user.id);
+    // Generate tokens using session service
+    await pruneExpiredSessions(user.id);
+    const { tokens, session } = await createSessionWithTokens({
+      user,
+      userAgent: req.get('user-agent'),
+      ipAddress: req.ip
+    });
 
-    // Return user data without password
-    const { password: _, ...userData } = user;
+    setAuthCookies(res, tokens);
+    const csrfToken = generateCsrfToken();
+    setCsrfCookie(res, csrfToken);
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        lastLoginAt: new Date(),
+        failedLoginCount: 0,
+        lockedUntil: null
+      }
+    });
+
+    logSecurityEvent({
+      event: 'LOGIN_SUCCESS',
+      userId: user.id,
+      ip: req.ip,
+      meta: { sessionId: session.id }
+    });
+
+    // Return user data without password or security fields
+    const {
+      password: _,
+      failedLoginCount,
+      lastFailedLoginAt,
+      lockedUntil,
+      ...userData
+    } = user;
 
     res.json({
       success: true,
       data: {
         user: userData,
-        tokens: {
-          accessToken,
-          refreshToken
-        }
+        tokens,
+        csrfToken
       },
       message: 'Giriş başarılı'
     });
@@ -248,6 +382,8 @@ export const login = async (req, res) => {
 export const refreshToken = async (req, res) => {
   try {
     const userId = req.userId; // From refresh token middleware
+    const sessionId = req.sessionId;
+    const { refreshToken: incomingRefreshToken } = req.body;
 
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -256,33 +392,102 @@ export const refreshToken = async (req, res) => {
         nickname: true,
         email: true,
         avatar: true,
-        isActive: true,
-        createdAt: true
+        role: true,
+        isBanned: true,
+        emailVerified: true,
+        isActive: true
       }
     });
 
-    if (!user || !user.isActive) {
+    if (!user || !user.isActive || user.isBanned) {
       return res.status(401).json({
         success: false,
         error: {
-          code: 'USER_NOT_FOUND',
-          message: 'Kullanıcı bulunamadı'
+          code: 'INVALID_REFRESH_TOKEN',
+          message: 'Geçersiz veya devre dışı bırakılmış kullanıcı'
         }
       });
     }
 
-    const { accessToken, refreshToken: newRefreshToken } = generateTokens(user.id);
+    const session = await findActiveSessionForRefresh({
+      userId,
+      sessionId,
+      refreshToken: incomingRefreshToken
+    });
+
+    if (!session) {
+      logSecurityEvent({
+        event: 'REFRESH_INVALID_SESSION',
+        userId,
+        ip: req.ip
+      });
+      return res.status(401).json({
+        success: false,
+        error: {
+          code: 'INVALID_REFRESH_TOKEN',
+          message: 'Refresh token geçersiz veya iptal edilmiş'
+        }
+      });
+    }
+
+    if (!verifyAbsoluteTtl(session) || hasExceededInactivity(session)) {
+      await revokeSession(session.id, 'expired');
+      logSecurityEvent({
+        event: 'REFRESH_EXPIRED_SESSION',
+        userId,
+        ip: req.ip,
+        meta: { sessionId: session.id }
+      });
+      return res.status(401).json({
+        success: false,
+        error: {
+          code: 'REFRESH_TOKEN_EXPIRED',
+          message: 'Oturum süresi doldu'
+        }
+      });
+    }
+
+    const { session: newSession, tokens } = await rotateSession({
+      session,
+      user,
+      refreshToken: incomingRefreshToken,
+      userAgent: req.get('user-agent'),
+      ipAddress: req.ip
+    });
+
+    setAuthCookies(res, tokens);
+    const csrfToken = generateCsrfToken();
+    setCsrfCookie(res, csrfToken);
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { lastLoginAt: new Date() }
+    });
+
+    logSecurityEvent({
+      event: 'REFRESH_SUCCESS',
+      userId,
+      ip: req.ip,
+      meta: { previousSessionId: session.id, newSessionId: newSession.id }
+    });
 
     res.json({
       success: true,
       data: {
-        user,
-        tokens: {
-          accessToken,
-          refreshToken: newRefreshToken
-        }
+        user: {
+          id: user.id,
+          nickname: user.nickname,
+          email: user.email,
+          avatar: user.avatar,
+          role: user.role,
+          emailVerified: user.emailVerified
+        },
+        tokens,
+        csrfToken
       }
     });
+
+    await pruneExpiredSessions(user.id);
 
   } catch (error) {
     console.error('Token refresh error:', error);
@@ -471,28 +676,105 @@ export const changePassword = async (req, res) => {
   }
 };
 
-// Deactivate account (soft delete)
+// DELETE /api/auth/account - Deactivate account
 export const deactivateAccount = async (req, res) => {
   try {
     const userId = req.user.id;
 
     await prisma.user.update({
       where: { id: userId },
-      data: { isActive: false }
+      data: {
+        isActive: false
+      }
     });
 
     res.json({
       success: true,
-      message: 'Hesap başarıyla deaktive edildi'
+      message: 'Hesap devre dışı bırakıldı'
     });
-
   } catch (error) {
     console.error('Deactivate account error:', error);
     res.status(500).json({
       success: false,
       error: {
         code: 'DEACTIVATE_ERROR',
-        message: 'Hesap deaktive edilirken hata oluştu'
+        message: 'Hesap devre dışı bırakılırken bir hata oluştu'
+      }
+    });
+  }
+};
+
+export const issueCsrfToken = (req, res) => {
+  const token = generateCsrfToken();
+  setCsrfCookie(res, token);
+
+  res.json({
+    success: true,
+    data: {
+      csrfToken: token,
+      headerName: process.env.CSRF_HEADER_NAME || 'x-csrf-token'
+    }
+  });
+};
+
+export const logout = async (req, res) => {
+  try {
+    const sessionId = req.sessionId || req.body?.sessionId;
+
+    if (sessionId) {
+      await revokeSession(Number(sessionId), 'logout');
+      logSecurityEvent({
+        event: 'LOGOUT_SUCCESS',
+        userId: req.user?.id,
+        ip: req.ip,
+        meta: { sessionId }
+      });
+    }
+
+    clearAuthCookies(res);
+    clearCsrfCookie(res);
+
+    res.json({
+      success: true,
+      message: 'Oturum başarıyla kapatıldı'
+    });
+  } catch (error) {
+    console.error('Logout error:', error);
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'LOGOUT_ERROR',
+        message: 'Çıkış yapılırken bir hata oluştu'
+      }
+    });
+  }
+};
+
+export const logoutAll = async (req, res) => {
+  try {
+    if (req.user?.id) {
+      await revokeAllSessions(req.user.id, 'logout_all');
+      logSecurityEvent({
+        event: 'LOGOUT_ALL_SUCCESS',
+        userId: req.user.id,
+        ip: req.ip
+      });
+    }
+
+    clearAuthCookies(res);
+    clearCsrfCookie(res);
+
+    res.json({
+      success: true,
+      message: 'Tüm oturumlardan çıkış yapıldı'
+    });
+  } catch (error) {
+    console.error('Logout all error:', error);
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'LOGOUT_ALL_ERROR',
+        message: 'Oturumlardan çıkış yapılırken hata oluştu'
       }
     });
   }
@@ -506,8 +788,7 @@ export default {
   updateProfile,
   changePassword,
   deactivateAccount,
-  registerValidation,
-  loginValidation,
-  updateProfileValidation,
-  changePasswordValidation
+  issueCsrfToken,
+  logout,
+  logoutAll
 };

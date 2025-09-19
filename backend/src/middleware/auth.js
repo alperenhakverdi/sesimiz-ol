@@ -1,29 +1,47 @@
-import jwt from 'jsonwebtoken';
 import { PrismaClient } from '@prisma/client';
+import {
+  issueTokenPair,
+  verifyAccessToken,
+  verifyRefreshToken,
+  signAccessToken
+} from '../services/authTokens.js';
+import { touchSession } from '../services/sessionService.js';
+import { getCookieNames } from '../utils/cookies.js';
 
 const prisma = new PrismaClient();
+const { access: ACCESS_COOKIE, refresh: REFRESH_COOKIE } = getCookieNames();
 
 // JWT Token generation utilities
-export const generateTokens = (userId) => {
-  const accessToken = jwt.sign(
-    { userId },
-    process.env.JWT_SECRET,
-    { expiresIn: process.env.JWT_EXPIRE || '15m' }
-  );
+export const generateTokens = (input) => {
+  const payload = typeof input === 'number'
+    ? { userId: input }
+    : input;
 
-  const refreshToken = jwt.sign(
-    { userId },
-    process.env.JWT_REFRESH_SECRET,
-    { expiresIn: process.env.JWT_REFRESH_EXPIRE || '7d' }
-  );
+  const {
+    userId,
+    role = 'USER',
+    sessionId = undefined,
+    isBanned = false,
+    emailVerified = false
+  } = payload;
 
-  return { accessToken, refreshToken };
+  return issueTokenPair({
+    userId,
+    role,
+    sessionId,
+    isBanned,
+    emailVerified
+  });
 };
 
 // Verify JWT Token middleware
 export const authenticateToken = async (req, res, next) => {
   const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+  let token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+
+  if (!token && req.cookies) {
+    token = req.cookies[ACCESS_COOKIE];
+  }
 
   if (!token) {
     return res.status(401).json({
@@ -36,17 +54,20 @@ export const authenticateToken = async (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = verifyAccessToken(token);
     
     // Get user from database
     const user = await prisma.user.findUnique({
-      where: { id: decoded.userId },
+      where: { id: Number(decoded.sub) },
       select: {
         id: true,
         nickname: true,
         email: true,
         avatar: true,
         isActive: true,
+        isBanned: true,
+        emailVerified: true,
+        role: true,
         createdAt: true
       }
     });
@@ -61,7 +82,23 @@ export const authenticateToken = async (req, res, next) => {
       });
     }
 
+    if (user.isBanned) {
+      return res.status(403).json({
+        success: false,
+        error: {
+          code: 'USER_BANNED',
+          message: 'Kullanıcı hesabı engellenmiştir'
+        }
+      });
+    }
+
     req.user = user;
+    req.sessionId = decoded.sid || null;
+
+    if (req.sessionId) {
+      await touchSession(Number(req.sessionId));
+    }
+
     next();
   } catch (error) {
     if (error.name === 'TokenExpiredError') {
@@ -95,7 +132,9 @@ export const authenticateToken = async (req, res, next) => {
 
 // Refresh token middleware
 export const refreshTokenMiddleware = async (req, res, next) => {
-  const { refreshToken } = req.body;
+  const bodyToken = req.body?.refreshToken;
+  const cookieToken = req.cookies ? req.cookies[REFRESH_COOKIE] : undefined;
+  const refreshToken = bodyToken || cookieToken;
 
   if (!refreshToken) {
     return res.status(401).json({
@@ -108,11 +147,11 @@ export const refreshTokenMiddleware = async (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+    const decoded = verifyRefreshToken(refreshToken);
     
     // Check if user exists and is active
     const user = await prisma.user.findUnique({
-      where: { id: decoded.userId }
+      where: { id: Number(decoded.sub) }
     });
 
     if (!user || !user.isActive) {
@@ -125,7 +164,8 @@ export const refreshTokenMiddleware = async (req, res, next) => {
       });
     }
 
-    req.userId = decoded.userId;
+    req.userId = Number(decoded.sub);
+    req.sessionId = decoded.sid || null;
     next();
   } catch (error) {
     if (error.name === 'TokenExpiredError') {
@@ -159,22 +199,27 @@ export const optionalAuth = async (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = verifyAccessToken(token);
     const user = await prisma.user.findUnique({
-      where: { id: decoded.userId },
+      where: { id: Number(decoded.sub) },
       select: {
         id: true,
         nickname: true,
         email: true,
         avatar: true,
         isActive: true,
+        isBanned: true,
+        emailVerified: true,
+        role: true,
         createdAt: true
       }
     });
 
-    req.user = user && user.isActive ? user : null;
+    req.user = user && user.isActive && !user.isBanned ? user : null;
+    req.sessionId = decoded.sid || null;
   } catch (error) {
     req.user = null;
+    req.sessionId = null;
   }
 
   next();
@@ -184,5 +229,6 @@ export default {
   generateTokens,
   authenticateToken,
   refreshTokenMiddleware,
-  optionalAuth
+  optionalAuth,
+  signAccessToken
 };

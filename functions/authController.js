@@ -141,12 +141,20 @@ export const register = async (req, res) => {
         nickname: true,
         email: true,
         avatar: true,
+        role: true,
+        isBanned: true,
+        emailVerified: true,
         createdAt: true
       }
     });
 
     // Generate tokens
-    const { accessToken, refreshToken } = generateTokens(user.id);
+    const { accessToken, refreshToken } = generateTokens({
+      userId: user.id,
+      role: user.role,
+      isBanned: user.isBanned,
+      emailVerified: user.emailVerified
+    });
 
     res.status(201).json({
       success: true,
@@ -215,7 +223,12 @@ export const login = async (req, res) => {
     }
 
     // Generate tokens
-    const { accessToken, refreshToken } = generateTokens(user.id);
+    const { accessToken, refreshToken } = generateTokens({
+      userId: user.id,
+      role: user.role,
+      isBanned: user.isBanned,
+      emailVerified: user.emailVerified
+    });
 
     // Return user data without password
     const { password: _, ...userData } = user;
@@ -271,7 +284,12 @@ export const refreshToken = async (req, res) => {
       });
     }
 
-    const { accessToken, refreshToken: newRefreshToken } = generateTokens(user.id);
+    const { accessToken, refreshToken: newRefreshToken } = generateTokens({
+      userId: user.id,
+      role: user.role,
+      isBanned: user.isBanned,
+      emailVerified: user.emailVerified
+    });
 
     res.json({
       success: true,
