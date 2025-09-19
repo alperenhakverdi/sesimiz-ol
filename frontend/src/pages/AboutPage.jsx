@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import {
   Container,
   VStack,
@@ -60,11 +60,13 @@ const sanitizeHtml = rawHtml => {
 
 const AboutPage = () => {
   const [customHtml, setCustomHtml] = useState('')
-  const [iframeKey, setIframeKey] = useState(() => Date.now())
+  const appendedAssetsRef = useRef([])
 
   useEffect(() => {
     const controller = new AbortController()
     let isMounted = true
+
+    const allowedScriptPrefixes = ['https://cdn.tailwindcss.com']
 
     const loadCustomAboutHtml = async () => {
       try {
@@ -87,11 +89,77 @@ const AboutPage = () => {
           return
         }
 
-        const sanitizedHtml = sanitizeHtml(rawHtml)
+        const parser = new DOMParser()
+        const doc = parser.parseFromString(rawHtml, 'text/html')
+
+        const appendAssetOnce = (selector, create) => {
+          if (document.head.querySelector(selector)) {
+            return null
+          }
+          const element = create()
+          if (element) {
+            document.head.appendChild(element)
+            appendedAssetsRef.current.push(element)
+          }
+          return element
+        }
+
+        doc.querySelectorAll('link[rel="stylesheet"]').forEach(link => {
+          const href = link.getAttribute('href')
+          if (!href) {
+            link.remove()
+            return
+          }
+
+          appendAssetOnce(`link[data-about-override="${href}"]`, () => {
+            const el = document.createElement('link')
+            el.setAttribute('rel', 'stylesheet')
+            el.setAttribute('href', href)
+            el.setAttribute('data-about-override', href)
+            return el
+          })
+
+          link.remove()
+        })
+
+        doc.querySelectorAll('style').forEach(style => {
+          const cssContent = style.textContent || ''
+          if (!cssContent.trim()) {
+            style.remove()
+            return
+          }
+
+          const contentHash = encodeURIComponent(cssContent.trim()).slice(0, 32)
+          appendAssetOnce(`style[data-about-override="${contentHash}"]`, () => {
+            const el = document.createElement('style')
+            el.setAttribute('data-about-override', contentHash)
+            el.textContent = cssContent
+            return el
+          })
+
+          style.remove()
+        })
+
+        doc.querySelectorAll('script').forEach(script => {
+          const src = script.getAttribute('src')
+          if (src && allowedScriptPrefixes.some(prefix => src.startsWith(prefix))) {
+            appendAssetOnce(`script[data-about-override="${src}"]`, () => {
+              const el = document.createElement('script')
+              el.setAttribute('src', src)
+              el.setAttribute('data-about-override', src)
+              el.referrerPolicy = 'no-referrer'
+              el.async = false
+              return el
+            })
+          }
+
+          script.remove()
+        })
+
+        const sanitizedHtml = sanitizeHtml(doc.body.innerHTML || '')
 
         if (sanitizedHtml) {
           setCustomHtml(sanitizedHtml)
-          setIframeKey(Date.now())
         }
       } catch (error) {
         if (error.name !== 'AbortError') {
@@ -105,6 +173,12 @@ const AboutPage = () => {
     return () => {
       isMounted = false
       controller.abort()
+      appendedAssetsRef.current.forEach(node => {
+        if (node && node.parentNode) {
+          node.parentNode.removeChild(node)
+        }
+      })
+      appendedAssetsRef.current = []
     }
   }, [])
 
@@ -264,16 +338,7 @@ const AboutPage = () => {
   return (
     <Container maxW="container.lg" py={8}>
       {customHtml ? (
-        <Box className="about-page-custom-html" w="full">
-          <Box
-            as="iframe"
-            key={iframeKey}
-            src={`/ui/hakkimizda.html?v=${iframeKey}`}
-            title="Sesimiz Ol Hakkında"
-            width="100%"
-            style={{ border: 'none', minHeight: '1200px' }}
-          />
-        </Box>
+        <Box className="about-page-custom-html" w="full" dangerouslySetInnerHTML={{ __html: customHtml }} />
       ) : (
         defaultContent
       )}
