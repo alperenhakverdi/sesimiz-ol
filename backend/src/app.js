@@ -16,32 +16,111 @@ import uploadRoutes from './routes/upload.js';
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Middleware
+// Security Headers - Phase 1.1: Enhanced security configuration
 app.use(helmet({
-  crossOriginResourcePolicy: false, // Disable to allow cross-origin requests
-  crossOriginOpenerPolicy: false   // Disable to allow cross-origin requests
-}));
-// Enhanced CORS configuration for all environments
-app.use(cors({
-  origin: function(origin, callback) {
-    // Allow all origins including localhost for development
-    callback(null, true);
+  // Content Security Policy
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      scriptSrc: ["'self'"],
+      imgSrc: ["'self'", "data:", "https:", "blob:"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      connectSrc: ["'self'", "https://sesimiz-ol.firebaseapp.com"],
+      frameSrc: ["'none'"],
+      objectSrc: ["'none'"],
+      mediaSrc: ["'self'"],
+      workerSrc: ["'self'", "blob:"],
+    },
   },
-  credentials: true,
+
+  // Cross-Origin Resource Policy - Enable with specific values
+  crossOriginResourcePolicy: {
+    policy: process.env.NODE_ENV === 'production' ? "same-site" : "cross-origin"
+  },
+
+  // Cross-Origin Opener Policy - Enable for better security
+  crossOriginOpenerPolicy: {
+    policy: "same-origin-allow-popups"
+  },
+
+  // Cross-Origin Embedder Policy
+  crossOriginEmbedderPolicy: false, // Disable for now to avoid breaking changes
+
+  // DNS Prefetch Control
+  dnsPrefetchControl: { allow: false },
+
+  // Frame Guard (X-Frame-Options)
+  frameguard: { action: 'deny' },
+
+  // Hide Powered By Header
+  hidePoweredBy: true,
+
+  // HTTP Strict Transport Security (HTTPS only)
+  hsts: process.env.NODE_ENV === 'production' ? {
+    maxAge: 31536000, // 1 year
+    includeSubDomains: true,
+    preload: true
+  } : false,
+
+  // IE No Open
+  ieNoOpen: true,
+
+  // No Sniff
+  noSniff: true,
+
+  // Origin Agent Cluster
+  originAgentCluster: true,
+
+  // Permitted Cross Domain Policies
+  permittedCrossDomainPolicies: false,
+
+  // Referrer Policy
+  referrerPolicy: { policy: "no-referrer" },
+
+  // X-XSS-Protection
+  xssFilter: true
+}));
+// Enhanced CORS configuration - Phase 1.1: Environment-based security
+const corsOptions = {
+  origin: function(origin, callback) {
+    // Get allowed origins from environment variables
+    const allowedOrigins = process.env.CORS_ALLOWED_ORIGINS
+      ? process.env.CORS_ALLOWED_ORIGINS.split(',').map(url => url.trim())
+      : ['http://localhost:5173', 'https://sesimiz-ol.firebaseapp.com', 'https://sesimiz-ol.web.app'];
+
+    // Allow requests with no origin (mobile apps, Postman, etc.) in development
+    if (!origin && process.env.NODE_ENV === 'development') {
+      return callback(null, true);
+    }
+
+    // Check if origin is in allowed list
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.warn(`CORS blocked origin: ${origin}`);
+      callback(new Error(`Origin ${origin} not allowed by CORS policy`));
+    }
+  },
+  credentials: process.env.CORS_CREDENTIALS === 'true' || true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: [
     'Origin',
-    'X-Requested-With', 
-    'Content-Type', 
+    'X-Requested-With',
+    'Content-Type',
     'Accept',
     'Authorization',
     'Cache-Control',
-    'X-HTTP-Method-Override'
+    'X-HTTP-Method-Override',
+    'X-CSRF-Token'
   ],
-  exposedHeaders: ['Content-Length', 'X-Requested-With'],
+  exposedHeaders: ['Content-Length', 'X-Requested-With', 'X-CSRF-Token'],
   optionsSuccessStatus: 200,
-  preflightContinue: false
-}));
+  preflightContinue: false,
+  maxAge: 86400 // 24 hours preflight cache
+};
+
+app.use(cors(corsOptions));
 
 // Handle preflight requests explicitly
 app.options('*', cors());

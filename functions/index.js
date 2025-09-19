@@ -10,33 +10,77 @@ admin.initializeApp();
 
 const app = express();
 
-// Middleware
+// Security Headers - Phase 1.1: Firebase Functions Security
 app.use(helmet({
-  crossOriginResourcePolicy: false,
-  crossOriginOpenerPolicy: false
+  // Content Security Policy for Firebase Functions
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'"],
+      imgSrc: ["'self'", "data:", "https:", "blob:"],
+      connectSrc: ["'self'", "https://firebaseapp.com"],
+      frameSrc: ["'none'"],
+      objectSrc: ["'none'"],
+    },
+  },
+
+  // Cross-Origin Resource Policy
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+
+  // Cross-Origin Opener Policy
+  crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" },
+
+  // Basic security headers
+  frameguard: { action: 'deny' },
+  hidePoweredBy: true,
+  noSniff: true,
+  xssFilter: true,
+  referrerPolicy: { policy: "no-referrer" }
 }));
 
-// Enhanced CORS configuration
-app.use(cors({
+// Enhanced CORS configuration - Phase 1.1: Secure Firebase Functions
+const corsOptions = {
   origin: function(origin, callback) {
-    // Allow all origins including Firebase Hosting
-    callback(null, true);
+    // Allowed origins for Firebase Functions
+    const allowedOrigins = [
+      'https://sesimiz-ol.firebaseapp.com',
+      'https://sesimiz-ol.web.app',
+      'http://localhost:5173', // Development only
+      'http://localhost:3001'  // Local backend
+    ];
+
+    // Allow requests with no origin in development
+    if (!origin && functions.config().runtime?.env === 'development') {
+      return callback(null, true);
+    }
+
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.warn(`Firebase Functions CORS blocked origin: ${origin}`);
+      callback(new Error(`Origin ${origin} not allowed by Firebase Functions CORS policy`));
+    }
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: [
     'Origin',
-    'X-Requested-With', 
-    'Content-Type', 
+    'X-Requested-With',
+    'Content-Type',
     'Accept',
     'Authorization',
     'Cache-Control',
-    'X-HTTP-Method-Override'
+    'X-HTTP-Method-Override',
+    'X-CSRF-Token'
   ],
-  exposedHeaders: ['Content-Length', 'X-Requested-With'],
+  exposedHeaders: ['Content-Length', 'X-Requested-With', 'X-CSRF-Token'],
   optionsSuccessStatus: 200,
-  preflightContinue: false
-}));
+  preflightContinue: false,
+  maxAge: 86400
+};
+
+app.use(cors(corsOptions));
 
 app.options('*', cors());
 app.use(express.json({ limit: '10mb' }));
