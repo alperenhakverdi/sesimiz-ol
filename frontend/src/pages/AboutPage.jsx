@@ -27,7 +27,18 @@ const sanitizeHtml = rawHtml => {
     return ''
   }
 
-  body.querySelectorAll('script, style, iframe, object, embed').forEach(element => {
+  const trustedScriptSrcPrefixes = ['https://cdn.tailwindcss.com']
+
+  body.querySelectorAll('script').forEach(element => {
+    const src = element.getAttribute('src') || ''
+    const isTrustedSrc = trustedScriptSrcPrefixes.some(prefix => src.startsWith(prefix))
+
+    if (!isTrustedSrc) {
+      element.remove()
+    }
+  })
+
+  body.querySelectorAll('iframe, object, embed').forEach(element => {
     element.remove()
   })
 
@@ -49,6 +60,7 @@ const sanitizeHtml = rawHtml => {
 
 const AboutPage = () => {
   const [customHtml, setCustomHtml] = useState('')
+  const [iframeKey, setIframeKey] = useState(() => Date.now())
 
   useEffect(() => {
     const controller = new AbortController()
@@ -79,6 +91,7 @@ const AboutPage = () => {
 
         if (sanitizedHtml) {
           setCustomHtml(sanitizedHtml)
+          setIframeKey(Date.now())
         }
       } catch (error) {
         if (error.name !== 'AbortError') {
@@ -251,7 +264,16 @@ const AboutPage = () => {
   return (
     <Container maxW="container.lg" py={8}>
       {customHtml ? (
-        <Box className="about-page-custom-html" dangerouslySetInnerHTML={{ __html: customHtml }} />
+        <Box className="about-page-custom-html" w="full">
+          <Box
+            as="iframe"
+            key={iframeKey}
+            src={`/ui/hakkimizda.html?v=${iframeKey}`}
+            title="Sesimiz Ol Hakkında"
+            width="100%"
+            style={{ border: 'none', minHeight: '1200px' }}
+          />
+        </Box>
       ) : (
         defaultContent
       )}
