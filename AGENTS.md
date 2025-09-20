@@ -1,22 +1,31 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-Frontend code lives in `frontend/` (Vite + React) with views in `frontend/src/`, assets under `frontend/public/`, and colocated tests as `Component.test.jsx`. The Express API sits in `backend/`; routes and services live in `backend/src/`, Prisma schema and migrations in `backend/prisma/`, and transient uploads in `backend/uploads/`. Firebase Functions reside in `functions/` with entrypoint wiring in `functions/index.js`. Shared utilities belong in `shared/`, while root-level infra docs and `docker-compose.yml` support deployments.
+- `frontend/` hosts the Vite + React UI; views live in `frontend/src/`, static assets in `frontend/public/`, and colocated tests follow `Component.test.jsx`.
+- `backend/` contains the Express API with routes/services in `backend/src/`, Prisma schema + migrations under `backend/prisma/`, and transient uploads in `backend/uploads/`.
+- Firebase Functions sit in `functions/`, shared utilities belong in `shared/`, and deployment docs plus `docker-compose.yml` live at the repo root.
 
 ## Build, Test, and Development Commands
-- `npm run dev` (root) starts frontend and backend with hot reload.
-- `docker compose up -d database` spins up Postgres; follow with `cd backend && npm run prisma:migrate` on a fresh database.
-- `cd frontend && npm run build` compiles the production UI; `npm run preview` serves the build locally.
-- `cd backend && npm run dev` watches API changes; use `npm run prisma:studio` for DB inspection.
+- Run `npm run dev` from the root to launch frontend and backend with hot reload against your local Postgres.
+- Start the database via `docker compose up -d database`, then run `cd backend && npm run prisma:migrate` on a fresh instance.
+- Build and preview the UI with `cd frontend && npm run build` followed by `npm run preview`; inspect Prisma data using `cd backend && npm run prisma:studio`.
 
 ## Coding Style & Naming Conventions
-Respect the repo Prettier config (2-space indent, single quotes, 80-char wrap) and run `npx prettier --write .` before commits. Lint UI code with `cd frontend && npm run lint` and API code with `cd backend && npx eslint .`. Use camelCase for variables/functions, PascalCase for React components, and lowercase filenames for Express routes.
+- Respect the repo Prettier config (2-space indent, single quotes, ~80 char wrap); format with `npx prettier --write .`.
+- Use `cd frontend && npm run lint` and `cd backend && npx eslint .` before opening a PR.
+- Name JS/TS variables and functions in camelCase, React components in PascalCase, and Express route files in lowercase.
 
 ## Testing Guidelines
-Frontend tests rely on Vitest + React Testing Library; place specs beside components as `Component.test.jsx` and run `cd frontend && npm test`. API tests use Jest + supertest, named `*.test.js` next to their modules and executed via `cd backend && npm test`. Document any gaps in PR descriptions when coverage is incomplete.
+- Frontend tests use Vitest + React Testing Library; colocate specs as `Component.test.jsx` and run `cd frontend && npm test`.
+- Backend tests rely on Jest + supertest; keep `*.test.js` beside the modules they cover and execute via `cd backend && npm test`.
+- Document any coverage gaps or pending scenarios in PR descriptions, especially when altering schema or auth flows.
 
 ## Commit & Pull Request Guidelines
-Follow Conventional Commits such as `feat(backend): add seed endpoint`. Each PR should describe scope, link related issues, include UI screenshots when visuals change, and list verification steps (build, lint, migrations). Confirm new Prisma migrations are committed whenever the schema evolves.
+- Follow Conventional Commits such as `feat(backend): add seed endpoint`; keep scopes aligned with affected packages.
+- PRs should outline scope, link to related issues, include UI screenshots for visual changes, and list verification steps (build, lint, migrations).
+- Confirm new Prisma migrations accompany schema changes and note any manual follow-up required post-deploy.
 
 ## Security & Configuration Tips
-Copy each package’s `.env.example` to `.env`, keeping secrets (`DATABASE_URL`, `JWT_SECRET`, `JWT_REFRESH_SECRET`, `VITE_API_BASE_URL`) out of version control. Review backend CORS origins before deployment, store Firebase credentials securely, and clear `backend/uploads/` of temporary files before pushing.
+- Copy each package’s `.env.example` to `.env` and keep secrets (`DATABASE_URL`, `JWT_SECRET`, `JWT_REFRESH_SECRET`, `VITE_API_BASE_URL`) out of git.
+- Review backend CORS origins before releases and store Firebase credentials securely (never in the repo).
+- Clear `backend/uploads/` of temporary artifacts before pushing branches or tagging releases.
