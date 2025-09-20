@@ -771,4 +771,355 @@ router.get('/search', async (req, res) => {
   }
 });
 
+// GET /api/stories/popular - Get popular stories
+router.get('/popular', async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = Math.min(parseInt(req.query.limit) || 10, 50);
+    const skip = (page - 1) * limit;
+    const timeframe = req.query.timeframe || 'week'; // day, week, month, all
+
+    // Calculate date range based on timeframe
+    let dateFilter = {};
+    const now = new Date();
+
+    switch (timeframe) {
+      case 'day':
+        dateFilter = {
+          createdAt: {
+            gte: new Date(now.getTime() - 24 * 60 * 60 * 1000)
+          }
+        };
+        break;
+      case 'week':
+        dateFilter = {
+          createdAt: {
+            gte: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+          }
+        };
+        break;
+      case 'month':
+        dateFilter = {
+          createdAt: {
+            gte: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+          }
+        };
+        break;
+      case 'all':
+      default:
+        dateFilter = {};
+        break;
+    }
+
+    const [stories, total] = await Promise.all([
+      prisma.story.findMany({
+        where: dateFilter,
+        include: {
+          author: {
+            select: {
+              id: true,
+              nickname: true,
+              avatar: true
+            }
+          },
+          category: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              color: true
+            }
+          },
+          organization: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              logo: true,
+              isVerified: true
+            }
+          },
+          tags: {
+            include: {
+              tag: {
+                select: {
+                  id: true,
+                  name: true,
+                  slug: true
+                }
+              }
+            }
+          },
+          _count: {
+            select: { comments: true }
+          }
+        },
+        orderBy: [
+          { viewCount: 'desc' },
+          { _count: { comments: 'desc' } },
+          { createdAt: 'desc' }
+        ],
+        skip,
+        take: limit
+      }),
+      prisma.story.count({ where: dateFilter })
+    ]);
+
+    res.json({
+      success: true,
+      timeframe,
+      stories: stories.map(story => ({
+        id: story.id,
+        title: story.title,
+        content: story.content.substring(0, 200) + (story.content.length > 200 ? '...' : ''),
+        slug: story.slug,
+        viewCount: story.viewCount,
+        createdAt: story.createdAt,
+        author: story.author,
+        category: story.category,
+        organization: story.organization,
+        tags: story.tags.map(st => st.tag),
+        commentCount: story._count.comments
+      })),
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit)
+      }
+    });
+
+  } catch (error) {
+    console.error('Get popular stories error:', error);
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Popüler hikayeler getirilemedi'
+      }
+    });
+  }
+});
+
+// GET /api/stories/trending - Get trending stories (based on recent engagement)
+router.get('/trending', async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = Math.min(parseInt(req.query.limit) || 10, 50);
+    const skip = (page - 1) * limit;
+
+    // Get stories with recent activity (comments in last 3 days)
+    const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
+
+    const stories = await prisma.story.findMany({
+      where: {
+        OR: [
+          {
+            createdAt: {
+              gte: threeDaysAgo
+            }
+          },
+          {
+            comments: {
+              some: {
+                createdAt: {
+                  gte: threeDaysAgo
+                }
+              }
+            }
+          }
+        ]
+      },
+      include: {
+        author: {
+          select: {
+            id: true,
+            nickname: true,
+            avatar: true
+          }
+        },
+        category: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            color: true
+          }
+        },
+        organization: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            logo: true,
+            isVerified: true
+          }
+        },
+        tags: {
+          include: {
+            tag: {
+              select: {
+                id: true,
+                name: true,
+                slug: true
+              }
+            }
+          }
+        },
+        _count: {
+          select: {
+            comments: {
+              where: {
+                createdAt: {
+                  gte: threeDaysAgo
+                }
+              }
+            }
+          }
+        }
+      },
+      orderBy: [
+        { _count: { comments: 'desc' } },
+        { viewCount: 'desc' },
+        { createdAt: 'desc' }
+      ],
+      skip,
+      take: limit
+    });
+
+    const total = await prisma.story.count({
+      where: {
+        OR: [
+          {
+            createdAt: {
+              gte: threeDaysAgo
+            }
+          },
+          {
+            comments: {
+              some: {
+                createdAt: {
+                  gte: threeDaysAgo
+                }
+              }
+            }
+          }
+        ]
+      }
+    });
+
+    res.json({
+      success: true,
+      stories: stories.map(story => ({
+        id: story.id,
+        title: story.title,
+        content: story.content.substring(0, 200) + (story.content.length > 200 ? '...' : ''),
+        slug: story.slug,
+        viewCount: story.viewCount,
+        createdAt: story.createdAt,
+        author: story.author,
+        category: story.category,
+        organization: story.organization,
+        tags: story.tags.map(st => st.tag),
+        commentCount: story._count.comments,
+        recentEngagement: story._count.comments
+      })),
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit)
+      }
+    });
+
+  } catch (error) {
+    console.error('Get trending stories error:', error);
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Trend hikayeler getirilemedi'
+      }
+    });
+  }
+});
+
+// GET /api/stories/stats - Get platform statistics
+router.get('/stats', async (req, res) => {
+  try {
+    const [
+      totalStories,
+      totalUsers,
+      totalOrganizations,
+      totalComments,
+      todayStories,
+      weekStories,
+      popularCategories
+    ] = await Promise.all([
+      prisma.story.count(),
+      prisma.user.count(),
+      prisma.organization.count({ where: { isActive: true } }),
+      prisma.comment.count(),
+      prisma.story.count({
+        where: {
+          createdAt: {
+            gte: new Date(Date.now() - 24 * 60 * 60 * 1000)
+          }
+        }
+      }),
+      prisma.story.count({
+        where: {
+          createdAt: {
+            gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+          }
+        }
+      }),
+      prisma.category.findMany({
+        include: {
+          _count: {
+            select: { stories: true }
+          }
+        },
+        orderBy: {
+          _count: { stories: 'desc' }
+        },
+        take: 5
+      })
+    ]);
+
+    res.json({
+      success: true,
+      stats: {
+        total: {
+          stories: totalStories,
+          users: totalUsers,
+          organizations: totalOrganizations,
+          comments: totalComments
+        },
+        recent: {
+          storiesLast24h: todayStories,
+          storiesLast7d: weekStories
+        },
+        topCategories: popularCategories.map(cat => ({
+          id: cat.id,
+          name: cat.name,
+          slug: cat.slug,
+          color: cat.color,
+          storyCount: cat._count.stories
+        }))
+      }
+    });
+
+  } catch (error) {
+    console.error('Get platform stats error:', error);
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Platform istatistikleri getirilemedi'
+      }
+    });
+  }
+});
+
 export default router;
