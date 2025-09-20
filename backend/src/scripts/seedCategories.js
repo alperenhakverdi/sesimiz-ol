@@ -4,34 +4,46 @@ const prisma = new PrismaClient();
 
 const categories = [
   {
-    name: 'Sosyal Adalet',
-    slug: 'sosyal-adalet',
-    color: '#E53E3E',
-    description: 'İnsan hakları, eşitlik ve sosyal adaletle ilgili hikayeler'
+    name: 'İş Hayatı',
+    slug: 'is-hayati',
+    color: '#2B6CB0',
+    description: 'Çalışma hayatı, kariyer yolculuğu ve işyeri deneyimlerine dair hikayeler',
+    sortOrder: 1
   },
   {
-    name: 'Çevre',
-    slug: 'cevre',
-    color: '#38A169',
-    description: 'Çevre koruma, iklim değişikliği ve sürdürülebilirlik hikayeleri'
+    name: 'Aile',
+    slug: 'aile',
+    color: '#D53F8C',
+    description: 'Aile içi ilişkiler, bakım emeği ve günlük hayatı paylaşan hikayeler',
+    sortOrder: 2
   },
   {
     name: 'Eğitim',
     slug: 'egitim',
-    color: '#3182CE',
-    description: 'Eğitim, öğrenme ve gelişim ile ilgili hikayeler'
+    color: '#38A169',
+    description: 'Öğrenme deneyimleri, eğitim fırsatları ve kişisel gelişim hikayeleri',
+    sortOrder: 3
   },
   {
     name: 'Sağlık',
     slug: 'saglik',
-    color: '#D53F8C',
-    description: 'Sağlık, mental sağlık ve yaşam kalitesi hikayeleri'
+    color: '#DD6B20',
+    description: 'Fiziksel ve mental sağlık, bakım süreçleri ve iyileşme hikayeleri',
+    sortOrder: 4
   },
   {
-    name: 'Teknoloji',
-    slug: 'teknoloji',
+    name: 'Sosyal',
+    slug: 'sosyal',
     color: '#805AD5',
-    description: 'Teknoloji, dijital dönüşüm ve inovasyon hikayeleri'
+    description: 'Topluluk, dayanışma, gönüllülük ve sosyal etki hikayeleri',
+    sortOrder: 5
+  },
+  {
+    name: 'Diğer',
+    slug: 'diger',
+    color: '#718096',
+    description: 'Diğer kategorilere sığmayan, paylaşmaya değer tüm hikayeler',
+    sortOrder: 6
   }
 ];
 
@@ -50,8 +62,35 @@ async function seedCategories() {
         });
         console.log(`✅ Kategori eklendi: ${category.name}`);
       } else {
-        console.log(`⚠️ Kategori zaten mevcut: ${category.name}`);
+        await prisma.category.update({
+          where: { id: existingCategory.id },
+          data: {
+            name: category.name,
+            color: category.color,
+            description: category.description,
+            sortOrder: category.sortOrder ?? existingCategory.sortOrder,
+            isActive: true
+          }
+        });
+        console.log(`♻️ Kategori güncellendi: ${category.name}`);
       }
+    }
+
+    const activeSlugs = categories.map(category => category.slug);
+    const deactivated = await prisma.category.updateMany({
+      where: {
+        slug: {
+          notIn: activeSlugs
+        },
+        isActive: true
+      },
+      data: {
+        isActive: false
+      }
+    });
+
+    if (deactivated.count > 0) {
+      console.log(`🔕 ${deactivated.count} kategori pasif hale getirildi.`);
     }
 
     console.log('🎉 Kategoriler başarıyla eklendi!');

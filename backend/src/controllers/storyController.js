@@ -1,4 +1,10 @@
 import { PrismaClient } from '@prisma/client';
+import crypto from 'crypto';
+import {
+  replaceStoryTags,
+  TagLimitError
+} from '../utils/tagUtils.js';
+import { buildSupportSummary, formatSupportSummary } from '../utils/supportUtils.js';
 
 const prisma = new PrismaClient();
 
@@ -231,7 +237,7 @@ export const getStoryById = async (req, res) => {
 // POST /api/stories - Create new story
 export const createStory = async (req, res) => {
   try {
-    const { title, content, categoryId, organizationId } = req.body;
+    const { title, content, categoryId, organizationId, tags } = req.body;
     const authorId = req.user.id;
 
     // Validation
@@ -323,7 +329,7 @@ export const createStory = async (req, res) => {
     const slug = await ensureUniqueSlug(baseSlug);
 
     // Create story
-    const story = await prisma.story.create({
+    let story = await prisma.story.create({
       data: {
         title,
         content,
@@ -356,6 +362,54 @@ export const createStory = async (req, res) => {
       }
     });
 
+    if (Array.isArray(tags) && tags.length > 0) {
+      try {
+        await replaceStoryTags({ prisma, storyId: story.id, tags });
+
+        const refreshedStory = await prisma.story.findUnique({
+          where: { id: story.id },
+          include: {
+            author: {
+              select: {
+                id: true,
+                nickname: true,
+                avatar: true
+              }
+            },
+            category: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+                color: true
+              }
+            },
+            tags: {
+              include: {
+                tag: true
+              }
+            }
+          }
+        });
+
+        if (refreshedStory) {
+          story = refreshedStory;
+        }
+      } catch (error) {
+        if (error instanceof TagLimitError) {
+          return res.status(400).json({
+            success: false,
+            error: {
+              code: error.code,
+              message: `Bir hikayeye en fazla ${error.max} etiket ekleyebilirsiniz`
+            }
+          });
+        }
+
+        throw error;
+      }
+    }
+
     res.status(201).json({
       success: true,
       story
@@ -377,7 +431,7 @@ export const createStory = async (req, res) => {
 export const updateStory = async (req, res) => {
   try {
     const storyId = parseInt(req.params.id);
-    const { title, content, categoryId, organizationId } = req.body;
+    const { title, content, categoryId, organizationId, tags } = req.body;
     const userId = req.user.id;
 
     // Check if story exists and user is the author
@@ -457,7 +511,7 @@ export const updateStory = async (req, res) => {
       updateData.slug = await ensureUniqueSlug(baseSlug, storyId);
     }
 
-    const story = await prisma.story.update({
+    let story = await prisma.story.update({
       where: { id: storyId },
       data: updateData,
       include: {
@@ -483,6 +537,54 @@ export const updateStory = async (req, res) => {
         }
       }
     });
+
+    if (tags !== undefined) {
+      try {
+        await replaceStoryTags({ prisma, storyId, tags });
+
+        const refreshedStory = await prisma.story.findUnique({
+          where: { id: storyId },
+          include: {
+            author: {
+              select: {
+                id: true,
+                nickname: true,
+                avatar: true
+              }
+            },
+            category: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+                color: true
+              }
+            },
+            tags: {
+              include: {
+                tag: true
+              }
+            }
+          }
+        });
+
+        if (refreshedStory) {
+          story = refreshedStory;
+        }
+      } catch (error) {
+        if (error instanceof TagLimitError) {
+          return res.status(400).json({
+            success: false,
+            error: {
+              code: error.code,
+              message: `Bir hikayeye en fazla ${error.max} etiket ekleyebilirsiniz`
+            }
+          });
+        }
+
+        throw error;
+      }
+    }
 
     res.json({
       success: true,

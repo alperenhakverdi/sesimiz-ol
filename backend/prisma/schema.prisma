@@ -40,6 +40,13 @@ enum CommentPermission {
   NONE
 }
 
+enum SupportType {
+  HEART
+  HUG
+  CLAP
+  CARE
+}
+
 enum ThemePreference {
   SYSTEM
   LIGHT
@@ -91,6 +98,8 @@ model User {
 
   // Comment reactions
   commentReactions CommentReaction[]
+  storyViews       StoryView[]
+  storySupports    StorySupport[]
 
   // Reports
   storyReports     StoryReport[] @relation("StoryReporter")
@@ -130,6 +139,7 @@ model Story {
   categoryId     Int?
   organizationId Int?
   viewCount      Int      @default(0)
+  supportCount   Int      @default(0)
   slug           String?  @unique
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
@@ -141,6 +151,8 @@ model Story {
   tags         StoryTag[]
   bookmarks    UserBookmark[]
   comments     Comment[]
+  views        StoryView[]
+  supports     StorySupport[]
 
   @@index([authorId])
   @@index([categoryId])
@@ -432,6 +444,41 @@ model StoryTag {
   @@index([storyId])
   @@index([tagId])
   @@map("story_tags")
+}
+
+model StoryView {
+  id           Int       @id @default(autoincrement())
+  storyId      Int
+  viewerId     Int?
+  fingerprint  String?   @db.VarChar(64)
+  userAgent    String?   @db.VarChar(255)
+  createdAt    DateTime  @default(now())
+  lastViewedAt DateTime  @updatedAt
+
+  story Story @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  viewer User? @relation(fields: [viewerId], references: [id], onDelete: SetNull)
+
+  @@unique([storyId, viewerId])
+  @@unique([storyId, fingerprint])
+  @@index([storyId, createdAt])
+  @@map("story_views")
+}
+
+model StorySupport {
+  id          Int         @id @default(autoincrement())
+  storyId     Int
+  userId      Int
+  supportType SupportType @default(HEART)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  story Story @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([storyId, userId])
+  @@index([supportType])
+  @@index([storyId, supportType])
+  @@map("story_supports")
 }
 
 model UserBookmark {

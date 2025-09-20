@@ -101,6 +101,11 @@ export const storyAPI = {
   incrementView: async (storyId) => {
     return await api.post(`/stories/${storyId}/view`);
   },
+
+  // Fetch predefined and popular tag suggestions
+  getTagSuggestions: async () => {
+    return await api.get('/stories/tag-suggestions');
+  }
 };
 
 // Health check

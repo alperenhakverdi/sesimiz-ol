@@ -8,21 +8,38 @@ import {
   deleteStory,
   incrementViewCount
 } from '../controllers/storyController.js';
-import { authenticateToken } from '../middleware/auth.js';
+import { authenticateToken, optionalAuth } from '../middleware/auth.js';
 import { csrfMiddleware } from '../utils/csrf.js';
+import { TAG_SUGGESTIONS } from '../config/tagSuggestions.js';
+import {
+  addTagsToStory,
+  slugifyTag,
+  TagLimitError
+} from '../utils/tagUtils.js';
+import {
+  buildSupportSummary,
+  applySupportMutation,
+  SUPPORT_TYPES,
+  normalizeSupportType,
+  formatSupportSummary,
+  SUPPORT_TYPE_LABELS
+} from '../utils/supportUtils.js';
 
 const prisma = new PrismaClient();
 
 const router = express.Router();
 
+const TRENDING_WINDOW_HOURS = 72;
+const TRENDING_WINDOW_MS = TRENDING_WINDOW_HOURS * 60 * 60 * 1000;
+
 // GET /api/stories - List all stories (public)
 router.get('/', getAllStories);
 
 // GET /api/stories/:id - Get story details
-router.get('/:id', getStoryById);
+router.get('/:id', optionalAuth, getStoryById);
 
-// POST /api/stories/:id/view - Increment view count
-router.post('/:id/view', incrementViewCount);
+// POST /api/stories/:id/view - Increment view count (unique)
+router.post('/:id/view', optionalAuth, incrementViewCount);
 
 // POST /api/stories - Create new story (requires authentication)
 router.post('/', authenticateToken, csrfMiddleware, createStory);
@@ -292,6 +309,164 @@ router.get('/tags', async (req, res) => {
   }
 });
 
+// GET /api/stories/tag-suggestions - Get predefined and popular tag suggestions
+router.get('/tag-suggestions', async (req, res) => {
+  try {
+    const suggestions = TAG_SUGGESTIONS.map(name => ({
+      name,
+      slug: slugifyTag(name)
+    }));
+
+    const popular = await prisma.tag.findMany({
+      where: {
+        isActive: true,
+        usageCount: { gt: 0 }
+      },
+      orderBy: { usageCount: 'desc' },
+      take: 10,
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        usageCount: true
+      }
+    });
+
+    res.json({
+      success: true,
+      suggestions,
+      popular
+    });
+
+  } catch (error) {
+    console.error('Get tag suggestions error:', error);
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Etiket önerileri getirilemedi'
+      }
+    });
+  }
+});
+
+// GET /api/stories/:id/support-summary - Support breakdown + user state
+router.get('/:id/support-summary', optionalAuth, async (req, res) => {
+  try {
+    const storyId = parseInt(req.params.id);
+
+    if (!Number.isFinite(storyId)) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_STORY_ID',
+          message: 'Geçersiz hikaye ID'
+        }
+      });
+    }
+
+    const story = await prisma.story.findUnique({
+      where: { id: storyId },
+      select: { id: true }
+    });
+
+    if (!story) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: 'STORY_NOT_FOUND',
+          message: 'Hikaye bulunamadı'
+        }
+      });
+    }
+
+    const summary = await buildSupportSummary({
+      prisma,
+      storyId,
+      userId: req.user?.id
+    });
+
+    res.json({
+      success: true,
+      summary: formatSupportSummary(summary)
+    });
+
+  } catch (error) {
+    console.error('Get support summary error:', error);
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Destek özeti getirilemedi'
+      }
+    });
+  }
+});
+
+// POST /api/stories/:id/support - Add/update/remove support reaction
+router.post('/:id/support', authenticateToken, csrfMiddleware, async (req, res) => {
+  try {
+    const storyId = parseInt(req.params.id);
+
+    if (!Number.isFinite(storyId)) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_STORY_ID',
+          message: 'Geçersiz hikaye ID'
+        }
+      });
+    }
+
+    const story = await prisma.story.findUnique({
+      where: { id: storyId },
+      select: { id: true }
+    });
+
+    if (!story) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: 'STORY_NOT_FOUND',
+          message: 'Hikaye bulunamadı'
+        }
+      });
+    }
+
+    const supportType = normalizeSupportType(req.body?.type);
+
+    const mutation = await applySupportMutation({
+      prisma,
+      storyId,
+      userId: req.user.id,
+      supportType
+    });
+
+    const summary = await buildSupportSummary({
+      prisma,
+      storyId,
+      userId: req.user.id
+    });
+
+    res.json({
+      success: true,
+      action: mutation.action,
+      supportType: mutation.supportType,
+      summary: formatSupportSummary(summary)
+    });
+
+  } catch (error) {
+    console.error('Support mutation error:', error);
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Destek işlemi tamamlanamadı'
+      }
+    });
+  }
+});
+
 // POST /api/stories/:id/tags - Add tags to story
 router.post('/:id/tags', authenticateToken, async (req, res) => {
   try {
@@ -334,78 +509,34 @@ router.post('/:id/tags', authenticateToken, async (req, res) => {
       });
     }
 
-    // Create or find tags and add them to story
-    const tagPromises = tags.map(async (tagName) => {
-      if (!tagName || tagName.trim().length < 2) return null;
-
-      const slug = tagName.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').trim('-');
-
-      // Find or create tag
-      let tag = await prisma.tag.findUnique({
-        where: { slug }
+    try {
+      const { added, tags: updatedTags } = await addTagsToStory({
+        prisma,
+        storyId,
+        tags
       });
 
-      if (!tag) {
-        tag = await prisma.tag.create({
-          data: {
-            name: tagName.trim(),
-            slug,
-            usageCount: 0
-          }
-        });
-      }
-
-      // Check if story-tag relationship already exists
-      const existingStoryTag = await prisma.storyTag.findUnique({
-        where: {
-          storyId_tagId: {
-            storyId,
-            tagId: tag.id
-          }
-        }
+      res.json({
+        success: true,
+        message: added.length > 0
+          ? 'Etiketler başarıyla eklendi'
+          : 'Yeni etiket eklenmedi',
+        added,
+        tags: updatedTags
       });
-
-      if (!existingStoryTag) {
-        await prisma.storyTag.create({
-          data: {
-            storyId,
-            tagId: tag.id
-          }
-        });
-
-        // Increment tag usage count
-        await prisma.tag.update({
-          where: { id: tag.id },
-          data: {
-            usageCount: {
-              increment: 1
-            }
+    } catch (error) {
+      if (error instanceof TagLimitError) {
+        return res.status(400).json({
+          success: false,
+          error: {
+            code: error.code,
+            message: `Bir hikayeye en fazla ${error.max} etiket ekleyebilirsiniz`
           }
         });
       }
 
-      return tag;
-    });
-
-    await Promise.all(tagPromises);
-
-    // Get updated story with tags
-    const updatedStory = await prisma.story.findUnique({
-      where: { id: storyId },
-      include: {
-        tags: {
-          include: {
-            tag: true
-          }
-        }
-      }
-    });
-
-    res.json({
-      success: true,
-      message: 'Etiketler başarıyla eklendi',
-      tags: updatedStory.tags.map(st => st.tag)
-    });
+      throw error;
+    }
 
   } catch (error) {
     console.error('Add tags to story error:', error);
@@ -466,6 +597,16 @@ router.delete('/:id/tags/:tagId', authenticateToken, async (req, res) => {
         usageCount: {
           decrement: 1
         }
+      }
+    });
+
+    await prisma.tag.updateMany({
+      where: {
+        id: tagId,
+        usageCount: { lt: 0 }
+      },
+      data: {
+        usageCount: 0
       }
     });
 
@@ -908,26 +1049,15 @@ router.get('/trending', async (req, res) => {
     const limit = Math.min(parseInt(req.query.limit) || 10, 50);
     const skip = (page - 1) * limit;
 
-    // Get stories with recent activity (comments in last 3 days)
-    const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
+    const windowStart = new Date(Date.now() - TRENDING_WINDOW_MS);
 
-    const stories = await prisma.story.findMany({
+    const candidateStories = await prisma.story.findMany({
       where: {
         OR: [
-          {
-            createdAt: {
-              gte: threeDaysAgo
-            }
-          },
-          {
-            comments: {
-              some: {
-                createdAt: {
-                  gte: threeDaysAgo
-                }
-              }
-            }
-          }
+          { createdAt: { gte: windowStart } },
+          { comments: { some: { createdAt: { gte: windowStart } } } },
+          { supports: { some: { createdAt: { gte: windowStart } } } },
+          { views: { some: { createdAt: { gte: windowStart } } } }
         ]
       },
       include: {
@@ -966,63 +1096,71 @@ router.get('/trending', async (req, res) => {
             }
           }
         },
-        _count: {
-          select: {
-            comments: {
-              where: {
-                createdAt: {
-                  gte: threeDaysAgo
-                }
-              }
-            }
-          }
+        supports: {
+          where: { createdAt: { gte: windowStart } },
+          select: { supportType: true }
+        },
+        views: {
+          where: { createdAt: { gte: windowStart } },
+          select: { id: true }
+        },
+        comments: {
+          where: { createdAt: { gte: windowStart } },
+          select: { id: true }
         }
       },
-      orderBy: [
-        { _count: { comments: 'desc' } },
-        { viewCount: 'desc' },
-        { createdAt: 'desc' }
-      ],
-      skip,
-      take: limit
+      orderBy: { createdAt: 'desc' }
     });
 
-    const total = await prisma.story.count({
-      where: {
-        OR: [
-          {
-            createdAt: {
-              gte: threeDaysAgo
-            }
-          },
-          {
-            comments: {
-              some: {
-                createdAt: {
-                  gte: threeDaysAgo
-                }
-              }
-            }
-          }
-        ]
-      }
-    });
+    const scored = candidateStories.map(story => {
+      const recentViews = story.views.length;
+      const recentSupports = story.supports.length;
+      const recentComments = story.comments.length;
+
+      const supportBreakdown = SUPPORT_TYPES.map(type => ({
+        type,
+        count: story.supports.filter(item => item.supportType === type).length,
+        label: SUPPORT_TYPE_LABELS[type] || type
+      }));
+
+      const score = (recentViews * 1.5) + (recentSupports * 2) + (recentComments * 1.25) + (story.supportCount * 0.5);
+
+      return {
+        story,
+        recentViews,
+        recentSupports,
+        recentComments,
+        score,
+        supportBreakdown
+      };
+    }).sort((a, b) => b.score - a.score);
+
+    const total = scored.length;
+    const paginated = scored.slice(skip, skip + limit);
 
     res.json({
       success: true,
-      stories: stories.map(story => ({
-        id: story.id,
-        title: story.title,
-        content: story.content.substring(0, 200) + (story.content.length > 200 ? '...' : ''),
-        slug: story.slug,
-        viewCount: story.viewCount,
-        createdAt: story.createdAt,
-        author: story.author,
-        category: story.category,
-        organization: story.organization,
-        tags: story.tags.map(st => st.tag),
-        commentCount: story._count.comments,
-        recentEngagement: story._count.comments
+      stories: paginated.map(entry => ({
+        id: entry.story.id,
+        title: entry.story.title,
+        content: entry.story.content.substring(0, 200) + (entry.story.content.length > 200 ? '...' : ''),
+        slug: entry.story.slug,
+        viewCount: entry.story.viewCount,
+        supportCount: entry.story.supportCount,
+        createdAt: entry.story.createdAt,
+        author: entry.story.author,
+        category: entry.story.category,
+        organization: entry.story.organization,
+        tags: entry.story.tags.map(st => st.tag),
+        metrics: {
+          score: entry.score,
+          recent: {
+            uniqueViews: entry.recentViews,
+            supports: entry.recentSupports,
+            comments: entry.recentComments
+          },
+          breakdown: entry.supportBreakdown
+        }
       })),
       pagination: {
         page,

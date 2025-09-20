@@ -1,0 +1,20 @@
+export const TAG_SUGGESTIONS = [
+  'Kariyer Yolculuğu',
+  'İş Yerinde Eşitlik',
+  'İşten Ayrılma Deneyimi',
+  'Aile İçinde Destek',
+  'Anne-Baba Hikayeleri',
+  'Çocuk Bakımı',
+  'Eğitim Fırsatları',
+  'Okul Deneyimleri',
+  'Sağlık Mücadeleleri',
+  'Mental Sağlık',
+  'Sosyal Destek',
+  'Gönüllülük',
+  'Topluluk Dayanışması',
+  'Şiddetle Mücadele',
+  'Göç Deneyimi',
+  'Dijital Güvenlik',
+  'Finansal Güçlenme',
+  'Hukuki Haklar'
+];
