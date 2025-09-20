@@ -17,6 +17,12 @@ import SettingsPage from './pages/SettingsPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import AdminDashboardPage from './pages/AdminDashboardPage'
+import AdminUsersPage from './pages/AdminUsersPage'
+import AdminStoriesPage from './pages/AdminStoriesPage'
+import AdminOrganizationsPage from './pages/AdminOrganizationsPage'
+import AdminAnnouncementsPage from './pages/AdminAnnouncementsPage'
+import AdminSettingsPage from './pages/AdminSettingsPage'
+import AdminFeatureFlagsPage from './pages/AdminFeatureFlagsPage'
 import ErrorBoundary from './components/common/ErrorBoundary'
 import ProtectedRoute from './components/common/ProtectedRoute'
 import { SkipToMain } from './components/common/AccessibilityEnhancements'
@@ -54,6 +60,54 @@ function App() {
                 element={
                   <ProtectedRoute requireAdmin={true} redirectToModal={false}>
                     <AdminDashboardPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/users"
+                element={
+                  <ProtectedRoute requireAdmin={true} redirectToModal={false}>
+                    <AdminUsersPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/stories"
+                element={
+                  <ProtectedRoute requireAdmin={true} redirectToModal={false}>
+                    <AdminStoriesPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/organizations"
+                element={
+                  <ProtectedRoute requireAdmin={true} redirectToModal={false}>
+                    <AdminOrganizationsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/announcements"
+                element={
+                  <ProtectedRoute requireAdmin={true} redirectToModal={false}>
+                    <AdminAnnouncementsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/settings"
+                element={
+                  <ProtectedRoute requireAdmin={true} redirectToModal={false}>
+                    <AdminSettingsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/feature-flags"
+                element={
+                  <ProtectedRoute requireAdmin={true} redirectToModal={false}>
+                    <AdminFeatureFlagsPage />
                   </ProtectedRoute>
                 }
               />

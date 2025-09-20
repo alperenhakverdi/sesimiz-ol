@@ -28,12 +28,37 @@ enum AnnouncementVisibility {
   ADMIN
 }
 
+enum ProfileVisibility {
+  PUBLIC
+  COMMUNITY
+  PRIVATE
+}
+
+enum CommentPermission {
+  EVERYONE
+  FOLLOWERS
+  NONE
+}
+
+enum ThemePreference {
+  SYSTEM
+  LIGHT
+  DARK
+}
+
+enum FontSizePreference {
+  SMALL
+  MEDIUM
+  LARGE
+}
+
 model User {
   id             Int                    @id @default(autoincrement())
   nickname       String                 @unique
   email          String?                @unique
   password       String
   avatar         String?
+  bio            String?                @db.Text
   role           Role                   @default(USER)
   isActive       Boolean                @default(true)
   isBanned       Boolean                @default(false)
@@ -52,8 +77,26 @@ model User {
   announcements  Announcement[]         @relation("AnnouncementAuthor")
   organizations  OrganizationMember[]
   featureFlagsChanged FeatureFlag[]     @relation("FeatureFlagLastChangedBy")
+  settings       UserSettings?
 
   @@map("users")
+}
+
+model UserSettings {
+  id                Int                 @id @default(autoincrement())
+  userId            Int                 @unique
+  profileVisibility ProfileVisibility   @default(PUBLIC)
+  commentPermission CommentPermission   @default(EVERYONE)
+  searchVisibility  Boolean             @default(true)
+  theme             ThemePreference     @default(SYSTEM)
+  fontSize          FontSizePreference  @default(MEDIUM)
+  reducedMotion     Boolean             @default(false)
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_settings")
 }
 
 model Story {

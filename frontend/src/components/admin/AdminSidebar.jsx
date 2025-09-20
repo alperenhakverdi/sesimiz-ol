@@ -17,7 +17,8 @@ import {
   FiFileText,
   FiSettings,
   FiFlag,
-  FiHeart
+  FiHeart,
+  FiMegaphone
 } from 'react-icons/fi'
 import { useAuth } from '../../contexts/AuthContext'
 
@@ -27,6 +28,7 @@ const LinkItems = [
   { name: 'Hikayeler', icon: FiFileText, href: '/admin/stories' },
   { name: 'STK\'lar', icon: FiHeart, href: '/admin/organizations' },
   { name: 'Feature Flags', icon: FiFlag, href: '/admin/feature-flags' },
+  { name: 'Duyurular', icon: FiMegaphone, href: '/admin/announcements' },
   { name: 'Ayarlar', icon: FiSettings, href: '/admin/settings' }
 ]
 
