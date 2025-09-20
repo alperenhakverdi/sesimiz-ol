@@ -17,6 +17,7 @@ import {
   updateFeatureFlagValidation,
   updateFeatureFlagController
 } from '../../controllers/featureFlagController.js';
+import { getMetrics } from '../../controllers/adminMetricsController.js';
 
 const router = express.Router();
 
@@ -31,5 +32,8 @@ router.post('/users/:id/role', updateUserRoleValidation, updateUserRole);
 
 router.get('/feature-flags', listFeatureFlagsValidation, listFeatureFlagsController);
 router.patch('/feature-flags/:key', updateFeatureFlagValidation, updateFeatureFlagController);
+
+// Admin metrics endpoint
+router.get('/metrics', getMetrics);
 
 export default router;

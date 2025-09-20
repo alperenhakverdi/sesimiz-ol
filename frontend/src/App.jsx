@@ -18,6 +18,7 @@ import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import AdminDashboardPage from './pages/AdminDashboardPage'
 import ErrorBoundary from './components/common/ErrorBoundary'
+import ProtectedRoute from './components/common/ProtectedRoute'
 import { SkipToMain } from './components/common/AccessibilityEnhancements'
 
 function App() {
@@ -48,7 +49,14 @@ function App() {
               <Route path="/sifremi-unuttum" element={<ForgotPasswordPage />} />
               <Route path="/reset-password" element={<ResetPasswordPage />} />
               <Route path="/ayarlar" element={<SettingsPage />} />
-              <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
+              <Route
+                path="/admin/dashboard"
+                element={
+                  <ProtectedRoute requireAdmin={true} redirectToModal={false}>
+                    <AdminDashboardPage />
+                  </ProtectedRoute>
+                }
+              />
             </Routes>
           </Box>
           <Footer />

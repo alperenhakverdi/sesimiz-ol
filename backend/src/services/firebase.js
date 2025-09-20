@@ -91,6 +91,15 @@ const disabledService = {
   },
   async createComment() {
     disabledError()
+  },
+  async getUserMetrics() {
+    return { total: 0, today: 0, active: 0 }
+  },
+  async getStoryMetrics() {
+    return { total: 0, today: 0, totalViews: 0 }
+  },
+  async getRecentActivity() {
+    return []
   }
 }
 
@@ -211,6 +220,148 @@ const activeService = {
       createdAt: new Date()
     })
     return { id: docRef.id, ...commentData }
+  },
+
+  async getUserMetrics() {
+    const usersRef = collection(db, 'users')
+    const snapshot = await getDocs(usersRef)
+
+    const users = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+      createdAt: doc.data().createdAt?.toDate?.() || doc.data().createdAt
+    }))
+
+    const total = users.length
+
+    // Users created today
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const todayUsers = users.filter(user => {
+      const createdAt = user.createdAt
+      if (!createdAt) return false
+      const userDate = new Date(createdAt)
+      userDate.setHours(0, 0, 0, 0)
+      return userDate.getTime() === today.getTime()
+    })
+
+    // Active users (logged in last 30 days)
+    const thirtyDaysAgo = new Date()
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+    const activeUsers = users.filter(user => {
+      const lastLogin = user.lastLoginAt
+      if (!lastLogin) return false
+      const loginDate = new Date(lastLogin)
+      return loginDate >= thirtyDaysAgo
+    })
+
+    return {
+      total,
+      today: todayUsers.length,
+      active: activeUsers.length
+    }
+  },
+
+  async getStoryMetrics() {
+    const storiesRef = collection(db, 'stories')
+    const snapshot = await getDocs(storiesRef)
+
+    const stories = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+      createdAt: doc.data().createdAt?.toDate?.() || doc.data().createdAt
+    }))
+
+    const total = stories.length
+
+    // Stories created today
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const todayStories = stories.filter(story => {
+      const createdAt = story.createdAt
+      if (!createdAt) return false
+      const storyDate = new Date(createdAt)
+      storyDate.setHours(0, 0, 0, 0)
+      return storyDate.getTime() === today.getTime()
+    })
+
+    // Total view count across all stories
+    const totalViews = stories.reduce((sum, story) => {
+      return sum + (story.viewCount || 0)
+    }, 0)
+
+    return {
+      total,
+      today: todayStories.length,
+      totalViews
+    }
+  },
+
+  async getRecentActivity() {
+    const activities = []
+
+    try {
+      // Get recent users (last 10)
+      const usersRef = collection(db, 'users')
+      const usersQuery = query(
+        usersRef,
+        orderBy('createdAt', 'desc'),
+        limit(5)
+      )
+      const usersSnapshot = await getDocs(usersQuery)
+
+      usersSnapshot.docs.forEach(doc => {
+        const userData = doc.data()
+        activities.push({
+          id: `user_${doc.id}`,
+          type: 'user_registered',
+          title: 'Yeni kullanıcı kaydı',
+          description: `${userData.nickname} platformuya katıldı`,
+          timestamp: userData.createdAt?.toDate?.() || userData.createdAt,
+          user: {
+            nickname: userData.nickname,
+            avatar: userData.avatar
+          }
+        })
+      })
+
+      // Get recent stories (last 5)
+      const storiesRef = collection(db, 'stories')
+      const storiesQuery = query(
+        storiesRef,
+        orderBy('createdAt', 'desc'),
+        limit(5)
+      )
+      const storiesSnapshot = await getDocs(storiesQuery)
+
+      storiesSnapshot.docs.forEach(doc => {
+        const storyData = doc.data()
+        activities.push({
+          id: `story_${doc.id}`,
+          type: 'story_created',
+          title: 'Yeni hikaye paylaşıldı',
+          description: `"${storyData.title}" hikayesi paylaşıldı`,
+          timestamp: storyData.createdAt?.toDate?.() || storyData.createdAt,
+          user: {
+            nickname: storyData.authorNickname,
+            avatar: storyData.authorAvatar
+          },
+          storyId: doc.id
+        })
+      })
+
+      // Sort by timestamp and limit to 10
+      activities.sort((a, b) => {
+        const dateA = new Date(a.timestamp)
+        const dateB = new Date(b.timestamp)
+        return dateB - dateA
+      })
+
+      return activities.slice(0, 10)
+    } catch (error) {
+      console.error('Get recent activity error:', error)
+      return []
+    }
   }
 }
 
