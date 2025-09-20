@@ -18,7 +18,8 @@ import {
 } from '@chakra-ui/react'
 import { useAuth } from '../contexts/AuthContext'
 import useNotifications from '../hooks/useNotifications'
-import NotificationList, { notificationTypeLabels } from '../components/notifications/NotificationList'
+import NotificationList from '../components/notifications/NotificationList'
+import { notificationTypeLabels } from '../components/notifications/notificationMetadata'
 
 const statusOptions = [
   { value: 'all', label: 'Tümü' },

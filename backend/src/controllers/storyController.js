@@ -71,6 +71,15 @@ export const getAllStories = async (req, res) => {
               color: true
             }
           },
+          organization: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              logo: true,
+              isVerified: true
+            }
+          },
           tags: {
             include: {
               tag: true
@@ -98,6 +107,7 @@ export const getAllStories = async (req, res) => {
         createdAt: story.createdAt,
         author: story.author,
         category: story.category,
+        organization: story.organization,
         commentCount: story._count.comments,
         tags: story.tags ? story.tags.map(st => st.tag) : []
       })),
@@ -221,7 +231,7 @@ export const getStoryById = async (req, res) => {
 // POST /api/stories - Create new story
 export const createStory = async (req, res) => {
   try {
-    const { title, content, categoryId } = req.body;
+    const { title, content, categoryId, organizationId } = req.body;
     const authorId = req.user.id;
 
     // Validation
@@ -272,6 +282,42 @@ export const createStory = async (req, res) => {
       }
     }
 
+    // Validate organization if provided and check membership
+    if (organizationId !== undefined) {
+      if (organizationId) {
+        const organization = await prisma.organization.findUnique({
+          where: { id: organizationId },
+          include: {
+            members: {
+              where: { userId }
+            }
+          }
+        });
+
+        if (!organization || !organization.isActive) {
+          return res.status(400).json({
+            success: false,
+            error: {
+              code: 'INVALID_ORGANIZATION',
+              message: 'Geçersiz STK'
+            }
+          });
+        }
+
+        if (organization.members.length === 0) {
+          return res.status(403).json({
+            success: false,
+            error: {
+              code: 'NOT_ORGANIZATION_MEMBER',
+              message: 'Bu STK adına hikaye yazabilmek için üye olmalısınız'
+            }
+          });
+        }
+      }
+    }
+
+
+
     // Generate unique slug
     const baseSlug = generateSlug(title);
     const slug = await ensureUniqueSlug(baseSlug);
@@ -283,7 +329,8 @@ export const createStory = async (req, res) => {
         content,
         slug,
         authorId,
-        categoryId: categoryId || null
+        categoryId: categoryId || null,
+        organizationId: organizationId || null
       },
       include: {
         author: {
@@ -330,7 +377,7 @@ export const createStory = async (req, res) => {
 export const updateStory = async (req, res) => {
   try {
     const storyId = parseInt(req.params.id);
-    const { title, content, categoryId } = req.body;
+    const { title, content, categoryId, organizationId } = req.body;
     const userId = req.user.id;
 
     // Check if story exists and user is the author
@@ -402,6 +449,7 @@ export const updateStory = async (req, res) => {
     if (title) updateData.title = title;
     if (content) updateData.content = content;
     if (categoryId !== undefined) updateData.categoryId = categoryId || null;
+    if (organizationId !== undefined) updateData.organizationId = organizationId || null;
 
     // Generate new slug if title changed
     if (title && title !== existingStory.title) {

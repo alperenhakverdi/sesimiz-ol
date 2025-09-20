@@ -1,24 +1,7 @@
 import { Box, VStack, Text, Badge, HStack, Button, Spinner } from '@chakra-ui/react'
 import { formatDistanceToNow } from 'date-fns'
 import { tr } from 'date-fns/locale'
-
-export const notificationTypeLabels = {
-  SYSTEM: 'Sistem',
-  SECURITY: 'Güvenlik',
-  ANNOUNCEMENT: 'Duyuru',
-  STORY_COMMENT: 'Yorum',
-  STORY_SUPPORT: 'Destek',
-  SYSTEM_ALERT: 'Sistem'
-}
-
-const typeColorSchemes = {
-  SYSTEM: 'gray',
-  SECURITY: 'red',
-  ANNOUNCEMENT: 'purple',
-  STORY_COMMENT: 'teal',
-  STORY_SUPPORT: 'pink',
-  SYSTEM_ALERT: 'orange'
-}
+import { notificationTypeLabels, notificationTypeColorSchemes } from './notificationMetadata'
 
 const formatTimestamp = (timestamp) => {
   if (!timestamp) return ''
@@ -27,7 +10,7 @@ const formatTimestamp = (timestamp) => {
       locale: tr,
       addSuffix: true
     })
-  } catch (error) {
+  } catch {
     return ''
   }
 }
@@ -62,7 +45,7 @@ const NotificationList = ({
     <VStack align="stretch" spacing={variant === 'compact' ? 2 : 4}>
       {notifications.map((notification) => {
         const isUnread = !notification.readAt
-        const colorScheme = typeColorSchemes[notification.type] || 'accent'
+        const colorScheme = notificationTypeColorSchemes[notification.type] || 'accent'
         const label = notificationTypeLabels[notification.type] || notification.type
 
         return (
