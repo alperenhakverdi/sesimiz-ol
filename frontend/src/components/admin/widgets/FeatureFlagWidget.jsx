@@ -91,7 +91,7 @@ const FeatureFlagWidget = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Feature flag'ları yüklenemedi');
+        throw new Error('Feature flag\'ları yüklenemedi');
       }
 
       const data = await response.json();
@@ -116,9 +116,9 @@ const FeatureFlagWidget = () => {
       } else {
         throw new Error(data.error?.message || 'Veri yüklenemedi');
       }
-    } catch (err) {
-      console.error('Feature flags error:', err);
-      setError(err.message);
+    } catch (error) {
+      console.error('Feature flags error:', error);
+      setError(error.message);
     } finally {
       setLoading(false);
     }
@@ -159,11 +159,11 @@ const FeatureFlagWidget = () => {
       } else {
         throw new Error(data.error?.message || 'Güncelleme başarısız');
       }
-    } catch (err) {
-      console.error('Toggle feature flag error:', err);
+    } catch (error) {
+      console.error('Toggle feature flag error:', error);
       toast({
         title: 'Hata',
-        description: err.message,
+        description: error.message,
         status: 'error',
         duration: 5000,
         isClosable: true,

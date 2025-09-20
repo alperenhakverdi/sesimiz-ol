@@ -9,12 +9,14 @@ import { ChatIcon } from '@chakra-ui/icons'
 import CommentCard from './CommentCard'
 import { CommentSkeleton, CustomSpinner } from '../common/LoadingStates'
 
-const CommentList = ({ 
-  comments = [], 
+const CommentList = ({
+  comments = [],
   loading = false,
   error = null,
   currentUserNickname = null,
   onDeleteComment = null,
+  onReplyComment = null,
+  onReactComment = null,
   emptyMessage = "Henüz yorum yapılmamış. İlk yorumu sen yap!"
 }) => {
   
@@ -64,6 +66,11 @@ const CommentList = ({
           comment={comment}
           currentUserNickname={currentUserNickname}
           onDelete={onDeleteComment}
+          onReply={onReplyComment}
+          onReact={onReactComment}
+          replies={comment.replies || []}
+          isReply={false}
+          depth={0}
         />
       ))}
     </VStack>

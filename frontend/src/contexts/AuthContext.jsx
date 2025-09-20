@@ -1,5 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useEffect, useCallback } from 'react'
+import { useColorMode } from '@chakra-ui/react'
 import axios from 'axios'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api'
@@ -100,6 +101,43 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [csrfToken, setCsrfToken] = useState(null)
+  const { colorMode, setColorMode } = useColorMode()
+
+  const applyThemePreference = useCallback((preference) => {
+    if (typeof window === 'undefined' || !setColorMode) return
+    if (!preference) return
+
+    if (preference === 'SYSTEM') {
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+      const targetMode = prefersDark ? 'dark' : 'light'
+      if (colorMode !== targetMode) {
+        setColorMode(targetMode)
+      }
+      return
+    }
+
+    const targetMode = preference === 'DARK' ? 'dark' : 'light'
+    if (colorMode !== targetMode) {
+      setColorMode(targetMode)
+    }
+  }, [colorMode, setColorMode])
+
+  const applyFontSizePreference = useCallback((preference) => {
+    if (typeof document === 'undefined') return
+    const root = document.documentElement
+    const sizeMap = {
+      SMALL: 15,
+      MEDIUM: 16,
+      LARGE: 18
+    }
+    const targetSize = sizeMap[preference] || sizeMap.MEDIUM
+    root.style.fontSize = `${targetSize}px`
+  }, [])
+
+  const applyMotionPreference = useCallback((reducedMotion) => {
+    if (typeof document === 'undefined' || !document.body) return
+    document.body.classList.toggle('reduced-motion', !!reducedMotion)
+  }, [])
 
   const applyCsrfToken = useCallback((token) => {
     if (!token) return
@@ -145,6 +183,36 @@ export const AuthProvider = ({ children }) => {
     initialize()
   }, [initialize])
 
+  const userSettings = user?.settings
+  const themePreference = userSettings?.theme
+
+  useEffect(() => {
+    if (!userSettings) {
+      applyThemePreference('SYSTEM')
+      applyFontSizePreference('MEDIUM')
+      applyMotionPreference(false)
+      return
+    }
+
+    const { theme, fontSize, reducedMotion } = userSettings
+    applyThemePreference(theme)
+    applyFontSizePreference(fontSize)
+    applyMotionPreference(reducedMotion)
+  }, [userSettings, applyThemePreference, applyFontSizePreference, applyMotionPreference])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    if (!themePreference || themePreference !== 'SYSTEM') return
+
+    const media = window.matchMedia('(prefers-color-scheme: dark)')
+    const handleChange = (event) => {
+      applyThemePreference(event.matches ? 'DARK' : 'LIGHT')
+    }
+
+    media.addEventListener('change', handleChange)
+    return () => media.removeEventListener('change', handleChange)
+  }, [themePreference, applyThemePreference])
+
   const forceLogout = useCallback(async ({ skipServer = false } = {}) => {
     if (!skipServer) {
       try {
@@ -184,17 +252,16 @@ export const AuthProvider = ({ children }) => {
     setIsLoading(true)
     try {
       const response = await api.post('/auth/register', requestData)
-      const registeredUser = response.data?.data?.user || null
       const token = response.data?.data?.csrfToken
       if (token) {
         applyCsrfToken(token)
       }
-      setUser(registeredUser)
-      return registeredUser
+      const profile = await fetchProfile()
+      return profile
     } finally {
       setIsLoading(false)
     }
-  }, [applyCsrfToken])
+  }, [applyCsrfToken, fetchProfile])
 
   const login = useCallback(async (identifier, password) => {
     setIsLoading(true)
@@ -209,12 +276,15 @@ export const AuthProvider = ({ children }) => {
       if (token) {
         applyCsrfToken(token)
       }
-      setUser(loggedInUser)
-      return loggedInUser
+      if (!loggedInUser) {
+        return null
+      }
+      const profile = await fetchProfile()
+      return profile
     } finally {
       setIsLoading(false)
     }
-  }, [applyCsrfToken])
+  }, [applyCsrfToken, fetchProfile])
 
   const logout = useCallback(async () => {
     await forceLogout()
@@ -239,23 +309,35 @@ export const AuthProvider = ({ children }) => {
       formData.append('email', profileData.email)
     }
 
+    if (profileData.bio !== undefined) {
+      formData.append('bio', profileData.bio ?? '')
+    }
+
     if (profileData.avatar) {
       formData.append('avatar', profileData.avatar)
     }
 
     setIsLoading(true)
     try {
-      const response = await api.put('/auth/profile', formData, {
+      await api.put('/auth/profile', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
       })
-      const updatedUser = response.data?.data?.user || null
-      setUser(updatedUser)
-      return updatedUser
+      const refreshed = await fetchProfile()
+      return refreshed
     } finally {
       setIsLoading(false)
     }
+  }, [fetchProfile])
+
+  const updateSettings = useCallback(async (settingsPayload) => {
+    const response = await api.put('/users/settings', settingsPayload)
+    const updatedSettings = response.data?.data?.settings || null
+    if (updatedSettings) {
+      setUser((prev) => (prev ? { ...prev, settings: updatedSettings } : prev))
+    }
+    return updatedSettings
   }, [])
 
   const changePassword = useCallback(async (currentPassword, newPassword) => {
@@ -276,6 +358,7 @@ export const AuthProvider = ({ children }) => {
     logout,
     logoutAll,
     updateProfile,
+    updateSettings,
     changePassword,
     refreshProfile: fetchProfile,
     api,

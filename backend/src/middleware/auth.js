@@ -7,6 +7,7 @@ import {
 } from '../services/authTokens.js';
 import { touchSession } from '../services/sessionService.js';
 import { getCookieNames } from '../utils/cookies.js';
+import { authUserSelect, mapUserForClient } from '../utils/userProfile.js';
 
 const prisma = new PrismaClient();
 const { access: ACCESS_COOKIE, refresh: REFRESH_COOKIE } = getCookieNames();
@@ -57,22 +58,12 @@ export const authenticateToken = async (req, res, next) => {
     const decoded = verifyAccessToken(token);
     
     // Get user from database
-    const user = await prisma.user.findUnique({
+    const userRecord = await prisma.user.findUnique({
       where: { id: Number(decoded.sub) },
-      select: {
-        id: true,
-        nickname: true,
-        email: true,
-        avatar: true,
-        isActive: true,
-        isBanned: true,
-        emailVerified: true,
-        role: true,
-        createdAt: true
-      }
+      select: authUserSelect,
     });
 
-    if (!user || !user.isActive) {
+    if (!userRecord || !userRecord.isActive) {
       return res.status(401).json({
         success: false,
         error: {
@@ -82,7 +73,7 @@ export const authenticateToken = async (req, res, next) => {
       });
     }
 
-    if (user.isBanned) {
+    if (userRecord.isBanned) {
       return res.status(403).json({
         success: false,
         error: {
@@ -92,7 +83,7 @@ export const authenticateToken = async (req, res, next) => {
       });
     }
 
-    req.user = user;
+    req.user = mapUserForClient(userRecord);
     req.sessionId = decoded.sid || null;
 
     if (req.sessionId) {
@@ -200,22 +191,15 @@ export const optionalAuth = async (req, res, next) => {
 
   try {
     const decoded = verifyAccessToken(token);
-    const user = await prisma.user.findUnique({
+    const userRecord = await prisma.user.findUnique({
       where: { id: Number(decoded.sub) },
-      select: {
-        id: true,
-        nickname: true,
-        email: true,
-        avatar: true,
-        isActive: true,
-        isBanned: true,
-        emailVerified: true,
-        role: true,
-        createdAt: true
-      }
+      select: authUserSelect,
     });
 
-    req.user = user && user.isActive && !user.isBanned ? user : null;
+    req.user =
+      userRecord && userRecord.isActive && !userRecord.isBanned
+        ? mapUserForClient(userRecord)
+        : null;
     req.sessionId = decoded.sid || null;
   } catch (error) {
     req.user = null;

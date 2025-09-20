@@ -129,9 +129,9 @@ const RecentActivityWidget = () => {
         } else {
           throw new Error(data.error?.message || 'Veri yüklenemedi');
         }
-      } catch (err) {
-        console.error('Recent activity error:', err);
-        setError(err.message);
+      } catch (error) {
+        console.error('Recent activity error:', error);
+        setError(error.message);
       } finally {
         setLoading(false);
       }

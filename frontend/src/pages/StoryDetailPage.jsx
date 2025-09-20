@@ -23,6 +23,7 @@ import { tr } from 'date-fns/locale'
 import { storyAPI } from '../services/api'
 import { useAuth } from '../contexts/AuthContext'
 import CommentSection from '../components/comments/CommentSection'
+import SendMessageButton from '../components/story/SendMessageButton'
 
 const StoryDetailPage = () => {
   const { id } = useParams()
@@ -139,8 +140,8 @@ const StoryDetailPage = () => {
               
               <HStack justify="space-between" w="full" align="center">
                 <HStack spacing={3}>
-                  <Avatar 
-                    size="md" 
+                  <Avatar
+                    size="md"
                     name={story.authorNickname || story.author?.nickname}
                     src={story.authorAvatar || story.author?.avatar}
                     bg="brand.100"
@@ -155,15 +156,25 @@ const StoryDetailPage = () => {
                     </Text>
                   </VStack>
                 </HStack>
-                
-                <Badge 
-                  colorScheme="accent" 
-                  variant="subtle"
-                  px={3}
-                  py={1}
-                >
-                  Hikâye
-                </Badge>
+
+                <HStack spacing={3}>
+                  <SendMessageButton
+                    storyAuthor={{
+                      id: story.authorId || story.author?.id,
+                      nickname: story.authorNickname || story.author?.nickname,
+                      avatar: story.authorAvatar || story.author?.avatar
+                    }}
+                    storyTitle={story.title}
+                  />
+                  <Badge
+                    colorScheme="accent"
+                    variant="subtle"
+                    px={3}
+                    py={1}
+                  >
+                    Hikâye
+                  </Badge>
+                </HStack>
               </HStack>
             </VStack>
 

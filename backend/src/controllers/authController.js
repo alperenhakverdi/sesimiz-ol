@@ -17,6 +17,7 @@ import {
   nicknameValidator,
   emailValidator,
   passwordValidator,
+  bioValidator,
 } from '../utils/validators.js';
 import {
   setAuthCookies,
@@ -28,6 +29,7 @@ import {
   setCsrfCookie,
   clearCsrfCookie,
 } from '../utils/csrf.js';
+import { fetchClientUser } from '../utils/userProfile.js';
 
 const prisma = new PrismaClient();
 
@@ -121,6 +123,7 @@ export const loginValidation = [
 export const updateProfileValidation = [
   nicknameValidator('nickname', false),
   emailValidator('email', false),
+  bioValidator('bio', false),
 ];
 
 export const changePasswordValidation = [
@@ -195,24 +198,30 @@ export const register = async (req, res) => {
       avatar: req.processedFile ? req.processedFile.url : null,
     };
 
-    const user = await prisma.user.create({
+    const createdUser = await prisma.user.create({
       data: userData,
       select: {
         id: true,
         nickname: true,
         email: true,
+        bio: true,
         avatar: true,
         role: true,
         isBanned: true,
         emailVerified: true,
+        isActive: true,
         createdAt: true,
       },
     });
 
-    await pruneExpiredSessions(user.id);
+    await prisma.userSettings.create({
+      data: { userId: createdUser.id },
+    });
+
+    await pruneExpiredSessions(createdUser.id);
 
     const { tokens } = await createSessionWithTokens({
-      user,
+      user: createdUser,
       userAgent: req.get('user-agent'),
       ipAddress: req.ip,
     });
@@ -222,21 +231,23 @@ export const register = async (req, res) => {
     setCsrfCookie(res, csrfToken);
 
     await prisma.user.update({
-      where: { id: user.id },
+      where: { id: createdUser.id },
       data: { lastLoginAt: new Date() },
     });
 
     logSecurityEvent({
       event: 'REGISTER_SUCCESS',
-      userId: user.id,
+      userId: createdUser.id,
       ip: req.ip,
       meta: { source: 'api' },
     });
 
+    const safeUser = await fetchClientUser(prisma, createdUser.id);
+
     res.status(201).json({
       success: true,
       data: {
-        user,
+        user: safeUser,
         tokens,
         csrfToken,
       },
@@ -353,18 +364,12 @@ export const login = async (req, res) => {
     });
 
     // Return user data without password or security fields
-    const {
-      password: _,
-      failedLoginCount,
-      lastFailedLoginAt,
-      lockedUntil,
-      ...userData
-    } = user;
+    const safeUser = await fetchClientUser(prisma, user.id);
 
     res.json({
       success: true,
       data: {
-        user: userData,
+        user: safeUser,
         tokens,
         csrfToken,
       },
@@ -395,6 +400,7 @@ export const refreshToken = async (req, res) => {
         id: true,
         nickname: true,
         email: true,
+        bio: true,
         avatar: true,
         role: true,
         isBanned: true,
@@ -475,17 +481,12 @@ export const refreshToken = async (req, res) => {
       meta: { previousSessionId: session.id, newSessionId: newSession.id },
     });
 
+    const safeUser = await fetchClientUser(prisma, user.id);
+
     res.json({
       success: true,
       data: {
-        user: {
-          id: user.id,
-          nickname: user.nickname,
-          email: user.email,
-          avatar: user.avatar,
-          role: user.role,
-          emailVerified: user.emailVerified,
-        },
+        user: safeUser,
         tokens,
         csrfToken,
       },
@@ -533,7 +534,7 @@ export const updateProfile = async (req, res) => {
     if (validationError) return;
 
     const userId = req.user.id;
-    const { nickname, email } = req.body;
+    const { nickname, email, bio } = req.body;
 
     // Check if nickname is being changed and if it's available
     if (nickname && nickname !== req.user.nickname) {
@@ -573,6 +574,7 @@ export const updateProfile = async (req, res) => {
     const updateData = {};
     if (nickname) updateData.nickname = nickname;
     if (email !== undefined) updateData.email = email || null;
+    if (bio !== undefined) updateData.bio = bio || null;
 
     // Handle avatar update
     if (req.processedFile) {
@@ -584,18 +586,12 @@ export const updateProfile = async (req, res) => {
     }
 
     // Update user
-    const updatedUser = await prisma.user.update({
+    await prisma.user.update({
       where: { id: userId },
       data: updateData,
-      select: {
-        id: true,
-        nickname: true,
-        email: true,
-        avatar: true,
-        createdAt: true,
-        updatedAt: true,
-      },
     });
+
+    const updatedUser = await fetchClientUser(prisma, userId);
 
     res.json({
       success: true,

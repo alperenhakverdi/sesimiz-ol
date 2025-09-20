@@ -73,9 +73,10 @@ const LoginModal = ({ isOpen, onClose }) => {
       setPassword('')
       onClose()
       
-    } catch (err) {
+    } catch (error) {
       // More user-friendly error messages
-      const errorMessage = err.message || 'Giriş işlemi başarısız'
+      console.error('Login modal error:', error)
+      const errorMessage = error.message || 'Giriş işlemi başarısız'
       
       if (errorMessage.includes('401') || errorMessage.includes('Unauthorized') || 
           errorMessage.includes('invalid') || errorMessage.includes('wrong')) {

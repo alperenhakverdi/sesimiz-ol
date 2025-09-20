@@ -23,6 +23,7 @@ import {
 } from '@chakra-ui/react'
 import { Link as RouterLink } from 'react-router-dom'
 import { AddIcon, HamburgerIcon } from '@chakra-ui/icons'
+import { FiMessageCircle } from 'react-icons/fi'
 import { useAuth } from '../../contexts/AuthContext'
 import { useDisclosure as useLoginDisclosure } from '@chakra-ui/react'
 import AuthButton from '../auth/AuthButton'
@@ -86,9 +87,21 @@ const Header = () => {
               </HStack>
               
               <HStack spacing={4}>
+                {isAuthenticated && (
+                  <IconButton
+                    as={RouterLink}
+                    to="/mesajlar"
+                    icon={<FiMessageCircle />}
+                    variant="ghost"
+                    size="sm"
+                    aria-label="Mesajlar"
+                    color="gray.600"
+                    _hover={{ color: 'accent.600', bg: 'gray.100' }}
+                  />
+                )}
                 <AuthButton size="sm" />
-                <AnimatedButton 
-                  colorScheme="accent" 
+                <AnimatedButton
+                  colorScheme="accent"
                   leftIcon={<AddIcon />}
                   as={isAuthenticated ? RouterLink : 'button'}
                   to={isAuthenticated ? "/hikaye-olustur" : undefined}
@@ -104,9 +117,21 @@ const Header = () => {
           {/* Mobile Navigation */}
           {isMobile && (
             <HStack spacing={2}>
+              {isAuthenticated && (
+                <IconButton
+                  as={RouterLink}
+                  to="/mesajlar"
+                  icon={<FiMessageCircle />}
+                  variant="ghost"
+                  size="sm"
+                  aria-label="Mesajlar"
+                  color="gray.600"
+                  _hover={{ color: 'accent.600', bg: 'gray.100' }}
+                />
+              )}
               <AuthButton size="sm" />
-              <AnimatedButton 
-                colorScheme="brand" 
+              <AnimatedButton
+                colorScheme="brand"
                 leftIcon={<AddIcon />}
                 as={isAuthenticated ? RouterLink : 'button'}
                 to={isAuthenticated ? "/hikaye-olustur" : undefined}
@@ -170,10 +195,23 @@ const Header = () => {
                     >
                       Hakkında
                     </Link>
+                    {isAuthenticated && (
+                      <Link
+                        as={RouterLink}
+                        to="/mesajlar"
+                        fontSize="lg"
+                        fontWeight="medium"
+                        color="neutral.800"
+                        _hover={{ color: 'accent.600', textDecoration: 'underline' }}
+                        onClick={onClose}
+                      >
+                        Mesajlar
+                      </Link>
+                    )}
                     {isAdmin && (
-                      <Link 
-                        as={RouterLink} 
-                        to="/admin/dashboard" 
+                      <Link
+                        as={RouterLink}
+                        to="/admin/dashboard"
                         fontSize="lg"
                         fontWeight="medium"
                         color="neutral.800"

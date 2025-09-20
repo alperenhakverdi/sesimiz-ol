@@ -56,11 +56,11 @@ const UserBanModal = ({ isOpen, onClose, user, onUpdate }) => {
       } else {
         throw new Error(data.error?.message || 'İşlem başarısız');
       }
-    } catch (err) {
-      console.error('Ban toggle error:', err);
+    } catch (error) {
+      console.error('Ban toggle error:', error);
       toast({
         title: 'Hata',
-        description: err.message,
+        description: error.message,
         status: 'error',
         duration: 5000,
         isClosable: true,

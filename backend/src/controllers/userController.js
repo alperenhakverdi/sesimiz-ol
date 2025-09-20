@@ -6,12 +6,14 @@ const prisma = new PrismaClient();
 // Validation schemas
 const createUserSchema = Joi.object({
   nickname: Joi.string().min(2).max(50).required(),
-  avatar: Joi.string().uri().optional()
+  avatar: Joi.string().uri().optional(),
+  bio: Joi.string().max(280).optional()
 });
 
 const updateUserSchema = Joi.object({
   nickname: Joi.string().min(2).max(50).optional(),
-  avatar: Joi.string().uri().optional()
+  avatar: Joi.string().uri().optional(),
+  bio: Joi.string().max(280).optional()
 });
 
 // Create new user (registration)
@@ -29,7 +31,7 @@ export const createUser = async (req, res) => {
       });
     }
 
-    const { nickname, avatar } = value;
+    const { nickname, avatar, bio } = value;
 
     // Check if nickname already exists
     const existingUser = await prisma.user.findUnique({
@@ -48,17 +50,20 @@ export const createUser = async (req, res) => {
 
     // Create user
     const user = await prisma.user.create({
-      data: { nickname, avatar },
+      data: { nickname, avatar, bio },
       select: {
         id: true,
         nickname: true,
         avatar: true,
+        bio: true,
         createdAt: true,
         _count: {
           select: { stories: true }
         }
       }
     });
+
+    await prisma.userSettings.create({ data: { userId: user.id } });
 
     res.status(201).json({
       success: true,
@@ -98,6 +103,7 @@ export const getUserProfile = async (req, res) => {
         id: true,
         nickname: true,
         avatar: true,
+        bio: true,
         createdAt: true,
         _count: {
           select: { stories: true }
@@ -198,6 +204,7 @@ export const updateUserProfile = async (req, res) => {
         id: true,
         nickname: true,
         avatar: true,
+        bio: true,
         createdAt: true,
         updatedAt: true,
         _count: {

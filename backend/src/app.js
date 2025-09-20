@@ -14,6 +14,8 @@ import storyRoutes from './routes/stories.js';
 import authRoutes from './routes/auth.js';
 import uploadRoutes from './routes/upload.js';
 import adminRoutes from './routes/admin/index.js';
+import messageRoutes from './routes/messages.js';
+import commentRoutes from './routes/comments.js';
 import { recordSecurityMetric } from './services/metrics.js';
 import { refreshFeatureFlags } from './services/featureFlags.js';
 
@@ -372,6 +374,8 @@ app.get('/api', (req, res) => {
       'GET /uploads/avatars/:filename - Get avatar file',
       // Legacy
       'POST /api/users - Create user',
+      'GET /api/users/settings - Get user settings',
+      'PUT /api/users/settings - Update user settings',
       'GET /api/users/:id - Get user profile'
     ]
   });
@@ -406,6 +410,8 @@ const mountApiRoutes = (router) => {
   router.use('/users', userRoutes);
   router.use('/stories', storyRoutes);
   router.use('/admin', adminRoutes);
+  router.use('/messages', messageRoutes);
+  router.use('/comments', commentRoutes);
   return router;
 };
 
@@ -437,6 +443,8 @@ app.get(['/api', '/api/v1'], (req, res) => {
       'GET /uploads/avatars/:filename - Get avatar file',
       // Legacy
       'POST /api/v1/users - Create user',
+      'GET /api/v1/users/settings - Get user settings',
+      'PUT /api/v1/users/settings - Update user settings',
       'GET /api/v1/users/:id - Get user profile'
     ]
   });

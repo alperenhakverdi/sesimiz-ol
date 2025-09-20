@@ -63,11 +63,11 @@ const UserRoleModal = ({ isOpen, onClose, user, onUpdate }) => {
       } else {
         throw new Error(data.error?.message || 'Rol değiştirilemedi');
       }
-    } catch (err) {
-      console.error('Role change error:', err);
+    } catch (error) {
+      console.error('Role change error:', error);
       toast({
         title: 'Hata',
-        description: err.message,
+        description: error.message,
         status: 'error',
         duration: 5000,
         isClosable: true,

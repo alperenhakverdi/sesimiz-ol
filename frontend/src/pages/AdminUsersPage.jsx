@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Heading,
@@ -25,7 +25,6 @@ import {
   Avatar,
   Text,
   Flex,
-  useToast,
   useDisclosure
 } from '@chakra-ui/react';
 import { FiMoreVertical, FiSearch, FiEye, FiEdit, FiUserX, FiUserCheck, FiShield } from 'react-icons/fi';
@@ -92,12 +91,11 @@ const AdminUsersPage = () => {
   });
   const [selectedUser, setSelectedUser] = useState(null);
 
-  const toast = useToast();
   const detailModal = useDisclosure();
   const banModal = useDisclosure();
   const roleModal = useDisclosure();
 
-  const fetchUsers = async (page = 1, search = '', role = '') => {
+  const fetchUsers = useCallback(async (page = 1, search = '', role = '') => {
     try {
       setLoading(true);
       setError(null);
@@ -127,13 +125,13 @@ const AdminUsersPage = () => {
       } else {
         throw new Error(data.error?.message || 'Veri yüklenemedi');
       }
-    } catch (err) {
-      console.error('Fetch users error:', err);
-      setError(err.message);
+    } catch (error) {
+      console.error('Fetch users error:', error);
+      setError(error.message);
     } finally {
       setLoading(false);
     }
-  };
+  }, [pagination.limit]);
 
   const handleSearch = (searchValue) => {
     setFilters(prev => ({ ...prev, search: searchValue }));
@@ -179,7 +177,7 @@ const AdminUsersPage = () => {
 
   useEffect(() => {
     fetchUsers();
-  }, []);
+  }, [fetchUsers]);
 
   return (
     <AdminLayout>

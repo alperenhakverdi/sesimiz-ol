@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Heading,
@@ -40,14 +40,14 @@ const AdminSettingsPage = () => {
     contactEmail: 'info@sesimizol.com',
     supportEmail: 'destek@sesimizol.com'
   });
-  const [systemInfo, setSystemInfo] = useState({
+  const systemInfo = {
     version: '2.0.0',
     uptime: '15 gün 8 saat',
     databaseSize: '145 MB',
     activeUsers: 89,
     totalStories: 234,
     lastBackup: '2024-01-15 03:00'
-  });
+  };
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(false);
   const toast = useToast();
@@ -72,10 +72,10 @@ const AdminSettingsPage = () => {
         duration: 3000,
         isClosable: true,
       });
-    } catch (err) {
+    } catch (error) {
       toast({
         title: 'Hata',
-        description: 'Ayarlar kaydedilemedi',
+        description: error.message || 'Ayarlar kaydedilemedi',
         status: 'error',
         duration: 5000,
         isClosable: true,
@@ -95,10 +95,10 @@ const AdminSettingsPage = () => {
         duration: 3000,
         isClosable: true,
       });
-    } catch (err) {
+    } catch (error) {
       toast({
         title: 'Hata',
-        description: 'Yedekleme başarısız',
+        description: error.message || 'Yedekleme başarısız',
         status: 'error',
         duration: 5000,
         isClosable: true,
@@ -116,10 +116,10 @@ const AdminSettingsPage = () => {
         duration: 3000,
         isClosable: true,
       });
-    } catch (err) {
+    } catch (error) {
       toast({
         title: 'Hata',
-        description: 'Önbellek temizlenemedi',
+        description: error.message || 'Önbellek temizlenemedi',
         status: 'error',
         duration: 5000,
         isClosable: true,

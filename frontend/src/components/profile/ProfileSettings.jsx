@@ -61,11 +61,11 @@ const ProfileSettings = ({ isOpen, onClose, user }) => {
       
       onClose()
       
-    } catch (err) {
-      setError(err.message)
+    } catch (error) {
+      setError(error.message)
       toast({
         title: "Güncelleme hatası",
-        description: err.message,
+        description: error.message,
         status: "error",
         duration: 4000,
         isClosable: true,

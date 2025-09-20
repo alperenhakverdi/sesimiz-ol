@@ -92,11 +92,11 @@ const OrganizationEditModal = ({ isOpen, onClose, organization, onUpdate }) => {
       });
 
       onClose();
-    } catch (err) {
-      console.error('Update organization error:', err);
+    } catch (error) {
+      console.error('Update organization error:', error);
       toast({
         title: 'Hata',
-        description: 'STK güncellenemedi',
+        description: error.message || 'STK güncellenemedi',
         status: 'error',
         duration: 5000,
         isClosable: true,

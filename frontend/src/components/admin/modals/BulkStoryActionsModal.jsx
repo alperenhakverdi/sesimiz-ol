@@ -51,10 +51,11 @@ const BulkStoryActionsModal = ({ isOpen, onClose, selectedStoryIds, stories, onU
       });
 
       onClose();
-    } catch (err) {
+    } catch (error) {
+      console.error('Bulk story action failed:', error)
       toast({
         title: 'Hata',
-        description: 'Toplu işlem başarısız',
+        description: error.message || 'Toplu işlem başarısız',
         status: 'error',
         duration: 5000,
         isClosable: true,

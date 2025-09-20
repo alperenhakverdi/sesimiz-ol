@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Modal,
   ModalOverlay,
@@ -29,7 +29,7 @@ const UserDetailModal = ({ isOpen, onClose, user }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const fetchUserStats = async () => {
+  const fetchUserStats = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -43,18 +43,19 @@ const UserDetailModal = ({ isOpen, onClose, user }) => {
       };
 
       setUserStats(mockStats);
-    } catch (err) {
+    } catch (error) {
+      console.error('User stats load failed:', error)
       setError('İstatistikler yüklenemedi');
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.createdAt]);
 
   useEffect(() => {
     if (isOpen && user) {
       fetchUserStats();
     }
-  }, [isOpen, user]);
+  }, [isOpen, user, fetchUserStats]);
 
   const getStatusColor = (user) => {
     if (user.isBanned) return 'red';

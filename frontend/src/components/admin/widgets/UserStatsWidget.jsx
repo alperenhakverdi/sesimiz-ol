@@ -89,9 +89,9 @@ const UserStatsWidget = () => {
         } else {
           throw new Error(data.error?.message || 'Veri yüklenemedi');
         }
-      } catch (err) {
-        console.error('User stats error:', err);
-        setError(err.message);
+      } catch (error) {
+        console.error('User stats error:', error);
+        setError(error.message);
       } finally {
         setLoading(false);
       }

@@ -24,7 +24,7 @@ CREATE TABLE "public"."user_settings" (
     "fontSize" "public"."FontSizePreference" NOT NULL DEFAULT 'MEDIUM',
     "reducedMotion" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "user_settings_pkey" PRIMARY KEY ("id")
 );
@@ -34,3 +34,8 @@ CREATE UNIQUE INDEX "user_settings_userId_key" ON "public"."user_settings"("user
 
 -- AddForeignKey
 ALTER TABLE "public"."user_settings" ADD CONSTRAINT "user_settings_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- Seed default settings for existing users
+INSERT INTO "public"."user_settings" ("userId")
+SELECT "id" FROM "public"."users"
+ON CONFLICT ("userId") DO NOTHING;

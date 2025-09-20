@@ -43,10 +43,11 @@ const StoryReviewModal = ({ isOpen, onClose, story, onUpdate }) => {
       });
 
       onClose();
-    } catch (err) {
+    } catch (error) {
+      console.error('Story approval failed:', error)
       toast({
         title: 'Hata',
-        description: 'Hikaye onaylanamadı',
+        description: error.message || 'Hikaye onaylanamadı',
         status: 'error',
         duration: 5000,
         isClosable: true,
@@ -73,10 +74,11 @@ const StoryReviewModal = ({ isOpen, onClose, story, onUpdate }) => {
       });
 
       onClose();
-    } catch (err) {
+    } catch (error) {
+      console.error('Story rejection failed:', error)
       toast({
         title: 'Hata',
-        description: 'Hikaye reddedilemedi',
+        description: error.message || 'Hikaye reddedilemedi',
         status: 'error',
         duration: 5000,
         isClosable: true,

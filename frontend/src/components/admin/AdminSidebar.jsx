@@ -36,12 +36,15 @@ const AdminSidebar = ({ onClose, ...rest }) => {
   const { user } = useAuth()
   const location = useLocation()
 
+  const sidebarBg = useColorModeValue('white', 'gray.900')
+  const sidebarBorderColor = useColorModeValue('gray.200', 'gray.700')
+
   return (
     <Box
       transition="3s ease"
-      bg={useColorModeValue('white', 'gray.900')}
+      bg={sidebarBg}
       borderRight="1px"
-      borderRightColor={useColorModeValue('gray.200', 'gray.700')}
+      borderRightColor={sidebarBorderColor}
       w={{ base: 'full', lg: 60 }}
       pos="fixed"
       h="full"
@@ -80,6 +83,8 @@ const AdminSidebar = ({ onClose, ...rest }) => {
 }
 
 const NavItem = ({ icon, children, href, isActive, onClick, ...rest }) => {
+  const inactiveColor = useColorModeValue('gray.600', 'gray.300')
+
   return (
     <Box
       as={RouterLink}
@@ -96,7 +101,7 @@ const NavItem = ({ icon, children, href, isActive, onClick, ...rest }) => {
         role="group"
         cursor="pointer"
         bg={isActive ? 'brand.50' : 'transparent'}
-        color={isActive ? 'brand.600' : useColorModeValue('gray.600', 'gray.300')}
+        color={isActive ? 'brand.600' : inactiveColor}
         borderLeft={isActive ? '3px solid' : '3px solid transparent'}
         borderLeftColor={isActive ? 'brand.500' : 'transparent'}
         _hover={{

@@ -159,9 +159,9 @@ const AdminAnnouncementsPage = () => {
         total: filteredAnnouncements.length,
         totalPages: Math.ceil(filteredAnnouncements.length / 20)
       });
-    } catch (err) {
-      console.error('Fetch announcements error:', err);
-      setError(err.message);
+    } catch (error) {
+      console.error('Fetch announcements error:', error);
+      setError(error.message);
     } finally {
       setLoading(false);
     }
@@ -210,10 +210,10 @@ const AdminAnnouncementsPage = () => {
         duration: 3000,
         isClosable: true,
       });
-    } catch (err) {
+    } catch (error) {
       toast({
         title: 'Hata',
-        description: 'Duyuru gönderilemedi',
+        description: error.message || 'Duyuru gönderilemedi',
         status: 'error',
         duration: 5000,
         isClosable: true,
@@ -235,10 +235,10 @@ const AdminAnnouncementsPage = () => {
         duration: 3000,
         isClosable: true,
       });
-    } catch (err) {
+    } catch (error) {
       toast({
         title: 'Hata',
-        description: 'Duyuru silinemedi',
+        description: error.message || 'Duyuru silinemedi',
         status: 'error',
         duration: 5000,
         isClosable: true,

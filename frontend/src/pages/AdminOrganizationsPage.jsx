@@ -181,9 +181,9 @@ const AdminOrganizationsPage = () => {
         total: filteredOrgs.length,
         totalPages: Math.ceil(filteredOrgs.length / 20)
       });
-    } catch (err) {
-      console.error('Fetch organizations error:', err);
-      setError(err.message);
+    } catch (error) {
+      console.error('Fetch organizations error:', error);
+      setError(error.message);
     } finally {
       setLoading(false);
     }
@@ -231,10 +231,10 @@ const AdminOrganizationsPage = () => {
         duration: 3000,
         isClosable: true,
       });
-    } catch (err) {
+    } catch (error) {
       toast({
         title: 'Hata',
-        description: 'STK onaylanamadı',
+        description: error.message || 'STK onaylanamadı',
         status: 'error',
         duration: 5000,
         isClosable: true,
@@ -259,10 +259,10 @@ const AdminOrganizationsPage = () => {
         duration: 3000,
         isClosable: true,
       });
-    } catch (err) {
+    } catch (error) {
       toast({
         title: 'Hata',
-        description: 'STK askıya alınamadı',
+        description: error.message || 'STK askıya alınamadı',
         status: 'error',
         duration: 5000,
         isClosable: true,

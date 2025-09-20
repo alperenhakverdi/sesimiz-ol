@@ -41,3 +41,12 @@ export const emailValidator = (field = 'email', required = false) => {
 
   return required ? chain : chain.optional({ checkFalsy: true });
 };
+
+export const bioValidator = (field = 'bio', required = false) => {
+  const chain = body(field)
+    .trim()
+    .isLength({ max: 280 })
+    .withMessage('Hakkında alanı en fazla 280 karakter olabilir');
+
+  return required ? chain : chain.optional({ checkFalsy: true });
+};

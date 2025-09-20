@@ -138,9 +138,9 @@ const AdminStoriesPage = () => {
         total: filteredStories.length,
         totalPages: Math.ceil(filteredStories.length / 20)
       });
-    } catch (err) {
-      console.error('Fetch stories error:', err);
-      setError(err.message);
+    } catch (error) {
+      console.error('Fetch stories error:', error);
+      setError(error.message);
     } finally {
       setLoading(false);
     }
@@ -173,10 +173,10 @@ const AdminStoriesPage = () => {
           s.id === story.id ? { ...s, status: 'APPROVED' } : s
         )
       );
-    } catch (err) {
+    } catch (error) {
       toast({
         title: 'Hata',
-        description: 'Hikaye onaylanamadı',
+        description: error.message || 'Hikaye onaylanamadı',
         status: 'error',
         duration: 5000,
         isClosable: true,
@@ -201,10 +201,10 @@ const AdminStoriesPage = () => {
           s.id === story.id ? { ...s, status: 'REJECTED' } : s
         )
       );
-    } catch (err) {
+    } catch (error) {
       toast({
         title: 'Hata',
-        description: 'Hikaye reddedilemedi',
+        description: error.message || 'Hikaye reddedilemedi',
         status: 'error',
         duration: 5000,
         isClosable: true,

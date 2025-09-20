@@ -82,11 +82,11 @@ const FeatureFlagEditModal = ({ isOpen, onClose, flag, onUpdate }) => {
       } else {
         throw new Error(data.error?.message || 'Güncelleme başarısız');
       }
-    } catch (err) {
-      console.error('Update feature flag error:', err);
+    } catch (error) {
+      console.error('Update feature flag error:', error);
       toast({
         title: 'Hata',
-        description: err.message,
+        description: error.message,
         status: 'error',
         duration: 5000,
         isClosable: true,

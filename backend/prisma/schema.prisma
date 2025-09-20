@@ -53,46 +53,64 @@ enum FontSizePreference {
 }
 
 model User {
-  id             Int                    @id @default(autoincrement())
-  nickname       String                 @unique
-  email          String?                @unique
-  password       String
-  avatar         String?
-  bio            String?                @db.Text
-  role           Role                   @default(USER)
-  isActive       Boolean                @default(true)
-  isBanned       Boolean                @default(false)
-  emailVerified  Boolean                @default(false)
-  lastLoginAt    DateTime?
-  failedLoginCount Int                 @default(0)
+  id                Int       @id @default(autoincrement())
+  nickname          String    @unique
+  email             String?   @unique
+  password          String
+  avatar            String?
+  bio               String?   @db.Text
+  role              Role      @default(USER)
+  isActive          Boolean   @default(true)
+  isBanned          Boolean   @default(false)
+  emailVerified     Boolean   @default(false)
+  lastLoginAt       DateTime?
+  failedLoginCount  Int       @default(0)
   lastFailedLoginAt DateTime?
-  lockedUntil   DateTime?
-  createdAt      DateTime               @default(now())
-  updatedAt      DateTime               @updatedAt
+  lockedUntil       DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
-  stories        Story[]
-  sessions       UserSession[]
-  passwordTokens PasswordResetToken[]
-  notifications  Notification[]
-  announcements  Announcement[]         @relation("AnnouncementAuthor")
-  organizations  OrganizationMember[]
-  featureFlagsChanged FeatureFlag[]     @relation("FeatureFlagLastChangedBy")
-  settings       UserSettings?
+  stories             Story[]
+  sessions            UserSession[]
+  passwordTokens      PasswordResetToken[]
+  notifications       Notification[]
+  announcements       Announcement[]       @relation("AnnouncementAuthor")
+  organizations       OrganizationMember[]
+  featureFlagsChanged FeatureFlag[]        @relation("FeatureFlagLastChangedBy")
+  settings            UserSettings?
+
+  // Messaging relationships
+  sentMessages     Message[] @relation("MessageSender")
+  receivedMessages Message[] @relation("MessageReceiver")
+  blockedUsers     BlockedUser[] @relation("UserBlocker")
+  blockedByUsers   BlockedUser[] @relation("UserBlocked")
+
+  // Following relationships
+  following        UserFollow[] @relation("UserFollower")
+  followers        UserFollow[] @relation("UserFollowing")
+
+  // Comment reactions
+  commentReactions CommentReaction[]
+
+  // Reports
+  storyReports     StoryReport[] @relation("StoryReporter")
+  userReports      UserReport[]  @relation("UserReporter")
+  reportedBy       UserReport[]  @relation("ReportedUser")
 
   @@map("users")
 }
 
 model UserSettings {
-  id                Int                 @id @default(autoincrement())
-  userId            Int                 @unique
-  profileVisibility ProfileVisibility   @default(PUBLIC)
-  commentPermission CommentPermission   @default(EVERYONE)
-  searchVisibility  Boolean             @default(true)
-  theme             ThemePreference     @default(SYSTEM)
-  fontSize          FontSizePreference  @default(MEDIUM)
-  reducedMotion     Boolean             @default(false)
-  createdAt         DateTime            @default(now())
-  updatedAt         DateTime            @updatedAt
+  id                Int                @id @default(autoincrement())
+  userId            Int                @unique
+  profileVisibility ProfileVisibility  @default(PUBLIC)
+  commentPermission CommentPermission  @default(EVERYONE)
+  searchVisibility  Boolean            @default(true)
+  theme             ThemePreference    @default(SYSTEM)
+  fontSize          FontSizePreference @default(MEDIUM)
+  reducedMotion     Boolean            @default(false)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -108,35 +126,36 @@ model Story {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  author  User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  reports StoryReport[]
 
-  @@map("stories")
   @@index([authorId])
+  @@map("stories")
 }
 
 model UserSession {
-  id                   Int          @id @default(autoincrement())
-  userId               Int
-  refreshTokenHash     String
-  userAgent            String?
-  ipAddress            String?
-  geolocation          Json?
-  createdAt            DateTime     @default(now())
-  lastSeenAt           DateTime     @default(now())
-  expiresAt            DateTime
-  revokedAt            DateTime?
-  revocationReason     String?
-  replacedBySessionId  Int?
+  id                  Int       @id @default(autoincrement())
+  userId              Int
+  refreshTokenHash    String
+  userAgent           String?
+  ipAddress           String?
+  geolocation         Json?
+  createdAt           DateTime  @default(now())
+  lastSeenAt          DateTime  @default(now())
+  expiresAt           DateTime
+  revokedAt           DateTime?
+  revocationReason    String?
+  replacedBySessionId Int?
 
-  user                 User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  replacement          UserSession? @relation("SessionReplacement", fields: [replacedBySessionId], references: [id])
-  replacedSessions     UserSession[] @relation("SessionReplacement")
+  user             User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  replacement      UserSession?  @relation("SessionReplacement", fields: [replacedBySessionId], references: [id])
+  replacedSessions UserSession[] @relation("SessionReplacement")
 
-  @@map("user_sessions")
   @@index([userId])
   @@index([expiresAt])
   @@index([revokedAt])
   @@index([refreshTokenHash])
+  @@map("user_sessions")
 }
 
 model PasswordResetToken {
@@ -151,79 +170,79 @@ model PasswordResetToken {
   metadata     Json?
   createdAt    DateTime  @default(now())
 
-  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@map("password_reset_tokens")
   @@index([userId])
   @@index([expiresAt])
   @@index([tokenHash])
+  @@map("password_reset_tokens")
 }
 
 model Organization {
-  id          Int                   @id @default(autoincrement())
-  name        String
-  slug        String                @unique
-  description String?
-  website     String?
+  id           Int      @id @default(autoincrement())
+  name         String
+  slug         String   @unique
+  description  String?
+  website      String?
   contactEmail String?
-  isActive    Boolean               @default(true)
-  createdAt   DateTime              @default(now())
-  updatedAt   DateTime              @updatedAt
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  members     OrganizationMember[]
+  members OrganizationMember[]
 
   @@map("organizations")
 }
 
 model OrganizationMember {
-  id             Int           @id @default(autoincrement())
+  id             Int      @id @default(autoincrement())
   organizationId Int
   userId         Int
-  role           String        @default("member")
-  createdAt      DateTime      @default(now())
+  role           String   @default("member")
+  createdAt      DateTime @default(now())
 
-  organization   Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@map("organization_members")
   @@unique([organizationId, userId])
   @@index([userId])
+  @@map("organization_members")
 }
 
 model Notification {
-  id        Int               @id @default(autoincrement())
+  id        Int              @id @default(autoincrement())
   userId    Int
-  type      NotificationType  @default(SYSTEM)
+  type      NotificationType @default(SYSTEM)
   title     String
   body      String
   data      Json?
   readAt    DateTime?
-  createdAt DateTime           @default(now())
+  createdAt DateTime         @default(now())
 
-  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@map("notifications")
   @@index([userId, readAt])
+  @@map("notifications")
 }
 
 model Announcement {
-  id          Int                      @id @default(autoincrement())
+  id          Int                    @id @default(autoincrement())
   title       String
   body        String
-  visibility  AnnouncementVisibility    @default(PUBLIC)
+  visibility  AnnouncementVisibility @default(PUBLIC)
   startsAt    DateTime?
   endsAt      DateTime?
-  isActive    Boolean                   @default(true)
+  isActive    Boolean                @default(true)
   createdById Int?
-  createdAt   DateTime                  @default(now())
-  updatedAt   DateTime                  @updatedAt
+  createdAt   DateTime               @default(now())
+  updatedAt   DateTime               @updatedAt
 
-  createdBy   User?                     @relation("AnnouncementAuthor", fields: [createdById], references: [id], onDelete: SetNull)
+  createdBy User? @relation("AnnouncementAuthor", fields: [createdById], references: [id], onDelete: SetNull)
 
-  @@map("announcements")
   @@index([visibility])
   @@index([startsAt])
   @@index([endsAt])
+  @@map("announcements")
 }
 
 model FeatureFlag {
@@ -239,7 +258,105 @@ model FeatureFlag {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
-  lastChangedBy   User?     @relation("FeatureFlagLastChangedBy", fields: [lastChangedById], references: [id], onDelete: SetNull)
+  lastChangedBy User? @relation("FeatureFlagLastChangedBy", fields: [lastChangedById], references: [id], onDelete: SetNull)
 
   @@map("feature_flags")
+}
+
+model Message {
+  id         Int       @id @default(autoincrement())
+  senderId   Int
+  receiverId Int
+  content    String
+  readAt     DateTime?
+  reportedAt DateTime?
+  deletedAt  DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  sender   User @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User @relation("MessageReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([createdAt])
+  @@map("messages")
+}
+
+model BlockedUser {
+  id        Int      @id @default(autoincrement())
+  blockerId Int
+  blockedId Int
+  createdAt DateTime @default(now())
+
+  blocker User @relation("UserBlocker", fields: [blockerId], references: [id], onDelete: Cascade)
+  blocked User @relation("UserBlocked", fields: [blockedId], references: [id], onDelete: Cascade)
+
+  @@unique([blockerId, blockedId])
+  @@index([blockerId])
+  @@index([blockedId])
+  @@map("blocked_users")
+}
+
+model CommentReaction {
+  id           Int      @id @default(autoincrement())
+  userId       Int
+  commentId    Int
+  reactionType String   @default("heart")
+  createdAt    DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, commentId])
+  @@index([commentId])
+  @@map("comment_reactions")
+}
+
+model UserFollow {
+  id          Int      @id @default(autoincrement())
+  followerId  Int
+  followingId Int
+  createdAt   DateTime @default(now())
+
+  follower  User @relation("UserFollower", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("UserFollowing", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
+  @@map("user_follows")
+}
+
+model StoryReport {
+  id          Int      @id @default(autoincrement())
+  reporterId  Int
+  storyId     Int
+  reason      String
+  description String?
+  status      String   @default("pending")
+  createdAt   DateTime @default(now())
+
+  reporter User  @relation("StoryReporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  story    Story @relation(fields: [storyId], references: [id], onDelete: Cascade)
+
+  @@index([storyId])
+  @@index([reporterId])
+  @@map("story_reports")
+}
+
+model UserReport {
+  id             Int      @id @default(autoincrement())
+  reporterId     Int
+  reportedUserId Int
+  reason         String
+  description    String?
+  status         String   @default("pending")
+  createdAt      DateTime @default(now())
+
+  reporter     User @relation("UserReporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  reportedUser User @relation("ReportedUser", fields: [reportedUserId], references: [id], onDelete: Cascade)
+
+  @@index([reportedUserId])
+  @@index([reporterId])
+  @@map("user_reports")
 }

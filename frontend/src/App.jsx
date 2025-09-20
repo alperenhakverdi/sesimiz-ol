@@ -14,6 +14,7 @@ import SupportPage from './pages/SupportPage'
 import ContactPage from './pages/ContactPage'
 import RegisterPage from './pages/RegisterPage'
 import SettingsPage from './pages/SettingsPage'
+import MessagesPage from './pages/MessagesPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import AdminDashboardPage from './pages/AdminDashboardPage'
@@ -55,6 +56,7 @@ function App() {
               <Route path="/sifremi-unuttum" element={<ForgotPasswordPage />} />
               <Route path="/reset-password" element={<ResetPasswordPage />} />
               <Route path="/ayarlar" element={<SettingsPage />} />
+              <Route path="/mesajlar" element={<MessagesPage />} />
               <Route
                 path="/admin/dashboard"
                 element={

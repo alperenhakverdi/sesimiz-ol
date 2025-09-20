@@ -125,11 +125,11 @@ const AnnouncementCreateModal = ({ isOpen, onClose, announcement, onUpdate }) =>
       });
 
       onClose();
-    } catch (err) {
-      console.error('Save announcement error:', err);
+    } catch (error) {
+      console.error('Save announcement error:', error);
       toast({
         title: 'Hata',
-        description: isEdit ? 'Duyuru güncellenemedi' : 'Duyuru oluşturulamadı',
+        description: error.message || (isEdit ? 'Duyuru güncellenemedi' : 'Duyuru oluşturulamadı'),
         status: 'error',
         duration: 5000,
         isClosable: true,
