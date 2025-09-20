@@ -97,6 +97,11 @@ model User {
   userReports      UserReport[]  @relation("UserReporter")
   reportedBy       UserReport[]  @relation("ReportedUser")
 
+  // Bookmarks and STK follows
+  bookmarks        UserBookmark[]
+  stkFollows       StkFollow[]
+  comments         Comment[]
+
   @@map("users")
 }
 
@@ -118,18 +123,30 @@ model UserSettings {
 }
 
 model Story {
-  id        Int      @id @default(autoincrement())
-  title     String
-  content   String
-  authorId  Int
-  viewCount Int      @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id             Int      @id @default(autoincrement())
+  title          String
+  content        String
+  authorId       Int
+  categoryId     Int?
+  organizationId Int?
+  viewCount      Int      @default(0)
+  slug           String?  @unique
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
-  author  User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  reports StoryReport[]
+  author       User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  category     Category?      @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  organization Organization?  @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  reports      StoryReport[]
+  tags         StoryTag[]
+  bookmarks    UserBookmark[]
+  comments     Comment[]
 
   @@index([authorId])
+  @@index([categoryId])
+  @@index([organizationId])
+  @@index([createdAt])
+  @@index([viewCount])
   @@map("stories")
 }
 
@@ -185,12 +202,19 @@ model Organization {
   description  String?
   website      String?
   contactEmail String?
+  logo         String?
+  isNgo        Boolean  @default(false)
+  isVerified   Boolean  @default(false)
   isActive     Boolean  @default(true)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  members OrganizationMember[]
+  members   OrganizationMember[]
+  stories   Story[]
+  followers StkFollow[]
 
+  @@index([isNgo])
+  @@index([isVerified])
   @@map("organizations")
 }
 
@@ -305,7 +329,8 @@ model CommentReaction {
   reactionType String   @default("heart")
   createdAt    DateTime @default(now())
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comment Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
 
   @@unique([userId, commentId])
   @@index([commentId])
@@ -359,4 +384,105 @@ model UserReport {
   @@index([reportedUserId])
   @@index([reporterId])
   @@map("user_reports")
+}
+
+model Category {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  slug        String   @unique
+  color       String   @default("#6B46C1")
+  description String?
+  isActive    Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  stories Story[]
+
+  @@index([isActive])
+  @@index([sortOrder])
+  @@map("categories")
+}
+
+model Tag {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  slug        String   @unique
+  usageCount  Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  stories StoryTag[]
+
+  @@index([usageCount])
+  @@index([isActive])
+  @@map("tags")
+}
+
+model StoryTag {
+  id      Int @id @default(autoincrement())
+  storyId Int
+  tagId   Int
+
+  story Story @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  tag   Tag   @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@unique([storyId, tagId])
+  @@index([storyId])
+  @@index([tagId])
+  @@map("story_tags")
+}
+
+model UserBookmark {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  storyId   Int
+  createdAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  story Story @relation(fields: [storyId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, storyId])
+  @@index([userId])
+  @@index([storyId])
+  @@map("user_bookmarks")
+}
+
+model StkFollow {
+  id             Int      @id @default(autoincrement())
+  userId         Int
+  organizationId Int
+  createdAt      DateTime @default(now())
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, organizationId])
+  @@index([userId])
+  @@index([organizationId])
+  @@map("stk_follows")
+}
+
+model Comment {
+  id         Int       @id @default(autoincrement())
+  content    String
+  authorId   Int
+  storyId    Int
+  parentId   Int?
+  reportedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  author    User              @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  story     Story             @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  parent    Comment?          @relation("CommentReplies", fields: [parentId], references: [id], onDelete: SetNull)
+  replies   Comment[]         @relation("CommentReplies")
+  reactions CommentReaction[]
+
+  @@index([authorId])
+  @@index([storyId])
+  @@index([parentId])
+  @@index([createdAt])
+  @@map("comments")
 }

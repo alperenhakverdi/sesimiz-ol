@@ -29,6 +29,7 @@ import { useDisclosure as useLoginDisclosure } from '@chakra-ui/react'
 import AuthButton from '../auth/AuthButton'
 import LoginModal from '../auth/LoginModal'
 import AnimatedButton from '../animations/AnimatedButton'
+import NotificationBell from '../notifications/NotificationBell'
 
 const Header = () => {
   const { isOpen, onOpen, onClose } = useDisclosure()
@@ -99,6 +100,7 @@ const Header = () => {
                     _hover={{ color: 'accent.600', bg: 'gray.100' }}
                   />
                 )}
+                {isAuthenticated && <NotificationBell />}
                 <AuthButton size="sm" />
                 <AnimatedButton
                   colorScheme="accent"
@@ -129,6 +131,7 @@ const Header = () => {
                   _hover={{ color: 'accent.600', bg: 'gray.100' }}
                 />
               )}
+              {isAuthenticated && <NotificationBell />}
               <AuthButton size="sm" />
               <AnimatedButton
                 colorScheme="brand"

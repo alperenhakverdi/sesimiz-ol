@@ -110,4 +110,20 @@ export const healthAPI = {
   },
 };
 
+// Notification API functions
+export const notificationAPI = {
+  list: async (params = {}) => {
+    return await api.get('/notifications', { params });
+  },
+  markRead: async (id) => {
+    return await api.put(`/notifications/${id}/read`);
+  },
+  markBulk: async (ids = []) => {
+    return await api.put('/notifications/bulk/read', { ids });
+  },
+  markAll: async () => {
+    return await api.put('/notifications/all/read');
+  }
+};
+
 export default api;

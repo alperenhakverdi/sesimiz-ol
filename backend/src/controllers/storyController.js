@@ -1,107 +1,192 @@
 import { PrismaClient } from '@prisma/client';
-import Joi from 'joi';
 
 const prisma = new PrismaClient();
 
-// Validation schemas
-const createStorySchema = Joi.object({
-  title: Joi.string().min(5).max(200).required(),
-  content: Joi.string().min(50).max(10000).required()
-});
+// Helper function to generate slug from title
+const generateSlug = (title) => {
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9 -]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .trim('-');
+};
 
-const updateStorySchema = Joi.object({
-  title: Joi.string().min(5).max(200).optional(),
-  content: Joi.string().min(50).max(10000).optional()
-});
+// Helper function to ensure unique slug
+const ensureUniqueSlug = async (baseSlug, storyId = null) => {
+  let slug = baseSlug;
+  let counter = 1;
 
-// Get all stories (public listing)
+  while (true) {
+    const existing = await prisma.story.findUnique({
+      where: { slug }
+    });
+
+    if (!existing || (storyId && existing.id === storyId)) {
+      return slug;
+    }
+
+    slug = `${baseSlug}-${counter}`;
+    counter++;
+  }
+};
+
+// GET /api/stories - List all stories with category filtering
 export const getAllStories = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
+    const limit = Math.min(parseInt(req.query.limit) || 10, 50);
     const skip = (page - 1) * limit;
+    const categoryId = req.query.categoryId ? parseInt(req.query.categoryId) : null;
+    const search = req.query.search || '';
+
+    // Build where clause
+    const where = {};
+    if (categoryId) {
+      where.categoryId = categoryId;
+    }
+    if (search) {
+      where.OR = [
+        { title: { contains: search, mode: 'insensitive' } },
+        { content: { contains: search, mode: 'insensitive' } }
+      ];
+    }
 
     const [stories, total] = await Promise.all([
       prisma.story.findMany({
-        skip,
-        take: limit,
-        select: {
-          id: true,
-          title: true,
-          content: true,
-          viewCount: true,
-          createdAt: true,
+        where,
+        include: {
           author: {
             select: {
               id: true,
               nickname: true,
               avatar: true
             }
+          },
+          category: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              color: true
+            }
+          },
+          tags: {
+            include: {
+              tag: true
+            }
+          },
+          _count: {
+            select: { comments: true }
           }
         },
-        orderBy: { createdAt: 'desc' }
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit
       }),
-      prisma.story.count()
+      prisma.story.count({ where })
     ]);
-
-    const totalPages = Math.ceil(total / limit);
 
     res.json({
       success: true,
-      data: {
-        stories,
-        pagination: {
-          page,
-          limit,
-          total,
-          totalPages,
-          hasNext: page < totalPages,
-          hasPrev: page > 1
-        }
+      stories: stories.map(story => ({
+        id: story.id,
+        title: story.title,
+        content: story.content.substring(0, 200) + (story.content.length > 200 ? '...' : ''),
+        slug: story.slug,
+        viewCount: story.viewCount,
+        createdAt: story.createdAt,
+        author: story.author,
+        category: story.category,
+        commentCount: story._count.comments,
+        tags: story.tags ? story.tags.map(st => st.tag) : []
+      })),
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit)
       }
     });
+
   } catch (error) {
-    console.error('Get all stories error:', error);
+    console.error('Get stories error:', error);
     res.status(500).json({
       success: false,
       error: {
         code: 'INTERNAL_SERVER_ERROR',
-        message: 'Hikâyeler alınırken bir hata oluştu'
+        message: 'Hikayeler getirilemedi'
       }
     });
   }
 };
 
-// Get story by ID
+// GET /api/stories/:id - Get story details
 export const getStoryById = async (req, res) => {
   try {
     const storyId = parseInt(req.params.id);
-    
-    if (isNaN(storyId)) {
-      return res.status(400).json({
-        success: false,
-        error: {
-          code: 'INVALID_STORY_ID',
-          message: 'Geçersiz hikâye ID'
-        }
-      });
-    }
 
     const story = await prisma.story.findUnique({
       where: { id: storyId },
-      select: {
-        id: true,
-        title: true,
-        content: true,
-        viewCount: true,
-        createdAt: true,
-        updatedAt: true,
+      include: {
         author: {
           select: {
             id: true,
             nickname: true,
-            avatar: true
+            avatar: true,
+            bio: true
           }
+        },
+        category: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            color: true
+          }
+        },
+        tags: {
+          include: {
+            tag: true
+          }
+        },
+        comments: {
+          where: { parentId: null },
+          include: {
+            author: {
+              select: {
+                id: true,
+                nickname: true,
+                avatar: true
+              }
+            },
+            replies: {
+              include: {
+                author: {
+                  select: {
+                    id: true,
+                    nickname: true,
+                    avatar: true
+                  }
+                },
+                _count: {
+                  select: { reactions: true }
+                }
+              }
+            },
+            _count: {
+              select: { reactions: true }
+            }
+          },
+          orderBy: { createdAt: 'desc' }
+        },
+        tags: {
+          include: {
+            tag: true
+          }
+        },
+        _count: {
+          select: { comments: true }
         }
       }
     });
@@ -111,58 +196,114 @@ export const getStoryById = async (req, res) => {
         success: false,
         error: {
           code: 'STORY_NOT_FOUND',
-          message: 'Hikâye bulunamadı'
+          message: 'Hikaye bulunamadı'
         }
       });
     }
 
     res.json({
       success: true,
-      data: story
+      story
     });
+
   } catch (error) {
     console.error('Get story by ID error:', error);
     res.status(500).json({
       success: false,
       error: {
         code: 'INTERNAL_SERVER_ERROR',
-        message: 'Hikâye alınırken bir hata oluştu'
+        message: 'Hikaye getirilemedi'
       }
     });
   }
 };
 
-// Create new story
+// POST /api/stories - Create new story
 export const createStory = async (req, res) => {
   try {
-    const { error, value } = createStorySchema.validate(req.body);
-    if (error) {
+    const { title, content, categoryId } = req.body;
+    const authorId = req.user.id;
+
+    // Validation
+    if (!title || !content) {
       return res.status(400).json({
         success: false,
         error: {
-          code: 'VALIDATION_ERROR',
-          message: 'Invalid input data',
-          details: error.details.map(detail => detail.message)
+          code: 'INVALID_INPUT',
+          message: 'Başlık ve içerik gereklidir'
         }
       });
     }
 
-    const { title, content } = value;
-    const authorId = req.user.id; // From JWT authentication middleware
+    if (title.length < 5 || title.length > 200) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_TITLE',
+          message: 'Başlık 5-200 karakter arasında olmalıdır'
+        }
+      });
+    }
+
+    if (content.length < 50) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_CONTENT',
+          message: 'İçerik en az 50 karakter olmalıdır'
+        }
+      });
+    }
+
+    // Validate category if provided
+    if (categoryId) {
+      const category = await prisma.category.findUnique({
+        where: { id: categoryId }
+      });
+
+      if (!category || !category.isActive) {
+        return res.status(400).json({
+          success: false,
+          error: {
+            code: 'INVALID_CATEGORY',
+            message: 'Geçersiz kategori'
+          }
+        });
+      }
+    }
+
+    // Generate unique slug
+    const baseSlug = generateSlug(title);
+    const slug = await ensureUniqueSlug(baseSlug);
 
     // Create story
     const story = await prisma.story.create({
-      data: { title, content, authorId },
-      select: {
-        id: true,
-        title: true,
-        content: true,
-        createdAt: true,
+      data: {
+        title,
+        content,
+        slug,
+        authorId,
+        categoryId: categoryId || null
+      },
+      include: {
         author: {
           select: {
             id: true,
             nickname: true,
             avatar: true
+          }
+        },
+        category: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            color: true
+          }
+        },
+        tags: {
+          include: {
+            tag: true
           }
         }
       }
@@ -170,52 +311,32 @@ export const createStory = async (req, res) => {
 
     res.status(201).json({
       success: true,
-      data: story,
-      message: 'Hikâye başarıyla oluşturuldu'
+      story
     });
+
   } catch (error) {
     console.error('Create story error:', error);
     res.status(500).json({
       success: false,
       error: {
         code: 'INTERNAL_SERVER_ERROR',
-        message: 'Hikâye oluşturulurken bir hata oluştu'
+        message: 'Hikaye oluşturulamadı'
       }
     });
   }
 };
 
-// Update story (author only)
+// PUT /api/stories/:id - Update story
 export const updateStory = async (req, res) => {
   try {
     const storyId = parseInt(req.params.id);
-    const authorId = req.user.id; // From JWT authentication middleware
-    
-    if (isNaN(storyId)) {
-      return res.status(400).json({
-        success: false,
-        error: {
-          code: 'INVALID_STORY_ID',
-          message: 'Geçersiz hikâye ID'
-        }
-      });
-    }
-
-    const { error, value } = updateStorySchema.validate(req.body);
-    if (error) {
-      return res.status(400).json({
-        success: false,
-        error: {
-          code: 'VALIDATION_ERROR',
-          message: 'Invalid input data',
-          details: error.details.map(detail => detail.message)
-        }
-      });
-    }
+    const { title, content, categoryId } = req.body;
+    const userId = req.user.id;
 
     // Check if story exists and user is the author
     const existingStory = await prisma.story.findUnique({
-      where: { id: storyId }
+      where: { id: storyId },
+      include: { author: true }
     });
 
     if (!existingStory) {
@@ -223,37 +344,93 @@ export const updateStory = async (req, res) => {
         success: false,
         error: {
           code: 'STORY_NOT_FOUND',
-          message: 'Hikâye bulunamadı'
+          message: 'Hikaye bulunamadı'
         }
       });
     }
 
-    if (existingStory.authorId !== authorId) {
+    if (existingStory.authorId !== userId) {
       return res.status(403).json({
         success: false,
         error: {
           code: 'UNAUTHORIZED',
-          message: 'Bu hikâyeyi düzenleme yetkiniz yok'
+          message: 'Bu hikayeyi düzenleme yetkiniz yok'
         }
       });
     }
 
-    // Update story
-    const updatedStory = await prisma.story.update({
+    // Validation
+    if (title && (title.length < 5 || title.length > 200)) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_TITLE',
+          message: 'Başlık 5-200 karakter arasında olmalıdır'
+        }
+      });
+    }
+
+    if (content && content.length < 50) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_CONTENT',
+          message: 'İçerik en az 50 karakter olmalıdır'
+        }
+      });
+    }
+
+    // Validate category if provided
+    if (categoryId) {
+      const category = await prisma.category.findUnique({
+        where: { id: categoryId }
+      });
+
+      if (!category || !category.isActive) {
+        return res.status(400).json({
+          success: false,
+          error: {
+            code: 'INVALID_CATEGORY',
+            message: 'Geçersiz kategori'
+          }
+        });
+      }
+    }
+
+    // Update data
+    const updateData = {};
+    if (title) updateData.title = title;
+    if (content) updateData.content = content;
+    if (categoryId !== undefined) updateData.categoryId = categoryId || null;
+
+    // Generate new slug if title changed
+    if (title && title !== existingStory.title) {
+      const baseSlug = generateSlug(title);
+      updateData.slug = await ensureUniqueSlug(baseSlug, storyId);
+    }
+
+    const story = await prisma.story.update({
       where: { id: storyId },
-      data: value,
-      select: {
-        id: true,
-        title: true,
-        content: true,
-        viewCount: true,
-        createdAt: true,
-        updatedAt: true,
+      data: updateData,
+      include: {
         author: {
           select: {
             id: true,
             nickname: true,
             avatar: true
+          }
+        },
+        category: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            color: true
+          }
+        },
+        tags: {
+          include: {
+            tag: true
           }
         }
       }
@@ -261,143 +438,99 @@ export const updateStory = async (req, res) => {
 
     res.json({
       success: true,
-      data: updatedStory,
-      message: 'Hikâye başarıyla güncellendi'
+      story
     });
+
   } catch (error) {
     console.error('Update story error:', error);
     res.status(500).json({
       success: false,
       error: {
         code: 'INTERNAL_SERVER_ERROR',
-        message: 'Hikâye güncellenirken bir hata oluştu'
+        message: 'Hikaye güncellenemedi'
       }
     });
   }
 };
 
-// Delete story (author only)
+// DELETE /api/stories/:id - Delete story
 export const deleteStory = async (req, res) => {
   try {
     const storyId = parseInt(req.params.id);
-    const authorId = req.user.id; // From JWT authentication middleware
-    
-    if (isNaN(storyId)) {
-      return res.status(400).json({
-        success: false,
-        error: {
-          code: 'INVALID_STORY_ID',
-          message: 'Geçersiz hikâye ID'
-        }
-      });
-    }
+    const userId = req.user.id;
 
     // Check if story exists and user is the author
-    const existingStory = await prisma.story.findUnique({
+    const story = await prisma.story.findUnique({
       where: { id: storyId }
     });
 
-    if (!existingStory) {
+    if (!story) {
       return res.status(404).json({
         success: false,
         error: {
           code: 'STORY_NOT_FOUND',
-          message: 'Hikâye bulunamadı'
+          message: 'Hikaye bulunamadı'
         }
       });
     }
 
-    if (existingStory.authorId !== authorId) {
+    if (story.authorId !== userId) {
       return res.status(403).json({
         success: false,
         error: {
           code: 'UNAUTHORIZED',
-          message: 'Bu hikâyeyi silme yetkiniz yok'
+          message: 'Bu hikayeyi silme yetkiniz yok'
         }
       });
     }
 
-    // Delete story
     await prisma.story.delete({
       where: { id: storyId }
     });
 
     res.json({
       success: true,
-      message: 'Hikâye başarıyla silindi'
+      message: 'Hikaye başarıyla silindi'
     });
+
   } catch (error) {
     console.error('Delete story error:', error);
     res.status(500).json({
       success: false,
       error: {
         code: 'INTERNAL_SERVER_ERROR',
-        message: 'Hikâye silinirken bir hata oluştu'
+        message: 'Hikaye silinemedi'
       }
     });
   }
 };
 
-// Increment view count
+// POST /api/stories/:id/view - Increment view count
 export const incrementViewCount = async (req, res) => {
   try {
     const storyId = parseInt(req.params.id);
-    
-    if (isNaN(storyId)) {
-      return res.status(400).json({
-        success: false,
-        error: {
-          code: 'INVALID_STORY_ID',
-          message: 'Geçersiz hikâye ID'
-        }
-      });
-    }
 
-    // Check if story exists
-    const existingStory = await prisma.story.findUnique({
-      where: { id: storyId },
-      select: { id: true, viewCount: true }
-    });
-
-    if (!existingStory) {
-      return res.status(404).json({
-        success: false,
-        error: {
-          code: 'STORY_NOT_FOUND',
-          message: 'Hikâye bulunamadı'
-        }
-      });
-    }
-
-    // Increment view count
-    const updatedStory = await prisma.story.update({
+    await prisma.story.update({
       where: { id: storyId },
       data: {
         viewCount: {
           increment: 1
         }
-      },
-      select: {
-        id: true,
-        viewCount: true
       }
     });
 
     res.json({
       success: true,
-      data: {
-        id: updatedStory.id,
-        viewCount: updatedStory.viewCount
-      },
       message: 'Görüntülenme sayısı güncellendi'
     });
+
   } catch (error) {
     console.error('Increment view count error:', error);
     res.status(500).json({
       success: false,
       error: {
         code: 'INTERNAL_SERVER_ERROR',
-        message: 'Görüntülenme sayısı güncellenirken bir hata oluştu'
+        message: 'Görüntülenme sayısı güncellenemedi'
       }
     });
   }
