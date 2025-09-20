@@ -24,6 +24,7 @@ import {
   formatSupportSummary,
   SUPPORT_TYPE_LABELS
 } from '../utils/supportUtils.js';
+import { calculateContentMetrics } from '../utils/contentQuality.js';
 
 const prisma = new PrismaClient();
 
@@ -31,6 +32,35 @@ const router = express.Router();
 
 const TRENDING_WINDOW_HOURS = 72;
 const TRENDING_WINDOW_MS = TRENDING_WINDOW_HOURS * 60 * 60 * 1000;
+
+// Helper function to generate slug from title
+const generateSlug = (title) => {
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9 -]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .trim('-');
+};
+
+// Helper function to ensure unique slug
+const ensureUniqueSlug = async (baseSlug, storyId = null) => {
+  let slug = baseSlug;
+  let counter = 1;
+
+  while (true) {
+    const existing = await prisma.story.findUnique({
+      where: { slug }
+    });
+
+    if (!existing || (storyId && existing.id === storyId)) {
+      return slug;
+    }
+
+    slug = `${baseSlug}-${counter}`;
+    counter++;
+  }
+};
 
 // GET /api/stories - List all stories (public)
 router.get('/', getAllStories);
@@ -43,6 +73,206 @@ router.post('/:id/view', optionalAuth, incrementViewCount);
 
 // POST /api/stories - Create new story (requires authentication)
 router.post('/', authenticateToken, csrfMiddleware, createStory);
+
+// GET /api/stories/drafts - Get user's draft stories
+router.get('/drafts', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const page = parseInt(req.query.page) || 1;
+    const limit = Math.min(parseInt(req.query.limit) || 10, 50);
+    const skip = (page - 1) * limit;
+
+    const [drafts, total] = await Promise.all([
+      prisma.story.findMany({
+        where: {
+          authorId: userId,
+          isPublished: false
+        },
+        include: {
+          category: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              color: true
+            }
+          },
+          tags: {
+            include: {
+              tag: true
+            }
+          },
+          _count: {
+            select: { comments: true }
+          }
+        },
+        orderBy: { updatedAt: 'desc' },
+        skip,
+        take: limit
+      }),
+      prisma.story.count({
+        where: {
+          authorId: userId,
+          isPublished: false
+        }
+      })
+    ]);
+
+    res.json({
+      success: true,
+      drafts: drafts.map(draft => {
+        const contentMetrics = calculateContentMetrics(draft);
+        return {
+          id: draft.id,
+          title: draft.title,
+          content: draft.content.substring(0, 200) + (draft.content.length > 200 ? '...' : ''),
+          category: draft.category,
+          tags: draft.tags.map(st => st.tag),
+          createdAt: draft.createdAt,
+          updatedAt: draft.updatedAt,
+          commentCount: draft._count.comments,
+          quality: {
+            readingTime: contentMetrics.readingTime,
+            qualityScore: contentMetrics.qualityScore,
+            qualityRating: contentMetrics.qualityRating,
+            wordCount: contentMetrics.wordCount
+          }
+        };
+      }),
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit)
+      }
+    });
+
+  } catch (error) {
+    console.error('Get drafts error:', error);
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Taslaklar getirilemedi'
+      }
+    });
+  }
+});
+
+// POST /api/stories/:id/publish - Publish a draft
+router.post('/:id/publish', authenticateToken, csrfMiddleware, async (req, res) => {
+  try {
+    const storyId = parseInt(req.params.id);
+    const userId = req.user.id;
+
+    // Find the draft story
+    const story = await prisma.story.findUnique({
+      where: { id: storyId }
+    });
+
+    if (!story) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: 'STORY_NOT_FOUND',
+          message: 'Hikaye bulunamadı'
+        }
+      });
+    }
+
+    if (story.authorId !== userId) {
+      return res.status(403).json({
+        success: false,
+        error: {
+          code: 'UNAUTHORIZED',
+          message: 'Bu işlem için yetkiniz yok'
+        }
+      });
+    }
+
+    if (story.isPublished) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'ALREADY_PUBLISHED',
+          message: 'Bu hikaye zaten yayınlanmış'
+        }
+      });
+    }
+
+    // Validate for publishing
+    if (story.title.length < 5 || story.title.length > 200) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_TITLE',
+          message: 'Yayınlamak için başlık 5-200 karakter arasında olmalıdır'
+        }
+      });
+    }
+
+    if (story.content.length < 50) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_CONTENT',
+          message: 'Yayınlamak için içerik en az 50 karakter olmalıdır'
+        }
+      });
+    }
+
+    // Generate slug for publishing
+    const baseSlug = generateSlug(story.title);
+    const slug = await ensureUniqueSlug(baseSlug);
+
+    // Update story to published
+    const publishedStory = await prisma.story.update({
+      where: { id: storyId },
+      data: {
+        isPublished: true,
+        slug
+      },
+      include: {
+        author: {
+          select: {
+            id: true,
+            nickname: true,
+            avatar: true
+          }
+        },
+        category: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            color: true
+          }
+        },
+        tags: {
+          include: {
+            tag: true
+          }
+        }
+      }
+    });
+
+    res.json({
+      success: true,
+      message: 'Hikaye başarıyla yayınlandı',
+      story: publishedStory
+    });
+
+  } catch (error) {
+    console.error('Publish story error:', error);
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Hikaye yayınlanamadı'
+      }
+    });
+  }
+});
 
 // PUT /api/stories/:id - Update story (author only)
 router.put('/:id', authenticateToken, csrfMiddleware, updateStory);
@@ -146,17 +376,30 @@ router.get('/by-category/:categorySlug', async (req, res) => {
     res.json({
       success: true,
       category,
-      stories: stories.map(story => ({
-        id: story.id,
-        title: story.title,
-        content: story.content.substring(0, 200) + (story.content.length > 200 ? '...' : ''),
-        slug: story.slug,
-        viewCount: story.viewCount,
-        createdAt: story.createdAt,
-        author: story.author,
-        category: story.category,
-        commentCount: story._count.comments
-      })),
+      stories: stories.map(story => {
+        const contentMetrics = calculateContentMetrics(story);
+        return {
+          id: story.id,
+          title: story.title,
+          content: story.content.substring(0, 200) + (story.content.length > 200 ? '...' : ''),
+          slug: story.slug,
+          viewCount: story.viewCount,
+          createdAt: story.createdAt,
+          author: story.isAnonymous ? {
+            id: null,
+            nickname: 'Anonim',
+            avatar: null
+          } : story.author,
+          category: story.category,
+          commentCount: story._count.comments,
+          quality: {
+            readingTime: contentMetrics.readingTime,
+            qualityScore: contentMetrics.qualityScore,
+            qualityRating: contentMetrics.qualityRating,
+            wordCount: contentMetrics.wordCount
+          }
+        };
+      }),
       pagination: {
         page,
         limit,
@@ -1140,24 +1383,37 @@ router.get('/trending', async (req, res) => {
 
     res.json({
       success: true,
-      stories: paginated.map(entry => ({
-        id: entry.story.id,
-        title: entry.story.title,
-        content: entry.story.content.substring(0, 200) + (entry.story.content.length > 200 ? '...' : ''),
-        slug: entry.story.slug,
-        viewCount: entry.story.viewCount,
-        supportCount: entry.story.supportCount,
-        createdAt: entry.story.createdAt,
-        author: entry.story.author,
-        category: entry.story.category,
-        organization: entry.story.organization,
-        tags: entry.story.tags.map(st => st.tag),
-        metrics: {
-          score: entry.score,
-          recent: {
-            uniqueViews: entry.recentViews,
-            supports: entry.recentSupports,
-            comments: entry.recentComments
+      stories: paginated.map(entry => {
+        const contentMetrics = calculateContentMetrics(entry.story);
+        return {
+          id: entry.story.id,
+          title: entry.story.title,
+          content: entry.story.content.substring(0, 200) + (entry.story.content.length > 200 ? '...' : ''),
+          slug: entry.story.slug,
+          viewCount: entry.story.viewCount,
+          supportCount: entry.story.supportCount,
+          createdAt: entry.story.createdAt,
+          author: entry.story.isAnonymous ? {
+            id: null,
+            nickname: 'Anonim',
+            avatar: null
+          } : entry.story.author,
+          category: entry.story.category,
+          organization: entry.story.organization,
+          tags: entry.story.tags.map(st => st.tag),
+          quality: {
+            readingTime: contentMetrics.readingTime,
+            qualityScore: contentMetrics.qualityScore,
+            qualityRating: contentMetrics.qualityRating,
+            wordCount: contentMetrics.wordCount
+          },
+          metrics: {
+            score: entry.score,
+            recent: {
+              uniqueViews: entry.recentViews,
+              supports: entry.recentSupports,
+              comments: entry.recentComments
+            }
           },
           breakdown: entry.supportBreakdown
         }

@@ -5,6 +5,7 @@ import {
   TagLimitError
 } from '../utils/tagUtils.js';
 import { buildSupportSummary, formatSupportSummary } from '../utils/supportUtils.js';
+import { calculateContentMetrics } from '../utils/contentQuality.js';
 
 const prisma = new PrismaClient();
 
@@ -46,8 +47,10 @@ export const getAllStories = async (req, res) => {
     const categoryId = req.query.categoryId ? parseInt(req.query.categoryId) : null;
     const search = req.query.search || '';
 
-    // Build where clause
-    const where = {};
+    // Build where clause - only show published stories
+    const where = {
+      isPublished: true
+    };
     if (categoryId) {
       where.categoryId = categoryId;
     }
@@ -104,19 +107,32 @@ export const getAllStories = async (req, res) => {
 
     res.json({
       success: true,
-      stories: stories.map(story => ({
-        id: story.id,
-        title: story.title,
-        content: story.content.substring(0, 200) + (story.content.length > 200 ? '...' : ''),
-        slug: story.slug,
-        viewCount: story.viewCount,
-        createdAt: story.createdAt,
-        author: story.author,
-        category: story.category,
-        organization: story.organization,
-        commentCount: story._count.comments,
-        tags: story.tags ? story.tags.map(st => st.tag) : []
-      })),
+      stories: stories.map(story => {
+        const contentMetrics = calculateContentMetrics(story);
+        return {
+          id: story.id,
+          title: story.title,
+          content: story.content.substring(0, 200) + (story.content.length > 200 ? '...' : ''),
+          slug: story.slug,
+          viewCount: story.viewCount,
+          createdAt: story.createdAt,
+          author: story.isAnonymous ? {
+            id: null,
+            nickname: 'Anonim',
+            avatar: null
+          } : story.author,
+          category: story.category,
+          organization: story.organization,
+          commentCount: story._count.comments,
+          tags: story.tags ? story.tags.map(st => st.tag) : [],
+          quality: {
+            readingTime: contentMetrics.readingTime,
+            qualityScore: contentMetrics.qualityScore,
+            qualityRating: contentMetrics.qualityRating,
+            wordCount: contentMetrics.wordCount
+          }
+        };
+      }),
       pagination: {
         page,
         limit,
@@ -217,9 +233,44 @@ export const getStoryById = async (req, res) => {
       });
     }
 
+    // Check if story is published or if user is the author
+    if (!story.isPublished) {
+      const userId = req.user?.id;
+      if (!userId || story.authorId !== userId) {
+        return res.status(404).json({
+          success: false,
+          error: {
+            code: 'STORY_NOT_FOUND',
+            message: 'Hikaye bulunamadı'
+          }
+        });
+      }
+    }
+
+    // Hide author information if story is anonymous (unless user is the author)
+    const userId = req.user?.id;
+    const contentMetrics = calculateContentMetrics(story);
+
+    const responseStory = {
+      ...story,
+      author: (story.isAnonymous && story.authorId !== userId) ? {
+        id: null,
+        nickname: 'Anonim',
+        avatar: null,
+        bio: null
+      } : story.author,
+      quality: {
+        readingTime: contentMetrics.readingTime,
+        qualityScore: contentMetrics.qualityScore,
+        qualityRating: contentMetrics.qualityRating,
+        wordCount: contentMetrics.wordCount,
+        characterCount: contentMetrics.characterCount
+      }
+    };
+
     res.json({
       success: true,
-      story
+      story: responseStory
     });
 
   } catch (error) {
@@ -237,10 +288,10 @@ export const getStoryById = async (req, res) => {
 // POST /api/stories - Create new story
 export const createStory = async (req, res) => {
   try {
-    const { title, content, categoryId, organizationId, tags } = req.body;
+    const { title, content, categoryId, organizationId, tags, isPublished = true, isAnonymous = false } = req.body;
     const authorId = req.user.id;
 
-    // Validation
+    // Basic validation
     if (!title || !content) {
       return res.status(400).json({
         success: false,
@@ -251,24 +302,38 @@ export const createStory = async (req, res) => {
       });
     }
 
-    if (title.length < 5 || title.length > 200) {
-      return res.status(400).json({
-        success: false,
-        error: {
-          code: 'INVALID_TITLE',
-          message: 'Başlık 5-200 karakter arasında olmalıdır'
-        }
-      });
-    }
+    // Relaxed validation for drafts
+    if (isPublished) {
+      if (title.length < 5 || title.length > 200) {
+        return res.status(400).json({
+          success: false,
+          error: {
+            code: 'INVALID_TITLE',
+            message: 'Başlık 5-200 karakter arasında olmalıdır'
+          }
+        });
+      }
 
-    if (content.length < 50) {
-      return res.status(400).json({
-        success: false,
-        error: {
-          code: 'INVALID_CONTENT',
-          message: 'İçerik en az 50 karakter olmalıdır'
-        }
-      });
+      if (content.length < 50) {
+        return res.status(400).json({
+          success: false,
+          error: {
+            code: 'INVALID_CONTENT',
+            message: 'İçerik en az 50 karakter olmalıdır'
+          }
+        });
+      }
+    } else {
+      // For drafts, allow shorter content but still have some limits
+      if (title.length > 200) {
+        return res.status(400).json({
+          success: false,
+          error: {
+            code: 'INVALID_TITLE',
+            message: 'Başlık 200 karakterden uzun olamaz'
+          }
+        });
+      }
     }
 
     // Validate category if provided
@@ -324,9 +389,12 @@ export const createStory = async (req, res) => {
 
 
 
-    // Generate unique slug
-    const baseSlug = generateSlug(title);
-    const slug = await ensureUniqueSlug(baseSlug);
+    // Generate unique slug only for published stories
+    let slug = null;
+    if (isPublished) {
+      const baseSlug = generateSlug(title);
+      slug = await ensureUniqueSlug(baseSlug);
+    }
 
     // Create story
     let story = await prisma.story.create({
@@ -336,7 +404,9 @@ export const createStory = async (req, res) => {
         slug,
         authorId,
         categoryId: categoryId || null,
-        organizationId: organizationId || null
+        organizationId: organizationId || null,
+        isPublished,
+        isAnonymous
       },
       include: {
         author: {
@@ -410,9 +480,19 @@ export const createStory = async (req, res) => {
       }
     }
 
+    // Hide author information if story is anonymous
+    const responseStory = {
+      ...story,
+      author: story.isAnonymous ? {
+        id: null,
+        nickname: 'Anonim',
+        avatar: null
+      } : story.author
+    };
+
     res.status(201).json({
       success: true,
-      story
+      story: responseStory
     });
 
   } catch (error) {
@@ -655,23 +735,97 @@ export const deleteStory = async (req, res) => {
   }
 };
 
-// POST /api/stories/:id/view - Increment view count
+// POST /api/stories/:id/view - Increment view count with unique tracking
 export const incrementViewCount = async (req, res) => {
   try {
     const storyId = parseInt(req.params.id);
+    const userId = req.user?.id;
+    const userAgent = req.get('User-Agent');
+    const ipAddress = req.ip || req.connection.remoteAddress || req.socket.remoteAddress;
 
-    await prisma.story.update({
-      where: { id: storyId },
-      data: {
-        viewCount: {
-          increment: 1
-        }
-      }
+    // Generate fingerprint for anonymous users
+    const fingerprint = userId ? null : crypto
+      .createHash('sha256')
+      .update(`${ipAddress}-${userAgent}`)
+      .digest('hex')
+      .substring(0, 64);
+
+    // Check if story exists
+    const story = await prisma.story.findUnique({
+      where: { id: storyId }
     });
+
+    if (!story) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: 'STORY_NOT_FOUND',
+          message: 'Hikaye bulunamadı'
+        }
+      });
+    }
+
+    // Try to create or update view record
+    let viewCreated = false;
+
+    if (userId) {
+      // For authenticated users, use upsert with userId
+      const result = await prisma.storyView.upsert({
+        where: {
+          storyId_viewerId: {
+            storyId,
+            viewerId: userId
+          }
+        },
+        create: {
+          storyId,
+          viewerId: userId,
+          userAgent,
+          lastViewedAt: new Date()
+        },
+        update: {
+          lastViewedAt: new Date()
+        }
+      });
+      viewCreated = result.createdAt.getTime() === result.lastViewedAt.getTime();
+    } else {
+      // For anonymous users, use upsert with fingerprint
+      const result = await prisma.storyView.upsert({
+        where: {
+          storyId_fingerprint: {
+            storyId,
+            fingerprint
+          }
+        },
+        create: {
+          storyId,
+          fingerprint,
+          userAgent,
+          lastViewedAt: new Date()
+        },
+        update: {
+          lastViewedAt: new Date()
+        }
+      });
+      viewCreated = result.createdAt.getTime() === result.lastViewedAt.getTime();
+    }
+
+    // Only increment story view count if this is a new unique view
+    if (viewCreated) {
+      await prisma.story.update({
+        where: { id: storyId },
+        data: {
+          viewCount: {
+            increment: 1
+          }
+        }
+      });
+    }
 
     res.json({
       success: true,
-      message: 'Görüntülenme sayısı güncellendi'
+      message: viewCreated ? 'Yeni görüntülenme kaydedildi' : 'Görüntülenme güncellendi',
+      isNewView: viewCreated
     });
 
   } catch (error) {

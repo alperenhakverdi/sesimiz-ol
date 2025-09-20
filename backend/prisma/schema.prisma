@@ -141,6 +141,8 @@ model Story {
   viewCount      Int      @default(0)
   supportCount   Int      @default(0)
   slug           String?  @unique
+  isPublished    Boolean  @default(true)
+  isAnonymous    Boolean  @default(false)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
