@@ -14,9 +14,18 @@ import {
   Badge,
   IconButton,
   useToast,
-  Divider
+  Divider,
+  InputGroup,
+  InputLeftElement,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalCloseButton,
+  useDisclosure
 } from '@chakra-ui/react';
-import { FiSend, FiMoreVertical, FiBlock } from 'react-icons/fi';
+import { FiSend, FiMoreVertical, FiBlock, FiSearch } from 'react-icons/fi';
 import { useAuth } from '../contexts/AuthContext';
 
 const MessagesPage = () => {
@@ -30,11 +39,54 @@ const MessagesPage = () => {
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [sendingMessage, setSendingMessage] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const { isOpen: isSearchOpen, onOpen: onSearchOpen, onClose: onSearchClose } = useDisclosure();
   const scrollToBottom = useCallback(() => {
   setTimeout(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, 100);
 }, []);
+
+  // Search messages
+  const searchMessages = useCallback(async (query) => {
+    if (!query || query.trim().length < 2) {
+      setSearchResults([]);
+      return;
+    }
+
+    setSearchLoading(true);
+    try {
+      const response = await fetch(`/api/messages/search?q=${encodeURIComponent(query)}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setSearchResults(data.messages);
+      }
+    } catch (error) {
+      console.error('Search messages error:', error);
+    } finally {
+      setSearchLoading(false);
+    }
+  }, [token]);
+
+  // Debounced search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchQuery.trim()) {
+        searchMessages(searchQuery.trim());
+      } else {
+        setSearchResults([]);
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery, searchMessages]);
 
   // Fetch conversations list
   const fetchConversations = useCallback(async () => {
@@ -245,7 +297,16 @@ const MessagesPage = () => {
           display={{ base: selectedConversation ? 'none' : 'block', md: 'block' }}
         >
           <Box p={4} borderBottom="1px solid" borderColor="gray.200">
-            <Text fontSize="lg" fontWeight="bold">Mesajlar</Text>
+            <HStack justify="space-between">
+              <Text fontSize="lg" fontWeight="bold">Mesajlar</Text>
+              <IconButton
+                size="sm"
+                variant="ghost"
+                icon={<FiSearch />}
+                aria-label="Mesajlarda ara"
+                onClick={onSearchOpen}
+              />
+            </HStack>
           </Box>
 
           <VStack spacing={0} align="stretch" maxH="calc(100% - 60px)" overflowY="auto">
@@ -408,6 +469,86 @@ const MessagesPage = () => {
             </Flex>
           )}
         </Box>
+
+        {/* Search Modal */}
+        <Modal isOpen={isSearchOpen} onClose={onSearchClose} size="lg">
+          <ModalOverlay />
+          <ModalContent>
+            <ModalHeader>Mesajlarda Ara</ModalHeader>
+            <ModalCloseButton />
+            <ModalBody pb={6}>
+              <VStack spacing={4} align="stretch">
+                <InputGroup>
+                  <InputLeftElement pointerEvents="none">
+                    <FiSearch color="gray.400" />
+                  </InputLeftElement>
+                  <Input
+                    placeholder="Mesaj içeriğinde ara..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </InputGroup>
+
+                {searchLoading && (
+                  <Flex justify="center" py={4}>
+                    <Spinner size="md" color="brand.500" />
+                  </Flex>
+                )}
+
+                {searchResults.length > 0 && (
+                  <VStack spacing={3} align="stretch" maxH="400px" overflowY="auto">
+                    {searchResults.map((message) => (
+                      <Box
+                        key={message.id}
+                        p={3}
+                        border="1px solid"
+                        borderColor="gray.200"
+                        borderRadius="md"
+                        _hover={{ borderColor: "gray.300" }}
+                      >
+                        <HStack spacing={3} align="start">
+                          <Avatar
+                            size="sm"
+                            name={message.senderId === user.id ? message.receiver.nickname : message.sender.nickname}
+                            src={message.senderId === user.id ? message.receiver.avatar : message.sender.avatar}
+                          />
+                          <VStack align="start" spacing={1} flex={1}>
+                            <Text fontSize="sm" fontWeight="medium">
+                              {message.senderId === user.id ?
+                                `Size → ${message.receiver.nickname}` :
+                                `${message.sender.nickname} → Size`
+                              }
+                            </Text>
+                            <Text fontSize="sm" color="gray.600" noOfLines={2}>
+                              {message.content}
+                            </Text>
+                            <Text fontSize="xs" color="gray.400">
+                              {new Date(message.createdAt).toLocaleDateString('tr-TR', {
+                                day: '2-digit',
+                                month: '2-digit',
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </Text>
+                          </VStack>
+                        </HStack>
+                      </Box>
+                    ))}
+                  </VStack>
+                )}
+
+                {searchQuery.trim() && !searchLoading && searchResults.length === 0 && (
+                  <Box textAlign="center" py={8}>
+                    <Text color="gray.500">
+                      "{searchQuery}" için sonuç bulunamadı
+                    </Text>
+                  </Box>
+                )}
+              </VStack>
+            </ModalBody>
+          </ModalContent>
+        </Modal>
       </Flex>
     </Box>
   );

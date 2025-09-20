@@ -424,4 +424,102 @@ router.get('/blocked/list', async (req, res) => {
   }
 });
 
+// Search messages
+router.get('/search', auth, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { q, page = 1, limit = 20 } = req.query;
+
+    if (!q || q.trim().length < 2) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_QUERY',
+          message: 'Arama terimi en az 2 karakter olmalıdır'
+        }
+      });
+    }
+
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    const messages = await prisma.message.findMany({
+      where: {
+        AND: [
+          {
+            OR: [
+              { senderId: userId },
+              { receiverId: userId }
+            ]
+          },
+          {
+            content: {
+              contains: q.trim(),
+              mode: 'insensitive'
+            }
+          }
+        ]
+      },
+      include: {
+        sender: {
+          select: {
+            id: true,
+            nickname: true,
+            avatar: true
+          }
+        },
+        receiver: {
+          select: {
+            id: true,
+            nickname: true,
+            avatar: true
+          }
+        }
+      },
+      orderBy: { createdAt: 'desc' },
+      skip,
+      take: parseInt(limit)
+    });
+
+    const total = await prisma.message.count({
+      where: {
+        AND: [
+          {
+            OR: [
+              { senderId: userId },
+              { receiverId: userId }
+            ]
+          },
+          {
+            content: {
+              contains: q.trim(),
+              mode: 'insensitive'
+            }
+          }
+        ]
+      }
+    });
+
+    res.json({
+      success: true,
+      messages,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        pages: Math.ceil(total / parseInt(limit))
+      }
+    });
+
+  } catch (error) {
+    console.error('Search messages error:', error);
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Mesaj araması başarısız'
+      }
+    });
+  }
+});
+
 export default router;
