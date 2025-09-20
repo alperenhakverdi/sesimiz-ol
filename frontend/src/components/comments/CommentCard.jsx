@@ -7,10 +7,14 @@ import {
   Button,
   useToast,
   IconButton,
-  Collapse
+  Collapse,
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItem
 } from '@chakra-ui/react'
 import { DeleteIcon } from '@chakra-ui/icons'
-import { FiMessageCircle, FiHeart } from 'react-icons/fi'
+import { FiMessageCircle, FiHeart, FiMoreVertical, FiFlag } from 'react-icons/fi'
 import { formatDistanceToNow } from 'date-fns'
 import { tr } from 'date-fns/locale'
 import { useState } from 'react'
@@ -113,6 +117,8 @@ const CommentCard = ({
     }
   }
 
+
+
   return (
     <Box
       ml={isReply ? 8 : 0}
@@ -150,20 +156,41 @@ const CommentCard = ({
               </VStack>
             </HStack>
 
-            {/* Delete button - only show for comment owner */}
-            {isOwner && onDelete && (
-              <Button
-                size="xs"
-                variant="ghost"
-                colorScheme="red"
-                leftIcon={<DeleteIcon />}
-                onClick={handleDelete}
-                isLoading={isDeleting}
-                loadingText="Siliniyor..."
-              >
-                Sil
-              </Button>
-            )}
+            {/* Actions menu */}
+            <HStack spacing={2}>
+              {/* Delete button - only show for comment owner */}
+              {isOwner && onDelete && (
+                <Button
+                  size="xs"
+                  variant="ghost"
+                  colorScheme="red"
+                  leftIcon={<DeleteIcon />}
+                  onClick={handleDelete}
+                  isLoading={isDeleting}
+                  loadingText="Siliniyor..."
+                >
+                  Sil
+                </Button>
+              )}
+
+              {/* Report menu - only show for other users' comments */}
+              {!isOwner && currentUserNickname && (
+                <Menu>
+                  <MenuButton
+                    as={IconButton}
+                    icon={<FiMoreVertical />}
+                    size="xs"
+                    variant="ghost"
+                    aria-label="Daha fazla seçenek"
+                  />
+                  <MenuList>
+                    <MenuItem icon={<FiFlag />} isDisabled>
+                      Şikayet Et (yakında)
+                    </MenuItem>
+                  </MenuList>
+                </Menu>
+              )}
+            </HStack>
           </HStack>
 
           {/* Comment content */}
@@ -283,6 +310,7 @@ const CommentCard = ({
           ))}
         </VStack>
       )}
+
     </Box>
   )
 }

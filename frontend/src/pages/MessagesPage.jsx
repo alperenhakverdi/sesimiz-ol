@@ -30,13 +30,11 @@ const MessagesPage = () => {
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [sendingMessage, setSendingMessage] = useState(false);
-const scrollToBottom = useCallback(() => {
+  const scrollToBottom = useCallback(() => {
   setTimeout(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, 100);
 }, []);
-
-  const pollingRef = useRef(null);
 
   // Fetch conversations list
   const fetchConversations = useCallback(async () => {
@@ -185,25 +183,37 @@ const scrollToBottom = useCallback(() => {
     }
   };
 
-  // Initialize component
+  // Initialize and poll conversations/messages
   useEffect(() => {
-    if (token) {
-      fetchConversations();
+    if (!token) {
       setLoading(false);
-      startPolling();
+      return () => {};
     }
+
+    let isMounted = true;
+
+    const init = async () => {
+      await fetchConversations();
+      if (isMounted) {
+        setLoading(false);
+      }
+    };
+
+    init();
+
+    const interval = setInterval(() => {
+      fetchConversations();
+      if (selectedConversation) {
+        fetchMessages(selectedConversation.user.id);
+      }
+    }, 10000);
+
 
     return () => {
-      stopPolling();
+      isMounted = false;
+      clearInterval(interval);
     };
-  }, [token]);
-
-  // Update polling when conversation changes
-  useEffect(() => {
-    if (selectedConversation) {
-      startPolling();
-    }
-  }, [selectedConversation]);
+  }, [token, fetchConversations, fetchMessages, selectedConversation]);
 
   if (loading) {
     return (

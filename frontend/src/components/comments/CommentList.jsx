@@ -17,6 +17,7 @@ const CommentList = ({
   onDeleteComment = null,
   onReplyComment = null,
   onReactComment = null,
+  onReportComment = null,
   emptyMessage = "Henüz yorum yapılmamış. İlk yorumu sen yap!"
 }) => {
   
@@ -68,6 +69,7 @@ const CommentList = ({
           onDelete={onDeleteComment}
           onReply={onReplyComment}
           onReact={onReactComment}
+          onReport={onReportComment}
           replies={comment.replies || []}
           isReply={false}
           depth={0}

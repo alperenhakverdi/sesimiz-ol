@@ -8,7 +8,7 @@ import {
   useToast
 } from '@chakra-ui/react'
 import { ChatIcon } from '@chakra-ui/icons'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import CommentForm from './CommentForm'
 import CommentList from './CommentList'
 import { useAuth } from '../../contexts/AuthContext'
@@ -27,7 +27,7 @@ const CommentSection = ({
   const [sortBy, setSortBy] = useState('newest')
 
   // Load comments from API
-  const loadComments = async () => {
+  const loadComments = useCallback(async () => {
     if (!storyId) return
 
     setLoading(true)
@@ -46,16 +46,17 @@ const CommentSection = ({
       } else {
         setError(data.error?.message || 'Yorumlar yüklenirken bir hata oluştu')
       }
-    } catch (err) {
+    } catch (error) {
+      console.error('Load comments error:', error)
       setError('Yorumlar yüklenirken bir hata oluştu')
     } finally {
       setLoading(false)
     }
-  }
+  }, [storyId, sortBy, token])
 
   useEffect(() => {
     loadComments()
-  }, [storyId, sortBy, token])
+  }, [loadComments])
 
   // Handle new comment submission
   const handleAddComment = async (commentData) => {
@@ -244,6 +245,47 @@ const CommentSection = ({
     }
   }
 
+  // Handle comment report
+  const handleReportComment = async (commentId, reason, description) => {
+    if (!token) return
+
+    try {
+      const response = await fetch(`/api/comments/${commentId}/report`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          reason,
+          description
+        })
+      })
+
+      const data = await response.json()
+      if (data.success) {
+        toast({
+          title: 'Başarılı',
+          description: 'Şikayetiniz başarıyla gönderildi',
+          status: 'success',
+          duration: 3000,
+          isClosable: true
+        })
+      } else {
+        throw new Error(data.error?.message || 'Şikayet gönderilirken bir hata oluştu')
+      }
+    } catch (error) {
+      toast({
+        title: 'Hata',
+        description: error.message,
+        status: 'error',
+        duration: 3000,
+        isClosable: true
+      })
+      throw error
+    }
+  }
+
   const commentCount = comments.length
 
   return (
@@ -302,6 +344,7 @@ const CommentSection = ({
         onDeleteComment={handleDeleteComment}
         onReplyComment={handleReplyComment}
         onReactComment={handleReactComment}
+        onReportComment={handleReportComment}
       />
     </VStack>
   )
