@@ -14,7 +14,6 @@ import {
 } from '../controllers/userSettingsController.js';
 import { authenticateToken } from '../middleware/auth.js';
 import { csrfMiddleware } from '../utils/csrf.js';
-import auth from '../middleware/auth.js';
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -59,7 +58,7 @@ router.get('/:id/stories', getUserStories);
 // Following system routes
 
 // Follow a user
-router.post('/:userId/follow', auth, followRateLimit, async (req, res) => {
+router.post('/:userId/follow', authenticateToken, followRateLimit, async (req, res) => {
   try {
     const followerId = req.user.id;
     const followingId = parseInt(req.params.userId);
@@ -135,7 +134,7 @@ router.post('/:userId/follow', auth, followRateLimit, async (req, res) => {
 });
 
 // Unfollow a user
-router.delete('/:userId/follow', auth, async (req, res) => {
+router.delete('/:userId/follow', authenticateToken, async (req, res) => {
   try {
     const followerId = req.user.id;
     const followingId = parseInt(req.params.userId);

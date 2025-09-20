@@ -1,12 +1,12 @@
 import express from 'express';
 import { PrismaClient } from '@prisma/client';
-import auth from '../middleware/auth.js';
+import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
 const prisma = new PrismaClient();
 
 // Get activity feed for authenticated user
-router.get('/feed', auth, async (req, res) => {
+router.get('/feed', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.id;
     const page = parseInt(req.query.page) || 1;
@@ -182,7 +182,7 @@ router.get('/feed', auth, async (req, res) => {
 });
 
 // Get user's own activities
-router.get('/my-activities', auth, async (req, res) => {
+router.get('/my-activities', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.id;
     const page = parseInt(req.query.page) || 1;
