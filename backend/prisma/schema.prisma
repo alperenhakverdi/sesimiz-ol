@@ -37,6 +37,9 @@ model User {
   passwordTokens      PasswordResetToken[]
   stories             Story[]
   storyReports        StoryReport[]        @relation("StoryReporter")
+  approvedStories     Story[]              @relation("StoryApprovedBy")
+  rejectedStories     Story[]              @relation("StoryRejectedBy")
+  bookmarks           Bookmark[]
   following           UserFollow[]         @relation("UserFollower")
   followers           UserFollow[]         @relation("UserFollowing")
   reportedBy          UserReport[]         @relation("ReportedUser")
@@ -64,18 +67,28 @@ model UserSettings {
 }
 
 model Story {
-  id        Int           @id @default(autoincrement())
-  title     String
-  content   String
-  authorId  Int
-  viewCount Int           @default(0)
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
-  author    User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  reports   StoryReport[]
-  comments  Comment[]
+  id             Int           @id @default(autoincrement())
+  title          String
+  content        String
+  authorId       Int
+  viewCount      Int           @default(0)
+  status         StoryStatus   @default(PENDING)
+  approvedAt     DateTime?
+  approvedById   Int?
+  rejectedAt     DateTime?
+  rejectedById   Int?
+  rejectionReason String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  author         User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  approvedBy     User?         @relation("StoryApprovedBy", fields: [approvedById], references: [id])
+  rejectedBy     User?         @relation("StoryRejectedBy", fields: [rejectedById], references: [id])
+  reports        StoryReport[]
+  comments       Comment[]
+  bookmarks      Bookmark[]
 
   @@index([authorId])
+  @@index([status])
   @@map("stories")
 }
 
@@ -236,6 +249,20 @@ model FeatureFlag {
   @@map("feature_flags")
 }
 
+model Bookmark {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  storyId   Int
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  story     Story    @relation(fields: [storyId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, storyId])
+  @@index([userId])
+  @@index([storyId])
+  @@map("bookmarks")
+}
+
 model Message {
   id         Int       @id @default(autoincrement())
   senderId   Int
@@ -389,5 +416,11 @@ enum OrgStatus {
   PENDING
   ACTIVE
   SUSPENDED
+  REJECTED
+}
+
+enum StoryStatus {
+  PENDING
+  APPROVED
   REJECTED
 }
