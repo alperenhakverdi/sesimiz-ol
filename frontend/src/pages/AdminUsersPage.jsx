@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import api from '../services/api';
 import {
   Box,
   Heading,
@@ -13,6 +14,8 @@ import {
   Badge,
   Button,
   Input,
+  InputGroup,
+  InputLeftElement,
   Select,
   Spinner,
   Alert,
@@ -107,27 +110,16 @@ const AdminUsersPage = () => {
         ...(role && { role })
       });
 
-      const response = await fetch(`/api/admin/users?${params}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
+      const response = await api.get(`/admin/users?${params}`);
 
-      if (!response.ok) {
-        throw new Error('Kullanıcılar yüklenemedi');
-      }
-
-      const data = await response.json();
-
-      if (data.success) {
-        setUsers(data.data.users);
-        setPagination(data.data.pagination);
+      if (response.success) {
+        setUsers(response.data.users);
+        setPagination(response.data.pagination);
       } else {
-        throw new Error(data.error?.message || 'Veri yüklenemedi');
+        throw new Error(response.error?.message || 'Veri yüklenemedi');
       }
     } catch (error) {
-      console.error('Fetch users error:', error);
-      setError(error.message);
+      setError(error.message || 'Kullanıcılar yüklenemedi');
     } finally {
       setLoading(false);
     }
@@ -189,13 +181,17 @@ const AdminUsersPage = () => {
         {/* Filters */}
         <HStack spacing={4} w="full">
           <Box flex="1">
-            <Input
-              placeholder="Kullanıcı adı veya email ile ara..."
-              value={filters.search}
-              onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
-              onKeyPress={(e) => e.key === 'Enter' && handleSearch(e.target.value)}
-              leftElement={<FiSearch />}
-            />
+            <InputGroup>
+              <InputLeftElement pointerEvents="none">
+                <FiSearch color="gray.300" />
+              </InputLeftElement>
+              <Input
+                placeholder="Kullanıcı adı veya email ile ara..."
+                value={filters.search}
+                onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
+                onKeyPress={(e) => e.key === 'Enter' && handleSearch(e.target.value)}
+              />
+            </InputGroup>
           </Box>
           <Select
             placeholder="Tüm Roller"

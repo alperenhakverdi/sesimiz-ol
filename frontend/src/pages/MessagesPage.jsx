@@ -27,9 +27,10 @@ import {
 } from '@chakra-ui/react';
 import { FiSend, FiMoreVertical, FiSlash, FiSearch } from 'react-icons/fi';
 import { useAuth } from '../contexts/AuthContext';
+import api from '../services/api';
 
 const MessagesPage = () => {
-  const { user, token } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const toast = useToast();
   const messagesEndRef = useRef(null);
 
@@ -58,22 +59,16 @@ const MessagesPage = () => {
 
     setSearchLoading(true);
     try {
-      const response = await fetch(`/api/messages/search?q=${encodeURIComponent(query)}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        setSearchResults(data.messages);
+      const response = await api.get(`/messages/search?q=${encodeURIComponent(query)}`);
+      if (response.success) {
+        setSearchResults(response.messages);
       }
     } catch (error) {
       console.error('Search messages error:', error);
     } finally {
       setSearchLoading(false);
     }
-  }, [token]);
+  }, []);
 
   // Debounced search
   useEffect(() => {
@@ -91,39 +86,27 @@ const MessagesPage = () => {
   // Fetch conversations list
   const fetchConversations = useCallback(async () => {
     try {
-      const response = await fetch('/api/messages', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        setConversations(data.conversations);
+      const response = await api.get('/messages');
+      if (response.success) {
+        setConversations(response.conversations || []);
       }
     } catch (error) {
       console.error('Error fetching conversations:', error);
     }
-  }, [token]);
+  }, []);
 
   // Fetch messages for a specific conversation
   const fetchMessages = useCallback(async (userId) => {
     try {
-      const response = await fetch(`/api/messages/${userId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        setMessages(data.messages);
+      const response = await api.get(`/messages/${userId}`);
+      if (response.success) {
+        setMessages(response.messages || []);
         scrollToBottom();
       }
     } catch (error) {
       console.error('Error fetching messages:', error);
     }
-  }, [token, scrollToBottom]);
+  }, [scrollToBottom]);
 
   // Send a new message
   const sendMessage = async () => {
@@ -131,21 +114,13 @@ const MessagesPage = () => {
 
     setSendingMessage(true);
     try {
-      const response = await fetch('/api/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          receiverId: selectedConversation.user.id,
-          content: newMessage.trim()
-        })
+      const response = await api.post('/messages', {
+        receiverId: selectedConversation.user.id,
+        content: newMessage.trim()
       });
 
-      const data = await response.json();
-      if (data.success) {
-        setMessages(prev => [...prev, data.message]);
+      if (response.success) {
+        setMessages(prev => [...prev, response.message]);
         setNewMessage('');
         scrollToBottom();
 
@@ -154,7 +129,7 @@ const MessagesPage = () => {
       } else {
         toast({
           title: 'Hata',
-          description: data.error?.message || 'Mesaj gönderilemedi',
+          description: response.error?.message || 'Mesaj gönderilemedi',
           status: 'error',
           duration: 3000,
           isClosable: true
@@ -177,15 +152,8 @@ const MessagesPage = () => {
   // Block user
   const blockUser = async (userId) => {
     try {
-      const response = await fetch(`/api/messages/block/${userId}`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      const data = await response.json();
-      if (data.success) {
+      const response = await api.post(`/messages/block/${userId}`);
+      if (response.success) {
         toast({
           title: 'Başarılı',
           description: 'Kullanıcı engellendi',
@@ -237,7 +205,7 @@ const MessagesPage = () => {
 
   // Initialize and poll conversations/messages
   useEffect(() => {
-    if (!token) {
+    if (!isAuthenticated) {
       setLoading(false);
       return () => {};
     }
@@ -265,7 +233,7 @@ const MessagesPage = () => {
       isMounted = false;
       clearInterval(interval);
     };
-  }, [token, fetchConversations, fetchMessages, selectedConversation]);
+  }, [isAuthenticated, fetchConversations, fetchMessages, selectedConversation]);
 
   if (loading) {
     return (

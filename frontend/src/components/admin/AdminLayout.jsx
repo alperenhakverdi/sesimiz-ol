@@ -12,9 +12,10 @@ import AdminMobileNav from './AdminMobileNav'
 
 const AdminLayout = ({ children }) => {
   const { isOpen, onOpen, onClose } = useDisclosure()
+  const bgColor = useColorModeValue('gray.50', 'gray.900')
 
   return (
-    <Box minH="100vh" bg={useColorModeValue('gray.50', 'gray.900')}>
+    <Box minH="100vh" bg={bgColor}>
       {/* Desktop Sidebar */}
       <AdminSidebar
         onClose={() => onClose}
@@ -35,16 +36,16 @@ const AdminLayout = ({ children }) => {
         </DrawerContent>
       </Drawer>
 
-      {/* Main Content */}
-      <Box ml={{ base: 0, lg: 60 }} transition="margin-left 0.3s ease">
+      {/* Main Content Area */}
+      <Flex direction="column" ml={{ base: 0, lg: 60 }} minH="100vh">
         {/* Header */}
         <AdminHeader onOpen={onOpen} />
 
         {/* Page Content */}
-        <Box as="main" p={6}>
+        <Box as="main" flex="1" p={{ base: 4, md: 6, lg: 8 }}>
           {children}
         </Box>
-      </Box>
+      </Flex>
     </Box>
   )
 }

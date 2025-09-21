@@ -5,6 +5,7 @@ import StoryStatsWidget from '../components/admin/widgets/StoryStatsWidget'
 import FeatureFlagWidget from '../components/admin/widgets/FeatureFlagWidget'
 import RecentActivityWidget from '../components/admin/widgets/RecentActivityWidget'
 import QuickAccessWidget from '../components/admin/widgets/QuickAccessWidget'
+import { useAuth } from '../contexts/AuthContext'
 
 const AdminDashboardPage = () => {
   return (

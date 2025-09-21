@@ -20,6 +20,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [csrfToken, setCsrfToken] = useState(null)
+  const [renderKey, setRenderKey] = useState(0)
   const { colorMode, setColorMode } = useColorMode()
 
   const applyThemePreference = useCallback((preference) => {
@@ -68,7 +69,17 @@ export const AuthProvider = ({ children }) => {
   const fetchProfile = useCallback(async () => {
     try {
       const response = await api.get('/auth/session')
-      const data = response.data || {}
+      
+      // API interceptor extracts response.data, so response is the full backend response
+      // Backend sends: { success: true, data: { authenticated: true, user: {...}, csrfToken: "..." } }
+      // After interceptor: { success: true, data: { authenticated: true, user: {...}, csrfToken: "..." } }
+      
+      if (!response?.success) {
+        setUser(null)
+        return null
+      }
+      
+      const data = response?.data || {}
 
       if (data?.csrfToken) {
         applyCsrfToken(data.csrfToken)
@@ -83,8 +94,9 @@ export const AuthProvider = ({ children }) => {
       setUser(profile)
       return profile
     } catch (error) {
+      console.error('Session fetch error:', error)
       setUser(null)
-      throw error
+      return null
     }
   }, [applyCsrfToken])
 
@@ -101,6 +113,13 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     initialize()
   }, [initialize])
+
+  // Force re-render when user state changes
+  useEffect(() => {
+    // This effect will run whenever user state changes
+    // It helps ensure components re-render when authentication state changes
+  }, [user])
+
 
   const userSettings = user?.settings
   const themePreference = userSettings?.theme
@@ -171,7 +190,12 @@ export const AuthProvider = ({ children }) => {
     setIsLoading(true)
     try {
       const response = await api.post('/auth/register', requestData)
-      const token = response.data?.csrfToken
+      
+      if (!response?.success) {
+        throw new Error('Registration failed')
+      }
+      
+      const token = response?.data?.csrfToken
       if (token) {
         applyCsrfToken(token)
       }
@@ -190,15 +214,24 @@ export const AuthProvider = ({ children }) => {
         password
       })
 
-      const loggedInUser = response.data?.user || null
-      const token = response.data?.csrfToken
+      // API interceptor extracts response.data, so response is the full backend response
+      if (!response?.success) {
+        setUser(null)
+        return null
+      }
+      
+      const loggedInUser = response?.data?.user || null
+      const token = response?.data?.csrfToken
 
       if (token) {
         applyCsrfToken(token)
       }
 
       if (loggedInUser) {
-        setUser(loggedInUser)
+        // Use a more explicit state update to ensure re-render
+        setUser(() => loggedInUser)
+        // Force a re-render by updating the render key
+        setRenderKey(prev => prev + 1)
         return loggedInUser
       }
       
@@ -206,11 +239,33 @@ export const AuthProvider = ({ children }) => {
       return null
     } catch (error) {
       setUser(null)
-      throw error
+      
+      // Create user-friendly error message
+      let userMessage = 'Giriş işlemi başarısız'
+      
+      if (error?.response?.status === 401) {
+        userMessage = 'Kullanıcı adı/email veya şifre hatalı'
+      } else if (error?.response?.status === 403) {
+        const errorData = error.response.data?.error
+        if (errorData?.code === 'USER_BANNED') {
+          userMessage = 'Hesabınız engellenmiştir'
+        } else if (errorData?.code === 'ACCOUNT_LOCKED') {
+          userMessage = 'Hesabınız geçici olarak kilitlenmiştir'
+        }
+      } else if (error?.response?.status === 429) {
+        userMessage = 'Çok fazla deneme yapıldı. Lütfen daha sonra tekrar deneyin'
+      } else if (error?.code === 'NETWORK_ERROR' || !error?.response) {
+        userMessage = 'Bağlantı hatası. İnternet bağlantınızı kontrol edin'
+      }
+      
+      // Create a new error with user-friendly message
+      const userError = new Error(userMessage)
+      userError.originalError = error
+      throw userError
     } finally {
       setIsLoading(false)
     }
-  }, [applyCsrfToken, setUser])
+  }, [applyCsrfToken])
 
   const logout = useCallback(async () => {
     await forceLogout()
@@ -259,6 +314,11 @@ export const AuthProvider = ({ children }) => {
 
   const updateSettings = useCallback(async (settingsPayload) => {
     const response = await api.put('/users/settings', settingsPayload)
+    
+    if (!response?.success) {
+      throw new Error('Settings update failed')
+    }
+    
     const updatedSettings = response.data?.settings || null
     if (updatedSettings) {
       setUser((prev) => (prev ? { ...prev, settings: updatedSettings } : prev))
@@ -271,14 +331,22 @@ export const AuthProvider = ({ children }) => {
       currentPassword,
       newPassword
     })
-    return response.data?.message || 'Şifre başarıyla güncellendi'
+    
+    if (!response?.success) {
+      throw new Error('Password change failed')
+    }
+    
+    return response.data?.message || response.message || 'Şifre başarıyla güncellendi'
   }, [])
+
+  const isAuthenticated = !!user
+  const isAdmin = user?.role === 'ADMIN'
 
   const value = {
     user,
     isLoading,
-    isAuthenticated: !!user,
-    isAdmin: user?.role === 'ADMIN',
+    isAuthenticated,
+    isAdmin,
     register,
     login,
     logout,
@@ -288,8 +356,10 @@ export const AuthProvider = ({ children }) => {
     changePassword,
     refreshProfile: fetchProfile,
     api,
-    csrfToken
+    csrfToken,
+    renderKey // Add render key to force re-renders when needed
   }
+
 
   return (
     <AuthContext.Provider value={value}>

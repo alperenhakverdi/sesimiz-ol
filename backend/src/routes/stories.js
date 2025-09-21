@@ -65,6 +65,34 @@ const ensureUniqueSlug = async (baseSlug, storyId = null) => {
 // GET /api/stories - List all stories (public)
 router.get('/', getAllStories);
 
+// GET /api/stories/tag-suggestions - Get predefined tag suggestions (must be before /:id route)
+router.get('/tag-suggestions', async (req, res) => {
+  try {
+    const suggestions = TAG_SUGGESTIONS.map(name => ({
+      name,
+      slug: slugifyTag(name)
+    }));
+
+    // Return only predefined suggestions for now (Tag model doesn't exist in current schema)
+    const popular = [];
+
+    res.json({
+      success: true,
+      suggestions,
+      popular
+    });
+  } catch (error) {
+    console.error('Get tag suggestions error:', error);
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Etiket önerileri getirilemedi'
+      }
+    });
+  }
+});
+
 // GET /api/stories/:id - Get story details
 router.get('/:id', optionalAuth, getStoryById);
 
@@ -552,7 +580,7 @@ router.get('/tags', async (req, res) => {
   }
 });
 
-// GET /api/stories/tag-suggestions - Get predefined and popular tag suggestions
+// GET /api/stories/tag-suggestions - Get predefined tag suggestions (simplified)
 router.get('/tag-suggestions', async (req, res) => {
   try {
     const suggestions = TAG_SUGGESTIONS.map(name => ({
@@ -560,20 +588,8 @@ router.get('/tag-suggestions', async (req, res) => {
       slug: slugifyTag(name)
     }));
 
-    const popular = await prisma.tag.findMany({
-      where: {
-        isActive: true,
-        usageCount: { gt: 0 }
-      },
-      orderBy: { usageCount: 'desc' },
-      take: 10,
-      select: {
-        id: true,
-        name: true,
-        slug: true,
-        usageCount: true
-      }
-    });
+    // Return only predefined suggestions for now (Tag model doesn't exist in current schema)
+    const popular = [];
 
     res.json({
       success: true,

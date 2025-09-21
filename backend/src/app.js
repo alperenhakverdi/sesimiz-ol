@@ -6,7 +6,7 @@ import { fileURLToPath } from 'url';
 import { readFileSync } from 'fs';
 import cookieParser from 'cookie-parser';
 import swaggerUi from 'swagger-ui-express';
-import swaggerJsdoc from 'swagger-jsdoc';
+
 // Firebase kullanıyoruz artık
 
 const __filename = fileURLToPath(import.meta.url);

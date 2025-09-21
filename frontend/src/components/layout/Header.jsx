@@ -34,16 +34,23 @@ import NotificationBell from '../notifications/NotificationBell'
 import ColorModeToggle from '../common/ColorModeToggle'
 
 const Header = () => {
+  // All hooks at the top, unconditionally
   const { isOpen, onOpen, onClose } = useDisclosure()
   const { isOpen: isLoginOpen, onOpen: onLoginOpen, onClose: onLoginClose } = useLoginDisclosure()
   const { isAuthenticated, isAdmin } = useAuth()
   const isMobile = useBreakpointValue({ base: true, md: false })
 
-  // Color mode values
+  // All color mode values at once
   const bg = useColorModeValue('white', 'neutral.800')
   const borderColor = useColorModeValue('gray.200', 'neutral.700')
   const linkColor = useColorModeValue('neutral.800', 'neutral.200')
   const linkHoverColor = useColorModeValue('accent.600', 'accent.400')
+  const hoverBg = useColorModeValue('gray.100', 'neutral.700')
+  const activeBg = useColorModeValue('gray.200', 'neutral.600')
+  const overlayBg = useColorModeValue('blackAlpha.600', 'blackAlpha.800')
+  const contentBg = useColorModeValue('white', 'neutral.800')
+  const borderBottomColor = useColorModeValue('gray.200', 'neutral.700')
+  const drawerHoverBg = useColorModeValue('gray.50', 'neutral.700')
   
   const handleShareClick = () => {
     if (!isAuthenticated) {
@@ -58,6 +65,15 @@ const Header = () => {
       </Link>
       <Link as={RouterLink} to="/hikayeler" color={linkColor} _hover={{ color: linkHoverColor, textDecoration: 'underline' }}>
         Hikâyeler
+      </Link>
+      <Link as={RouterLink} to="/stklar" color={linkColor} _hover={{ color: linkHoverColor, textDecoration: 'underline' }}>
+        STK'lar
+      </Link>
+      <Link as={RouterLink} to="/topluluk" color={linkColor} _hover={{ color: linkHoverColor, textDecoration: 'underline' }}>
+        Topluluk
+      </Link>
+      <Link as={RouterLink} to="/duyurular" color={linkColor} _hover={{ color: linkHoverColor, textDecoration: 'underline' }}>
+        Duyurular
       </Link>
       <Link as={RouterLink} to="/hakkinda" color={linkColor} _hover={{ color: linkHoverColor, textDecoration: 'underline' }}>
         Hakkında
@@ -105,7 +121,7 @@ const Header = () => {
                     size="md"
                     aria-label="Mesajlar"
                     color={linkColor}
-                    _hover={{ color: linkHoverColor, bg: useColorModeValue('gray.100', 'neutral.700') }}
+                    _hover={{ color: linkHoverColor, bg: hoverBg }}
                     _focus={{ boxShadow: 'outline' }}
                     minW="40px"
                     minH="40px"
@@ -140,9 +156,9 @@ const Header = () => {
                   size="lg"
                   aria-label="Mesajlar"
                   color={linkColor}
-                  _hover={{ color: linkHoverColor, bg: useColorModeValue('gray.100', 'neutral.700') }}
+                  _hover={{ color: linkHoverColor, bg: hoverBg }}
                   _focus={{ boxShadow: 'outline' }}
-                  _active={{ bg: useColorModeValue('gray.200', 'neutral.600') }}
+                  _active={{ bg: activeBg }}
                   minW="44px"
                   minH="44px"
                 />
@@ -167,9 +183,9 @@ const Header = () => {
                 onClick={onOpen}
                 variant="ghost"
                 color={linkColor}
-                _hover={{ color: linkHoverColor, bg: useColorModeValue('gray.100', 'neutral.700') }}
+                _hover={{ color: linkHoverColor, bg: hoverBg }}
                 _focus={{ boxShadow: 'outline' }}
-                _active={{ bg: useColorModeValue('gray.200', 'neutral.600') }}
+                _active={{ bg: activeBg }}
                 borderRadius="md"
                 minW="44px"
                 minH="44px"
@@ -179,17 +195,17 @@ const Header = () => {
 
           {/* Mobile Drawer */}
           <Drawer isOpen={isOpen} placement="right" onClose={onClose} size="md">
-            <DrawerOverlay bg={useColorModeValue('blackAlpha.600', 'blackAlpha.800')} />
-            <DrawerContent bg={useColorModeValue('white', 'neutral.800')} maxW="320px">
+            <DrawerOverlay bg={overlayBg} />
+            <DrawerContent bg={contentBg} maxW="320px">
               <DrawerCloseButton
                 size="lg"
                 color={linkColor}
-                _hover={{ color: linkHoverColor, bg: useColorModeValue('gray.100', 'neutral.700') }}
+                _hover={{ color: linkHoverColor, bg: hoverBg }}
                 _focus={{ boxShadow: 'outline' }}
                 top="16px"
                 right="16px"
               />
-              <DrawerHeader borderBottomWidth="1px" borderColor={borderColor} py={6}>
+              <DrawerHeader borderBottomWidth="1px" borderColor={borderBottomColor} py={6}>
                 <Heading size="md" color="accent.500">
                   Sesimiz Ol
                 </Heading>
@@ -203,7 +219,7 @@ const Header = () => {
                       fontSize="xl"
                       fontWeight="semibold"
                       color={linkColor}
-                      _hover={{ color: linkHoverColor, textDecoration: 'none', bg: useColorModeValue('gray.50', 'neutral.700') }}
+                      _hover={{ color: linkHoverColor, textDecoration: 'none', bg: drawerHoverBg }}
                       _focus={{ boxShadow: 'outline' }}
                       onClick={onClose}
                       p={3}
@@ -221,7 +237,7 @@ const Header = () => {
                       fontSize="xl"
                       fontWeight="semibold"
                       color={linkColor}
-                      _hover={{ color: linkHoverColor, textDecoration: 'none', bg: useColorModeValue('gray.50', 'neutral.700') }}
+                      _hover={{ color: linkHoverColor, textDecoration: 'none', bg: drawerHoverBg }}
                       _focus={{ boxShadow: 'outline' }}
                       onClick={onClose}
                       p={3}
@@ -235,11 +251,65 @@ const Header = () => {
                     </Link>
                     <Link
                       as={RouterLink}
+                      to="/stklar"
+                      fontSize="xl"
+                      fontWeight="semibold"
+                      color={linkColor}
+                      _hover={{ color: linkHoverColor, textDecoration: 'none', bg: drawerHoverBg }}
+                      _focus={{ boxShadow: 'outline' }}
+                      onClick={onClose}
+                      p={3}
+                      borderRadius="lg"
+                      transition="all 0.2s"
+                      minH="56px"
+                      display="flex"
+                      alignItems="center"
+                    >
+                      STK'lar
+                    </Link>
+                    <Link
+                      as={RouterLink}
+                      to="/topluluk"
+                      fontSize="xl"
+                      fontWeight="semibold"
+                      color={linkColor}
+                      _hover={{ color: linkHoverColor, textDecoration: 'none', bg: drawerHoverBg }}
+                      _focus={{ boxShadow: 'outline' }}
+                      onClick={onClose}
+                      p={3}
+                      borderRadius="lg"
+                      transition="all 0.2s"
+                      minH="56px"
+                      display="flex"
+                      alignItems="center"
+                    >
+                      Topluluk
+                    </Link>
+                    <Link
+                      as={RouterLink}
+                      to="/duyurular"
+                      fontSize="xl"
+                      fontWeight="semibold"
+                      color={linkColor}
+                      _hover={{ color: linkHoverColor, textDecoration: 'none', bg: drawerHoverBg }}
+                      _focus={{ boxShadow: 'outline' }}
+                      onClick={onClose}
+                      p={3}
+                      borderRadius="lg"
+                      transition="all 0.2s"
+                      minH="56px"
+                      display="flex"
+                      alignItems="center"
+                    >
+                      Duyurular
+                    </Link>
+                    <Link
+                      as={RouterLink}
                       to="/hakkinda"
                       fontSize="xl"
                       fontWeight="semibold"
                       color={linkColor}
-                      _hover={{ color: linkHoverColor, textDecoration: 'none', bg: useColorModeValue('gray.50', 'neutral.700') }}
+                      _hover={{ color: linkHoverColor, textDecoration: 'none', bg: drawerHoverBg }}
                       _focus={{ boxShadow: 'outline' }}
                       onClick={onClose}
                       p={3}
@@ -258,7 +328,7 @@ const Header = () => {
                         fontSize="xl"
                         fontWeight="semibold"
                         color={linkColor}
-                        _hover={{ color: linkHoverColor, textDecoration: 'none', bg: useColorModeValue('gray.50', 'neutral.700') }}
+                        _hover={{ color: linkHoverColor, textDecoration: 'none', bg: drawerHoverBg }}
                         _focus={{ boxShadow: 'outline' }}
                         onClick={onClose}
                         p={3}
@@ -278,7 +348,7 @@ const Header = () => {
                         fontSize="xl"
                         fontWeight="semibold"
                         color={linkColor}
-                        _hover={{ color: linkHoverColor, textDecoration: 'none', bg: useColorModeValue('gray.50', 'neutral.700') }}
+                        _hover={{ color: linkHoverColor, textDecoration: 'none', bg: drawerHoverBg }}
                         _focus={{ boxShadow: 'outline' }}
                         onClick={onClose}
                         p={3}
@@ -293,7 +363,7 @@ const Header = () => {
                     )}
                   </VStack>
 
-                  <Box pt={6} borderTopWidth="1px" borderColor={borderColor}>
+                  <Box pt={6} borderTopWidth="1px" borderColor={borderBottomColor}>
                     <VStack spacing={4} align="stretch">
                       <HStack justify="space-between">
                         <ColorModeToggle size="lg" />

@@ -86,14 +86,6 @@ const AboutPage = () => {
             <Text fontSize={{ base: 'lg', md: 'xl' }} color="primary.600" maxW="3xl">
               "Sesimiz Ol", kadınların hikâyelerini güvenle paylaşabilecekleri anonim bir dijital platformdur.
             </Text>
-            <HStack spacing={4} flexWrap="wrap" justify="center">
-              <Button colorScheme="accent" size="lg">
-                Hikayeni Paylaş
-              </Button>
-              <Button variant="outline" size="lg">
-                Giriş Yap
-              </Button>
-            </HStack>
           </VStack>
         </ProgressiveLoader>
 

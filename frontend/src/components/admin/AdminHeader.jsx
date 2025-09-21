@@ -55,14 +55,17 @@ const AdminHeader = ({ onOpen, ...rest }) => {
 
   return (
     <Flex
-      ml={{ base: 0, lg: 60 }}
+      ml={{ base: 0, lg: 0 }}
       px={{ base: 4, lg: 6 }}
       height="20"
       alignItems="center"
       bg={useColorModeValue('white', 'gray.900')}
       borderBottomWidth="1px"
       borderBottomColor={useColorModeValue('gray.200', 'gray.700')}
-      justifyContent={{ base: 'space-between', lg: 'flex-end' }}
+      justifyContent={{ base: 'space-between', lg: 'space-between' }}
+      position="sticky"
+      top={0}
+      zIndex={1}
       {...rest}
     >
       {/* Mobile menu button */}

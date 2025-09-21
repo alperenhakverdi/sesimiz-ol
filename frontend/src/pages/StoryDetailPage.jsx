@@ -28,7 +28,7 @@ import SendMessageButton from '../components/story/SendMessageButton'
 
 const StoryDetailPage = () => {
   const { id } = useParams()
-  const { getCurrentNickname } = useAuth()
+  const { user } = useAuth()
   const [story, setStory] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -75,8 +75,8 @@ const StoryDetailPage = () => {
       try {
         setLoading(true)
         const response = await storyAPI.getById(id)
-        console.log('✅ Story loaded:', response.data.story.title)
-        setStory(response.data.story)
+        console.log('✅ Story loaded:', response.story.title)
+        setStory(response.story)
       } catch (err) {
         setError(err.message)
       } finally {
@@ -266,7 +266,7 @@ const StoryDetailPage = () => {
         <Box bg="neutral.50" p={6} borderRadius="lg">
           <CommentSection 
             storyId={id}
-            currentUserNickname={getCurrentNickname()}
+            currentUserNickname={user?.nickname}
           />
         </Box>
 

@@ -58,34 +58,29 @@ const LoginModal = ({ isOpen, onClose }) => {
     setIsLoading(true)
 
     try {
-      await login(nickname, password)
+      const loggedInUser = await login(nickname, password)
       
-      toast({
-        title: "Başarıyla giriş yapıldı",
-        description: `Hoş geldin!`,
-        status: "success",
-        duration: 3000,
-        isClosable: true,
-      })
-      
-      // Reset form and close modal
-      setNickname('')
-      setPassword('')
-      onClose()
+      if (loggedInUser) {
+        toast({
+          title: "Başarıyla giriş yapıldı",
+          description: `Hoş geldin ${loggedInUser.nickname}!`,
+          status: "success",
+          duration: 3000,
+          isClosable: true,
+        })
+        
+        // Reset form and close modal
+        setNickname('')
+        setPassword('')
+        onClose()
+      } else {
+        throw new Error('Giriş başarısız - kullanıcı bilgileri alınamadı')
+      }
       
     } catch (error) {
-      // More user-friendly error messages
-      console.error('Login modal error:', error)
+      // Use the user-friendly error message from AuthContext
       const errorMessage = error.message || 'Giriş işlemi başarısız'
-      
-      if (errorMessage.includes('401') || errorMessage.includes('Unauthorized') || 
-          errorMessage.includes('invalid') || errorMessage.includes('wrong')) {
-        setError('Kullanıcı adı veya şifre hatalı. Lütfen tekrar deneyin.')
-      } else if (errorMessage.includes('network') || errorMessage.includes('Network')) {
-        setError('Bağlantı hatası. Lütfen internet bağlantınızı kontrol edin.')
-      } else {
-        setError(errorMessage)
-      }
+      setError(errorMessage)
     } finally {
       setIsLoading(false)
     }

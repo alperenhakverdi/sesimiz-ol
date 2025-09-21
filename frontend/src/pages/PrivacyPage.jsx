@@ -12,7 +12,12 @@ import {
   Icon,
   SimpleGrid,
   Alert,
-  AlertIcon
+  AlertIcon,
+  Accordion,
+  AccordionItem,
+  AccordionButton,
+  AccordionPanel,
+  AccordionIcon
 } from '@chakra-ui/react'
 import { Link as RouterLink } from 'react-router-dom'
 import { LockIcon, InfoIcon, CheckCircleIcon, WarningIcon } from '@chakra-ui/icons'

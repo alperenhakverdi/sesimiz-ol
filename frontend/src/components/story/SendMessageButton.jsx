@@ -19,10 +19,11 @@ import {
 import { FiMessageCircle } from 'react-icons/fi';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import api from '../../services/api';
 
 const SendMessageButton = ({ storyAuthor, storyTitle }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const { user, token } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const [message, setMessage] = useState('');
   const [sending, setSending] = useState(false);
   const toast = useToast();
@@ -33,20 +34,12 @@ const SendMessageButton = ({ storyAuthor, storyTitle }) => {
 
     setSending(true);
     try {
-      const response = await fetch('/api/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          receiverId: storyAuthor.id,
-          content: message.trim()
-        })
+      const response = await api.post('/messages', {
+        receiverId: storyAuthor.id,
+        content: message.trim()
       });
 
-      const data = await response.json();
-      if (data.success) {
+      if (response.success) {
         toast({
           title: 'Başarılı',
           description: 'Mesajınız gönderildi',
@@ -63,7 +56,7 @@ const SendMessageButton = ({ storyAuthor, storyTitle }) => {
       } else {
         toast({
           title: 'Hata',
-          description: data.error?.message || 'Mesaj gönderilemedi',
+          description: response.error?.message || 'Mesaj gönderilemedi',
           status: 'error',
           duration: 3000,
           isClosable: true
@@ -84,7 +77,7 @@ const SendMessageButton = ({ storyAuthor, storyTitle }) => {
   };
 
   const handleOpen = () => {
-    if (!user) {
+    if (!isAuthenticated) {
       toast({
         title: 'Giriş Gerekli',
         description: 'Mesaj göndermek için giriş yapmanız gerekiyor',

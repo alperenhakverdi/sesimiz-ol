@@ -14,6 +14,7 @@ import {
   AlertIcon
 } from '@chakra-ui/react';
 import { FiFileText, FiEdit, FiEye } from 'react-icons/fi';
+import api from '../../../services/api';
 
 const StatCard = ({ title, value, change, changeType, icon, color }) => {
   const bgColor = useColorModeValue('white', 'gray.800');
@@ -70,28 +71,15 @@ const StoryStatsWidget = () => {
         setLoading(true);
         setError(null);
 
-        const response = await fetch('/api/admin/metrics', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        });
+        const response = await api.get('/admin/metrics');
 
-        if (!response.ok) {
-          throw new Error('Hikaye istatistikleri yüklenemedi');
-        }
-
-        const data = await response.json();
-
-        if (data.success) {
-          setStats(data.data.stories);
+        if (response.success) {
+          setStats(response.data.stories);
         } else {
-          throw new Error(data.error?.message || 'Veri yüklenemedi');
+          throw new Error(response.error?.message || 'Veri yüklenemedi');
         }
       } catch (error) {
-        console.error('Story stats error:', error);
-        setError(error.message);
+        setError(error.message || 'Hikaye istatistikleri yüklenemedi');
       } finally {
         setLoading(false);
       }

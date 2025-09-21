@@ -1,4 +1,5 @@
 import express from 'express';
+import { authenticateToken } from '../../middleware/auth.js';
 import { requireFeature, requireRole } from '../../middleware/authorization.js';
 import {
   listAdminUsers,
@@ -21,6 +22,8 @@ import { getMetrics } from '../../controllers/adminMetricsController.js';
 
 const router = express.Router();
 
+// First authenticate the user, then check admin role
+router.use(authenticateToken);
 router.use(requireFeature('adminPanel'));
 router.use(requireRole('ADMIN'));
 

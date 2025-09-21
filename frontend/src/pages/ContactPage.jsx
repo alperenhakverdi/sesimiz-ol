@@ -13,8 +13,15 @@ import {
   Alert,
   AlertIcon,
   Card,
-  CardBody
+  CardBody,
+  FormControl,
+  FormLabel,
+  Input,
+  Textarea,
+  Select,
+  useToast
 } from '@chakra-ui/react'
+import { useState } from 'react'
 import { 
   EmailIcon, 
   InfoIcon, 
@@ -27,6 +34,43 @@ import { Link as RouterLink } from 'react-router-dom'
 import ProgressiveLoader from '../components/animations/ProgressiveLoader'
 
 const ContactPage = () => {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    subject: '',
+    message: ''
+  })
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const toast = useToast()
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target
+    setFormData(prev => ({ ...prev, [name]: value }))
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setIsSubmitting(true)
+
+    // Simulate form submission
+    setTimeout(() => {
+      toast({
+        title: 'Mesajınız gönderildi!',
+        description: 'En kısa sürede size geri dönüş yapacağız.',
+        status: 'success',
+        duration: 5000,
+        isClosable: true
+      })
+      setFormData({
+        name: '',
+        email: '',
+        subject: '',
+        message: ''
+      })
+      setIsSubmitting(false)
+    }, 2000)
+  }
+
   const contactOptions = [
     {
       icon: ChatIcon,
@@ -124,6 +168,84 @@ const ContactPage = () => {
             </Card>
           ))}
           </SimpleGrid>
+        </ProgressiveLoader>
+
+        <Divider borderColor="neutral.300" />
+
+        {/* Contact Form */}
+        <ProgressiveLoader delay={500} type="fade">
+          <Box bg="white" p={8} borderRadius="lg" borderWidth="1px" borderColor="neutral.200" shadow="sm">
+            <VStack spacing={6} align="stretch">
+              <VStack spacing={2} textAlign="center">
+                <Heading size="lg" color="accent.600">
+                  Doğrudan İletişim
+                </Heading>
+                <Text color="neutral.600">
+                  Özel bir konunuz varsa aşağıdaki formu kullanarak bizimle iletişime geçebilirsiniz
+                </Text>
+              </VStack>
+
+              <form onSubmit={handleSubmit}>
+                <VStack spacing={4}>
+                  <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4} w="full">
+                    <FormControl isRequired>
+                      <FormLabel>İsim</FormLabel>
+                      <Input
+                        name="name"
+                        value={formData.name}
+                        onChange={handleInputChange}
+                        placeholder="Adınız"
+                      />
+                    </FormControl>
+
+                    <FormControl isRequired>
+                      <FormLabel>E-posta</FormLabel>
+                      <Input
+                        name="email"
+                        type="email"
+                        value={formData.email}
+                        onChange={handleInputChange}
+                        placeholder="ornek@email.com"
+                      />
+                    </FormControl>
+                  </SimpleGrid>
+
+                  <FormControl isRequired>
+                    <FormLabel>Konu</FormLabel>
+                    <Input
+                      name="subject"
+                      value={formData.subject}
+                      onChange={handleInputChange}
+                      placeholder="Konu başlığı"
+                    />
+                  </FormControl>
+
+                  <FormControl isRequired>
+                    <FormLabel>Mesaj</FormLabel>
+                    <Textarea
+                      name="message"
+                      value={formData.message}
+                      onChange={handleInputChange}
+                      placeholder="Mesajınızı buraya yazın..."
+                      rows={5}
+                    />
+                  </FormControl>
+
+                  <Button
+                    type="submit"
+                    colorScheme="accent"
+                    size="lg"
+                    isLoading={isSubmitting}
+                    loadingText="Gönderiliyor..."
+                    w={{ base: 'full', md: 'auto' }}
+                    px={8}
+                  >
+                    Mesaj Gönder
+                  </Button>
+                </VStack>
+              </form>
+            </VStack>
+          </Box>
         </ProgressiveLoader>
 
         <Divider borderColor="neutral.300" />

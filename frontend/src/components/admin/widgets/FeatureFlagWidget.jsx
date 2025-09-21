@@ -15,6 +15,7 @@ import {
   Flex,
   Divider
 } from '@chakra-ui/react';
+import api from '../../../services/api';
 
 const FeatureFlagItem = ({ flag, onToggle }) => {
   const [isUpdating, setIsUpdating] = useState(false);
@@ -82,24 +83,12 @@ const FeatureFlagWidget = () => {
     try {
       setError(null);
 
-      const response = await fetch('/api/admin/feature-flags', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
+      const response = await api.get('/admin/feature-flags');
 
-      if (!response.ok) {
-        throw new Error('Feature flag\'ları yüklenemedi');
-      }
-
-      const data = await response.json();
-
-      if (data.success) {
+      if (response.success) {
         // Combine database flags with defaults
-        const dbFlags = data.data.flags || [];
-        const defaults = data.data.defaults || {};
+        const dbFlags = response.data.flags || [];
+        const defaults = response.data.defaults || {};
 
         // Create a unified flag list
         const flagList = Object.keys(defaults).map(key => {
@@ -114,11 +103,10 @@ const FeatureFlagWidget = () => {
 
         setFlags(flagList);
       } else {
-        throw new Error(data.error?.message || 'Veri yüklenemedi');
+        throw new Error(response.error?.message || 'Veri yüklenemedi');
       }
     } catch (error) {
-      console.error('Feature flags error:', error);
-      setError(error.message);
+      setError(error.message || 'Feature flag\'ları yüklenemedi');
     } finally {
       setLoading(false);
     }
@@ -126,22 +114,9 @@ const FeatureFlagWidget = () => {
 
   const handleToggleFlag = async (key, enabled) => {
     try {
-      const response = await fetch(`/api/admin/feature-flags/${key}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({ enabled })
-      });
+      const response = await api.patch(`/admin/feature-flags/${key}`, { enabled });
 
-      if (!response.ok) {
-        throw new Error('Feature flag güncellenemedi');
-      }
-
-      const data = await response.json();
-
-      if (data.success) {
+      if (response.success) {
         // Update local state
         setFlags(prevFlags =>
           prevFlags.map(flag =>

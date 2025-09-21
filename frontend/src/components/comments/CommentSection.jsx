@@ -12,13 +12,14 @@ import { useState, useEffect, useCallback } from 'react'
 import CommentForm from './CommentForm'
 import CommentList from './CommentList'
 import { useAuth } from '../../contexts/AuthContext'
+import { commentAPI } from '../../services/api'
 
 const CommentSection = ({
   storyId,
   currentUserNickname = null,
   title = "Yorumlar"
 }) => {
-  const { token } = useAuth()
+  const { isAuthenticated } = useAuth()
   const toast = useToast()
   const [comments, setComments] = useState([])
   const [loading, setLoading] = useState(false)
@@ -34,13 +35,7 @@ const CommentSection = ({
     setError(null)
 
     try {
-      const response = await fetch(`/api/comments/story/${storyId}?sort=${sortBy}`, {
-        headers: token ? {
-          'Authorization': `Bearer ${token}`
-        } : {}
-      })
-
-      const data = await response.json()
+      const data = await commentAPI.getByStory(storyId, sortBy)
       if (data.success) {
         setComments(data.comments)
       } else {
@@ -52,7 +47,7 @@ const CommentSection = ({
     } finally {
       setLoading(false)
     }
-  }, [storyId, sortBy, token])
+  }, [storyId, sortBy])
 
   useEffect(() => {
     loadComments()
@@ -60,7 +55,7 @@ const CommentSection = ({
 
   // Handle new comment submission
   const handleAddComment = async (commentData) => {
-    if (!token) {
+    if (!isAuthenticated) {
       toast({
         title: 'Hata',
         description: 'Yorum yapmak için giriş yapmanız gerekiyor',
@@ -74,19 +69,11 @@ const CommentSection = ({
     setIsSubmitting(true)
 
     try {
-      const response = await fetch('/api/comments', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          content: commentData.content,
-          storyId: parseInt(storyId)
-        })
+      const data = await commentAPI.create({
+        content: commentData.content,
+        storyId: parseInt(storyId)
       })
 
-      const data = await response.json()
       if (data.success) {
         // Add to beginning of list (newest first) if sorting by newest
         if (sortBy === 'newest') {
@@ -122,17 +109,10 @@ const CommentSection = ({
 
   // Handle comment deletion
   const handleDeleteComment = async (commentId) => {
-    if (!token) return
+    if (!isAuthenticated) return
 
     try {
-      const response = await fetch(`/api/comments/${commentId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      })
-
-      const data = await response.json()
+      const data = await commentAPI.delete(commentId)
       if (data.success) {
         // Remove from local state
         setComments(prev => prev.filter(comment => comment.id !== commentId))
@@ -161,23 +141,15 @@ const CommentSection = ({
 
   // Handle comment reply
   const handleReplyComment = async (parentId, content) => {
-    if (!token) return
+    if (!isAuthenticated) return
 
     try {
-      const response = await fetch('/api/comments', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          content,
-          storyId: parseInt(storyId),
-          parentId: parseInt(parentId)
-        })
+      const data = await commentAPI.create({
+        content,
+        storyId: parseInt(storyId),
+        parentId: parseInt(parentId)
       })
 
-      const data = await response.json()
       if (data.success) {
         // Reload comments to show the new reply
         loadComments()
@@ -198,17 +170,10 @@ const CommentSection = ({
 
   // Handle comment reaction
   const handleReactComment = async (commentId) => {
-    if (!token) return
+    if (!isAuthenticated) return
 
     try {
-      const response = await fetch(`/api/comments/${commentId}/react`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      })
-
-      const data = await response.json()
+      const data = await commentAPI.react(commentId)
       if (data.success) {
         // Update comment in local state
         setComments(prev => prev.map(comment => {
@@ -247,22 +212,14 @@ const CommentSection = ({
 
   // Handle comment report
   const handleReportComment = async (commentId, reason, description) => {
-    if (!token) return
+    if (!isAuthenticated) return
 
     try {
-      const response = await fetch(`/api/comments/${commentId}/report`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          reason,
-          description
-        })
+      const data = await commentAPI.report(commentId, {
+        reason,
+        description
       })
 
-      const data = await response.json()
       if (data.success) {
         toast({
           title: 'Başarılı',

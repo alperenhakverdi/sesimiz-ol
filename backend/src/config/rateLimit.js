@@ -12,8 +12,8 @@ const defaultWindowMs = 15 * 60 * 1000;
 const generalWindowMs = parsePositiveInt(process.env.RATE_LIMIT_GENERAL_WINDOW_MS, defaultWindowMs);
 const generalMax = parsePositiveInt(process.env.RATE_LIMIT_GENERAL_MAX, 100);
 
-const authWindowMs = parsePositiveInt(process.env.RATE_LIMIT_AUTH_WINDOW_MS, generalWindowMs);
-const authMax = parsePositiveInt(process.env.RATE_LIMIT_AUTH_MAX, 5);
+const authWindowMs = parsePositiveInt(process.env.RATE_LIMIT_AUTH_WINDOW_MS, process.env.NODE_ENV === 'development' ? 60 * 1000 : generalWindowMs);
+const authMax = parsePositiveInt(process.env.RATE_LIMIT_AUTH_MAX, process.env.NODE_ENV === 'development' ? 50 : 5);
 
 const uploadWindowMs = parsePositiveInt(process.env.RATE_LIMIT_UPLOAD_WINDOW_MS, generalWindowMs);
 const uploadMax = parsePositiveInt(process.env.RATE_LIMIT_UPLOAD_MAX, 10);

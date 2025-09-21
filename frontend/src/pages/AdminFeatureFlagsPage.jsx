@@ -25,6 +25,7 @@ import {
   Input,
   Textarea
 } from '@chakra-ui/react';
+import api from '../services/api';
 import { FiPlus, FiEdit } from 'react-icons/fi';
 import AdminLayout from '../components/admin/AdminLayout';
 import FeatureFlagEditModal from '../components/admin/modals/FeatureFlagEditModal';
@@ -43,24 +44,12 @@ const FeatureFlagPage = () => {
       setLoading(true);
       setError(null);
 
-      const response = await fetch('/api/admin/feature-flags', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
+      const response = await api.get('/admin/feature-flags');
 
-      if (!response.ok) {
-        throw new Error('Feature flag\'ları yüklenemedi');
-      }
-
-      const data = await response.json();
-
-      if (data.success) {
+      if (response.success) {
         // Combine database flags with defaults
-        const dbFlags = data.data.flags || [];
-        const defaults = data.data.defaults || {};
+        const dbFlags = response.data.flags || [];
+        const defaults = response.data.defaults || {};
 
         // Create a unified flag list
         const flagList = Object.keys(defaults).map(key => {
@@ -76,11 +65,10 @@ const FeatureFlagPage = () => {
 
         setFlags(flagList);
       } else {
-        throw new Error(data.error?.message || 'Veri yüklenemedi');
+        throw new Error(response.error?.message || 'Veri yüklenemedi');
       }
     } catch (err) {
-      console.error('Feature flags error:', err);
-      setError(err.message);
+      setError(err.message || 'Feature flags yüklenemedi');
     } finally {
       setLoading(false);
     }
@@ -88,22 +76,9 @@ const FeatureFlagPage = () => {
 
   const handleToggleFlag = async (key, enabled) => {
     try {
-      const response = await fetch(`/api/admin/feature-flags/${key}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({ enabled })
-      });
+      const response = await api.patch(`/admin/feature-flags/${key}`, { enabled });
 
-      if (!response.ok) {
-        throw new Error('Feature flag güncellenemedi');
-      }
-
-      const data = await response.json();
-
-      if (data.success) {
+      if (response.success) {
         // Update local state
         setFlags(prevFlags =>
           prevFlags.map(flag =>
@@ -119,10 +94,9 @@ const FeatureFlagPage = () => {
           isClosable: true,
         });
       } else {
-        throw new Error(data.error?.message || 'Güncelleme başarısız');
+        throw new Error(response.error?.message || 'Güncelleme başarısız');
       }
     } catch (err) {
-      console.error('Toggle feature flag error:', err);
       toast({
         title: 'Hata',
         description: err.message,

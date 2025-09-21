@@ -15,6 +15,7 @@ import {
   Flex,
   Divider
 } from '@chakra-ui/react';
+import api from '../../../services/api';
 import { FiUsers, FiFileText, FiClock } from 'react-icons/fi';
 
 const ActivityIcon = ({ type }) => {
@@ -110,28 +111,15 @@ const RecentActivityWidget = () => {
         setLoading(true);
         setError(null);
 
-        const response = await fetch('/api/admin/metrics', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        });
+        const response = await api.get('/admin/metrics');
 
-        if (!response.ok) {
-          throw new Error('Son aktiviteler yüklenemedi');
-        }
-
-        const data = await response.json();
-
-        if (data.success) {
-          setActivities(data.data.recentActivity || []);
+        if (response.success) {
+          setActivities(response.data.recentActivity || []);
         } else {
-          throw new Error(data.error?.message || 'Veri yüklenemedi');
+          throw new Error(response.error?.message || 'Veri yüklenemedi');
         }
       } catch (error) {
-        console.error('Recent activity error:', error);
-        setError(error.message);
+        setError(error.message || 'Son aktiviteler yüklenemedi');
       } finally {
         setLoading(false);
       }
@@ -190,8 +178,8 @@ const RecentActivityWidget = () => {
 
       {activities.length > 0 ? (
         <VStack spacing={0} maxH="400px" overflowY="auto">
-          {activities.map((activity) => (
-            <ActivityItem key={activity.id} activity={activity} />
+          {activities.map((activity, index) => (
+            <ActivityItem key={activity.id || `${activity.type}-${activity.user}-${index}`} activity={activity} />
           ))}
         </VStack>
       ) : (

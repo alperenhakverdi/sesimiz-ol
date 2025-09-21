@@ -18,7 +18,7 @@ import {
   FiSettings,
   FiFlag,
   FiHeart,
-  FiMegaphone
+  FiBell
 } from 'react-icons/fi'
 import { useAuth } from '../../contexts/AuthContext'
 
@@ -28,7 +28,7 @@ const LinkItems = [
   { name: 'Hikayeler', icon: FiFileText, href: '/admin/stories' },
   { name: 'STK\'lar', icon: FiHeart, href: '/admin/organizations' },
   { name: 'Feature Flags', icon: FiFlag, href: '/admin/feature-flags' },
-  { name: 'Duyurular', icon: FiMegaphone, href: '/admin/announcements' },
+  { name: 'Duyurular', icon: FiBell, href: '/admin/announcements' },
   { name: 'Ayarlar', icon: FiSettings, href: '/admin/settings' }
 ]
 
@@ -41,29 +41,40 @@ const AdminSidebar = ({ onClose, ...rest }) => {
 
   return (
     <Box
-      transition="3s ease"
+      transition="0.3s ease"
       bg={sidebarBg}
       borderRight="1px"
       borderRightColor={sidebarBorderColor}
       w={{ base: 'full', lg: 60 }}
       pos="fixed"
-      h="full"
+      h="100vh"
+      overflowY="auto"
+      zIndex={2}
       {...rest}
     >
-      <Flex h="20" alignItems="center" mx="8" justifyContent="space-between">
-        <HStack spacing={3}>
-          <Avatar size="sm" name="Admin" bg="brand.500" />
-          <VStack align="start" spacing={0}>
-            <Text fontSize="sm" fontWeight="bold">
-              Admin Panel
-            </Text>
-            <Badge size="sm" colorScheme="brand">
-              {user?.nickname}
-            </Badge>
-          </VStack>
+      <Flex h="20" alignItems="center" mx="6" justifyContent="space-between">
+        <HStack spacing={3} as={RouterLink} to="/" _hover={{ textDecoration: 'none' }}>
+          <Text fontSize="xl" fontWeight="bold" color="brand.500">
+            Sesimiz Ol
+          </Text>
         </HStack>
         <CloseButton display={{ base: 'flex', lg: 'none' }} onClick={onClose} />
       </Flex>
+
+      {/* Admin User Info */}
+      <Box mx="6" mb="6" p="4" bg={useColorModeValue('gray.50', 'gray.800')} borderRadius="lg">
+        <HStack spacing={3}>
+          <Avatar size="sm" name={user?.nickname} src={user?.avatar} bg="brand.500" />
+          <VStack align="start" spacing={0}>
+            <Text fontSize="sm" fontWeight="semibold">
+              {user?.nickname}
+            </Text>
+            <Badge size="sm" colorScheme="brand" variant="subtle">
+              Admin
+            </Badge>
+          </VStack>
+        </HStack>
+      </Box>
 
       <VStack align="stretch" spacing={1} px={4}>
         {LinkItems.map((link) => (

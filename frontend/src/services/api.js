@@ -49,8 +49,10 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config || {};
     const status = error.response?.status;
+    const url = originalRequest.url || '';
 
-    if (status === 401 && !originalRequest._retry) {
+    // Don't try to refresh token for session endpoint or if already retried
+    if (status === 401 && !originalRequest._retry && !url.includes('/auth/session')) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           addToFailedQueue({ resolve, reject });
@@ -61,22 +63,23 @@ api.interceptors.response.use(
       setIsRefreshing(true);
 
       try {
-        console.log("Attempting token refresh...");
         const refreshResponse = await axios.post(
           `${API_BASE_URL}/auth/refresh`,
           {},
           { withCredentials: true }
         );
-        const newCsrf = refreshResponse.data?.data?.csrfToken;
+        const newCsrf = refreshResponse.data?.csrfToken;
         if (newCsrf) {
           csrfTokenHandler(newCsrf);
         }
         processQueue(null);
         return api(originalRequest);
       } catch (refreshError) {
-        console.error("Token refresh failed:", refreshError);
         processQueue(refreshError);
-        await logoutHandler({ skipServer: true });
+        // Only call logout if it's not a session check
+        if (!url.includes('/auth/session')) {
+          await logoutHandler({ skipServer: true });
+        }
         return Promise.reject(refreshError);
       } finally {
         setIsRefreshing(false);
@@ -185,6 +188,34 @@ export const notificationAPI = {
   },
   markAll: async () => {
     return await api.put('/notifications/all/read');
+  }
+};
+
+// Comments API functions
+export const commentAPI = {
+  // Get comments for a story
+  getByStory: async (storyId, sort = 'newest') => {
+    return await api.get(`/comments/story/${storyId}?sort=${sort}`);
+  },
+
+  // Create new comment
+  create: async (commentData) => {
+    return await api.post('/comments', commentData);
+  },
+
+  // Delete comment
+  delete: async (commentId) => {
+    return await api.delete(`/comments/${commentId}`);
+  },
+
+  // React to comment
+  react: async (commentId) => {
+    return await api.post(`/comments/${commentId}/react`);
+  },
+
+  // Report comment
+  report: async (commentId, reportData) => {
+    return await api.post(`/comments/${commentId}/report`, reportData);
   }
 };
 

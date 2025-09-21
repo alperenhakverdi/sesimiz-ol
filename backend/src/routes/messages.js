@@ -200,62 +200,67 @@ router.get('/', async (req, res) => {
   try {
     const currentUserId = req.user.id;
 
-    // Get unique users that have conversations with current user
-    const conversations = await prisma.$queryRaw`
-      SELECT
-        CASE
-          WHEN m.sender_id = ${currentUserId} THEN m.receiver_id
-          ELSE m.sender_id
-        END as user_id,
-        MAX(m.created_at) as last_message_time,
-        (
-          SELECT content
-          FROM messages m2
-          WHERE ((m2.sender_id = ${currentUserId} AND m2.receiver_id = user_id)
-                OR (m2.sender_id = user_id AND m2.receiver_id = ${currentUserId}))
-            AND m2.deleted_at IS NULL
-          ORDER BY m2.created_at DESC
-          LIMIT 1
-        ) as last_message,
-        (
-          SELECT COUNT(*)
-          FROM messages m3
-          WHERE m3.sender_id = user_id
-            AND m3.receiver_id = ${currentUserId}
-            AND m3.read_at IS NULL
-            AND m3.deleted_at IS NULL
-        ) as unread_count
-      FROM messages m
-      WHERE (m.sender_id = ${currentUserId} OR m.receiver_id = ${currentUserId})
-        AND m.deleted_at IS NULL
-      GROUP BY user_id
-      ORDER BY last_message_time DESC
-    `;
+    // Get all messages involving current user
+    const allMessages = await prisma.message.findMany({
+      where: {
+        OR: [
+          { senderId: currentUserId },
+          { receiverId: currentUserId }
+        ],
+        deletedAt: null
+      },
+      include: {
+        sender: {
+          select: { id: true, nickname: true, avatar: true }
+        },
+        receiver: {
+          select: { id: true, nickname: true, avatar: true }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
 
-    // Get user details for each conversation
-    const conversationsWithUsers = await Promise.all(
-      conversations.map(async (conv) => {
-        const user = await prisma.user.findUnique({
-          where: { id: conv.user_id },
-          select: {
-            id: true,
-            nickname: true,
-            avatar: true
-          }
+    // Group by conversation partner
+    const conversationMap = new Map();
+    
+    allMessages.forEach(message => {
+      const partnerId = message.senderId === currentUserId 
+        ? message.receiverId 
+        : message.senderId;
+      
+      if (!conversationMap.has(partnerId)) {
+        const partner = message.senderId === currentUserId 
+          ? message.receiver 
+          : message.sender;
+          
+        conversationMap.set(partnerId, {
+          user: partner,
+          lastMessage: message.content,
+          lastMessageTime: message.createdAt,
+          unreadCount: 0
         });
+      }
+    });
 
-        return {
-          user,
-          lastMessage: conv.last_message,
-          lastMessageTime: conv.last_message_time,
-          unreadCount: parseInt(conv.unread_count)
-        };
-      })
-    );
+    // Calculate unread count for each conversation
+    for (const [partnerId, conversation] of conversationMap) {
+      const unreadCount = await prisma.message.count({
+        where: {
+          senderId: partnerId,
+          receiverId: currentUserId,
+          readAt: null,
+          deletedAt: null
+        }
+      });
+      conversation.unreadCount = unreadCount;
+    }
+
+    const conversations = Array.from(conversationMap.values())
+      .sort((a, b) => new Date(b.lastMessageTime) - new Date(a.lastMessageTime));
 
     res.json({
       success: true,
-      conversations: conversationsWithUsers
+      conversations
     });
 
   } catch (error) {

@@ -1,12 +1,9 @@
 import express from 'express';
 import { PrismaClient } from '@prisma/client';
-import { authenticateToken } from '../middleware/auth.js';
+import { authenticateToken, optionalAuth } from '../middleware/auth.js';
 
 const router = express.Router();
 const prisma = new PrismaClient();
-
-// All comment routes require authentication
-router.use(authenticateToken);
 
 // Comment rate limiting middleware
 const commentRateLimit = (req, res, next) => {
@@ -35,8 +32,8 @@ const commentRateLimit = (req, res, next) => {
   next();
 };
 
-// Get comments for a story
-router.get('/story/:storyId', async (req, res) => {
+// Get comments for a story (optional auth - anyone can view comments)
+router.get('/story/:storyId', optionalAuth, async (req, res) => {
   try {
     const { storyId } = req.params;
     const { sort = 'newest' } = req.query;
@@ -106,13 +103,13 @@ router.get('/story/:storyId', async (req, res) => {
       authorNickname: comment.author.nickname,
       authorAvatar: comment.author.avatar,
       reactionCount: comment._count.reactions,
-      userReacted: comment.reactions.some(r => r.userId === req.user.id),
+      userReacted: req.user ? comment.reactions.some(r => r.userId === req.user.id) : false,
       replies: comment.replies.map(reply => ({
         ...reply,
         authorNickname: reply.author.nickname,
         authorAvatar: reply.author.avatar,
         reactionCount: reply.reactions.length,
-        userReacted: reply.reactions.some(r => r.userId === req.user.id)
+        userReacted: req.user ? reply.reactions.some(r => r.userId === req.user.id) : false
       }))
     }));
 
@@ -131,7 +128,7 @@ router.get('/story/:storyId', async (req, res) => {
 });
 
 // Create new comment
-router.post('/', commentRateLimit, async (req, res) => {
+router.post('/', authenticateToken, commentRateLimit, async (req, res) => {
   try {
     const { content, storyId, parentId } = req.body;
     const authorId = req.user.id;
@@ -224,7 +221,7 @@ router.post('/', commentRateLimit, async (req, res) => {
 });
 
 // React to comment
-router.post('/:commentId/react', async (req, res) => {
+router.post('/:commentId/react', authenticateToken, async (req, res) => {
   try {
     const { commentId } = req.params;
     const userId = req.user.id;
@@ -295,7 +292,7 @@ router.post('/:commentId/react', async (req, res) => {
 });
 
 // Delete comment
-router.delete('/:commentId', async (req, res) => {
+router.delete('/:commentId', authenticateToken, async (req, res) => {
   try {
     const { commentId } = req.params;
     const userId = req.user.id;
@@ -349,7 +346,7 @@ router.delete('/:commentId', async (req, res) => {
 });
 
 // Report comment
-router.post('/:commentId/report', async (req, res) => {
+router.post('/:commentId/report', authenticateToken, async (req, res) => {
   try {
     const { commentId } = req.params;
     const { reason, description } = req.body;

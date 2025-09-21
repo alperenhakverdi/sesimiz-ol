@@ -31,6 +31,12 @@ const AdminOrganizationsPage = lazy(() => import('./pages/AdminOrganizationsPage
 const AdminAnnouncementsPage = lazy(() => import('./pages/AdminAnnouncementsPage'))
 const AdminSettingsPage = lazy(() => import('./pages/AdminSettingsPage'))
 const AdminFeatureFlagsPage = lazy(() => import('./pages/AdminFeatureFlagsPage'))
+const OrganizationsPage = lazy(() => import('./pages/OrganizationsPage'))
+const OrganizationDetailPage = lazy(() => import('./pages/OrganizationDetailPage'))
+const AnnouncementsPage = lazy(() => import('./pages/AnnouncementsPage'))
+const AnnouncementDetailPage = lazy(() => import('./pages/AnnouncementDetailPage'))
+const CommunityPage = lazy(() => import('./pages/CommunityPage'))
+const SupportPage = lazy(() => import('./pages/SupportPage'))
 
 // Loading component
 const PageLoader = () => (
@@ -44,100 +50,96 @@ function App() {
     <ErrorBoundary>
       <AuthProvider>
         <SkipToMain />
-        <Box minH="100vh" display="flex" flexDirection="column">
-          <Header />
-          <Box
-            flex="1"
-            as="main"
-            id="main-content"
-            tabIndex="-1"
-            outline="none"
-          >
-            <Suspense fallback={<PageLoader />}>
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
+            {/* Admin Routes - No main header */}
+            <Route path="/admin/*" element={
               <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/hikayeler" element={<StoriesPage />} />
-              <Route path="/hikayeler/:id" element={<StoryDetailPage />} />
-              <Route path="/hikaye-olustur" element={<StoryCreatePage />} />
-              <Route path="/profil/:id" element={<ProfilePage />} />
-              <Route path="/hakkinda" element={<AboutPage />} />
-              <Route path="/gizlilik" element={<PrivacyPage />} />
-              <Route path="/destek" element={<SupportPage />} />
-              <Route path="/iletisim" element={<ContactPage />} />
-              <Route path="/kayit-ol" element={<RegisterPage />} />
-              <Route path="/sifremi-unuttum" element={<ForgotPasswordPage />} />
-              <Route path="/reset-password" element={<ResetPasswordPage />} />
-              <Route path="/ayarlar" element={<SettingsPage />} />
-              <Route path="/mesajlar" element={<MessagesPage />} />
-              <Route
-                path="/notifications"
-                element={
-                  <ProtectedRoute>
-                    <NotificationsPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/admin/dashboard"
-                element={
+                <Route path="dashboard" element={
                   <ProtectedRoute requireAdmin={true} redirectToModal={false}>
                     <AdminDashboardPage />
                   </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/admin/users"
-                element={
+                } />
+                <Route path="users" element={
                   <ProtectedRoute requireAdmin={true} redirectToModal={false}>
                     <AdminUsersPage />
                   </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/admin/stories"
-                element={
+                } />
+                <Route path="stories" element={
                   <ProtectedRoute requireAdmin={true} redirectToModal={false}>
                     <AdminStoriesPage />
                   </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/admin/organizations"
-                element={
+                } />
+                <Route path="organizations" element={
                   <ProtectedRoute requireAdmin={true} redirectToModal={false}>
                     <AdminOrganizationsPage />
                   </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/admin/announcements"
-                element={
+                } />
+                <Route path="announcements" element={
                   <ProtectedRoute requireAdmin={true} redirectToModal={false}>
                     <AdminAnnouncementsPage />
                   </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/admin/settings"
-                element={
+                } />
+                <Route path="settings" element={
                   <ProtectedRoute requireAdmin={true} redirectToModal={false}>
                     <AdminSettingsPage />
                   </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/admin/feature-flags"
-                element={
+                } />
+                <Route path="feature-flags" element={
                   <ProtectedRoute requireAdmin={true} redirectToModal={false}>
                     <AdminFeatureFlagsPage />
                   </ProtectedRoute>
-                }
-              />
+                } />
               </Routes>
-            </Suspense>
-          </Box>
-          <Footer />
-        </Box>
+            } />
+            
+            {/* Main Site Routes - With main header */}
+            <Route path="/*" element={
+              <Box minH="100vh" display="flex" flexDirection="column">
+                <Header />
+                <Box
+                  flex="1"
+                  as="main"
+                  id="main-content"
+                  tabIndex="-1"
+                  outline="none"
+                >
+                  <Routes>
+                    <Route path="/" element={<HomePage />} />
+                    <Route path="/hikayeler" element={<StoriesPage />} />
+                    <Route path="/hikayeler/:id" element={<StoryDetailPage />} />
+                    <Route path="/hikaye-olustur" element={<StoryCreatePage />} />
+                    <Route path="/profil/:id" element={<ProfilePage />} />
+                    <Route path="/hakkinda" element={<AboutPage />} />
+                    <Route path="/gizlilik" element={<PrivacyPage />} />
+                    <Route path="/destek" element={<SupportPage />} />
+                    <Route path="/iletisim" element={<ContactPage />} />
+                    <Route path="/kayit-ol" element={<RegisterPage />} />
+                    <Route path="/sifremi-unuttum" element={<ForgotPasswordPage />} />
+                    <Route path="/reset-password" element={<ResetPasswordPage />} />
+                    <Route path="/ayarlar" element={<SettingsPage />} />
+                    <Route path="/mesajlar" element={<MessagesPage />} />
+                    <Route path="/stklar" element={<OrganizationsPage />} />
+                    <Route path="/stklar/:slug" element={<OrganizationDetailPage />} />
+                    <Route path="/duyurular" element={<AnnouncementsPage />} />
+                    <Route path="/duyurular/:id" element={<AnnouncementDetailPage />} />
+                    <Route path="/topluluk" element={<CommunityPage />} />
+                    <Route path="/destek" element={<SupportPage />} />
+                    <Route
+                      path="/notifications"
+                      element={
+                        <ProtectedRoute>
+                          <NotificationsPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                  </Routes>
+                </Box>
+                <Footer />
+              </Box>
+            } />
+          </Routes>
+        </Suspense>
       </AuthProvider>
     </ErrorBoundary>
   )

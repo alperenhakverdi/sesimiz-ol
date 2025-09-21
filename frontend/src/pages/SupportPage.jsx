@@ -1,264 +1,309 @@
+import { useState } from 'react'
 import {
   Container,
   VStack,
+  HStack,
   Heading,
   Text,
   Box,
+  Button,
+  FormControl,
+  FormLabel,
+  Input,
+  Textarea,
+  Select,
   Alert,
   AlertIcon,
-  List,
-  ListItem,
-  Divider,
-  Button,
-  HStack,
+  Icon,
   SimpleGrid,
   Accordion,
   AccordionItem,
   AccordionButton,
   AccordionPanel,
   AccordionIcon,
-  Link
+  useColorModeValue,
+  useToast
 } from '@chakra-ui/react'
 import { Link as RouterLink } from 'react-router-dom'
-import { PhoneIcon } from '@chakra-ui/icons'
-import ProgressiveLoader from '../components/animations/ProgressiveLoader'
+import { FiHelpCircle, FiMail, FiMessageSquare, FiBook } from 'react-icons/fi'
 
 const SupportPage = () => {
-  const emergencyNumbers = [
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    category: '',
+    subject: '',
+    message: ''
+  })
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const toast = useToast()
+
+  const bgColor = useColorModeValue('gray.50', 'gray.900')
+  const cardBgColor = useColorModeValue('white', 'gray.800')
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target
+    setFormData(prev => ({ ...prev, [name]: value }))
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setIsSubmitting(true)
+
+    // Simulate form submission
+    setTimeout(() => {
+      toast({
+        title: 'Destek talebiniz alındı!',
+        description: 'En kısa sürede size geri dönüş yapacağız.',
+        status: 'success',
+        duration: 5000,
+        isClosable: true
+      })
+      setFormData({
+        name: '',
+        email: '',
+        category: '',
+        subject: '',
+        message: ''
+      })
+      setIsSubmitting(false)
+    }, 2000)
+  }
+
+  const faqData = [
     {
-      name: 'ALO 183 Aile Danışma Hattı',
-      number: '183',
-      description: '7/24 aile danışmanlığı ve kadın destek hattı'
+      question: 'Hesabımı nasıl oluştururum?',
+      answer: 'Ana sayfadaki "Giriş Yap" butonuna tıklayarak giriş modalını açın. Modalın alt kısmındaki "Hesap oluştur" linkine tıklayarak kayıt formunu doldurun. Sadece takma isim ve şifre yeterlidir.'
     },
     {
-      name: 'Mor Çatı Kadın Danışma Merkezi', 
-      number: '0212 292 52 31',
-      description: 'Kadına yönelik şiddet danışma hattı'
+      question: 'Hikayemi nasıl anonim tutarım?',
+      answer: 'Tüm hikayeler varsayılan olarak anonimdir. Gerçek isminizi asla paylaşmıyoruz. Sadece seçtiğiniz takma isim görünür. Ek güvenlik için hikayenizde kişisel bilgiler paylaşmamaya özen gösterin.'
     },
     {
-      name: 'Kadın Dayanışma Vakfı',
-      number: '0212 256 13 59', 
-      description: 'Hukuki ve psikolojik destek hattı'
+      question: 'Hikayemi yanlışlıkla paylaştım, silebilir miyim?',
+      answer: 'Evet, kendi hikayelerinizi istediğiniz zaman silebilirsiniz. Hikaye sayfasında "Düzenle" veya "Sil" seçeneklerini kullanabilirsiniz. Silinen hikayeler kalıcı olarak sistemden kaldırılır.'
     },
     {
-      name: 'İntihara Müdahale Hattı',
-      number: '182',
-      description: '7/24 kriz müdahale ve psikolojik destek'
+      question: 'Platformda zararlı içerik gördüm, ne yapmalıyım?',
+      answer: 'Her hikaye ve yorunda "Şikayet Et" butonu bulunur. Bu butona tıklayarak zararlı içeriği bildirebilirsiniz. Moderasyon ekibimiz 24 saat içinde inceleme yapar.'
+    },
+    {
+      question: 'STK olarak platforma nasıl katılırım?',
+      answer: 'STK kayıt sistemi üzerinden başvuru yapabilirsiniz. Gerekli belgelerinizi yükledikten sonra doğrulama süreci 2-3 iş günü sürer. Onaylandıktan sonra STK profiliniz aktif olur.'
+    },
+    {
+      question: 'Şifremi unuttum, ne yapmalıyım?',
+      answer: 'Giriş modalında "Şifremi Unuttum" linkine tıklayın. Kayıt olurken kullandığınız e-posta adresini girin, size şifre sıfırlama linki gönderilecektir.'
+    },
+    {
+      question: 'Mobil uygulamanız var mı?',
+      answer: 'Şu anda mobil uygulamamız bulunmamakta, ancak web sitemiz mobil cihazlarda mükemmel çalışacak şekilde optimize edilmiştir. Mobil uygulama geliştirme sürecimiz devam etmektedir.'
+    },
+    {
+      question: 'Verilerim güvende mi?',
+      answer: 'Evet, verileriniz tamamen güvende. Minimum veri toplama politikası uyguluyoruz ve hiçbir kişisel bilginizi 3. taraflarla paylaşmıyoruz. Detaylar için Gizlilik Politikamızı inceleyebilirsiniz.'
     }
   ]
 
-  const faqs = [
-    {
-      question: "Hikâyemi anonim olarak paylaşabilir miyim?",
-      answer: "Evet! Platformumuzda sadece takma isim kullanıyorsunuz. Gerçek isminizi, telefon numaranızı ya da adresinizi asla talep etmiyoruz. Tüm hikâyeler tamamen anonimdir."
-    },
-    {
-      question: "Paylaştığım hikâyeyi daha sonra silebilir miyim?",
-      answer: "Tabii ki! Hesabınıza giriş yaparak paylaştığınız hikâyeleri istediğiniz zaman düzenleyebilir veya tamamen silebilirsiniz. Bu tamamen sizin kontrolünüzdedir."
-    },
-    {
-      question: "Bilgilerim güvende mi?",
-      answer: "Evet, tüm verileriniz SSL şifreleme ile korunur. KVKK'ya uygun olarak çalışıyoruz ve bilgilerinizi asla 3. taraflarla paylaşmıyoruz. Minimal veri toplama prensibiyle hareket ediyoruz."
-    },
-    {
-      question: "Kötü içerikli hikâyeler nasıl kontrol ediliyor?",
-      answer: "Topluluk raporlama sistemi ve içerik moderasyonu ile uygunsuz içerikleri tespit ediyoruz. Şiddet, nefret söylemi veya taciz içeren hikâyeler kaldırılır."
-    },
-    {
-      question: "Hesabımı nasıl kapatırım?",
-      answer: "Hesap kapatma talebinizi destek@sesimizol.com adresine gönderebilirsiniz. 48 saat içinde tüm verilerinizi kalıcı olarak sileriz."
-    }
+  const supportCategories = [
+    { icon: FiHelpCircle, title: 'Genel Sorular', description: 'Platform kullanımı hakkında genel sorular' },
+    { icon: FiMessageSquare, title: 'Teknik Sorunlar', description: 'Site erişimi, hata mesajları ve teknik problemler' },
+    { icon: FiBook, title: 'Hesap Yönetimi', description: 'Giriş, kayıt, şifre ve profil sorunları' },
+    { icon: FiMail, title: 'İçerik Moderasyonu', description: 'Zararlı içerik bildirimi ve topluluk kuralları' }
   ]
 
   return (
-    <Container maxW="container.lg" py={8}>
-      <VStack spacing={8} align="stretch">
-        {/* Hero Section */}
-        <ProgressiveLoader delay={200} type="fade">
-          <VStack spacing={4} textAlign="center">
-          <Heading as="h1" size="xl" color="neutral.800">
-            Destek Merkezi
-          </Heading>
-          <Text fontSize="lg" color="neutral.600" maxW="2xl">
-            Size yardımcı olmak için buradayız. Platform kullanımı ve acil durumlarda 
-            ihtiyaç duyacağınız tüm bilgiler aşağıda yer alıyor.
-          </Text>
-          </VStack>
-        </ProgressiveLoader>
-
-        {/* Emergency Alert */}
-        <ProgressiveLoader delay={400} type="fade">
-          <Alert 
-            status="warning" 
-            borderRadius="lg" 
-            py={4}
-            bg="accent.50"
-            borderColor="accent.200"
-            borderWidth="1px"
-          >
-            <AlertIcon color="accent.500" />
-            <VStack align="start" spacing={2} flex="1">
-              <Text fontWeight="bold" color="accent.700">
-                Acil Durum!
-              </Text>
-              <Text fontSize="sm" color="accent.600">
-                Hayatınız tehlikede ise derhal <strong>112</strong>'yi arayın. 
-                Şiddet yaşıyorsanız güvenli bir yerden aşağıdaki destek hatlarını kullanın.
-              </Text>
-            </VStack>
-          </Alert>
-        </ProgressiveLoader>
-
-        {/* Emergency Numbers */}
-        <ProgressiveLoader delay={600} type="fade">
-          <Box bg="neutral.50" p={6} borderRadius="lg">
-          <VStack spacing={4} align="start">
-            <Heading as="h2" size="lg" color="neutral.800">
-              Acil Destek Hatları
-            </Heading>
-            
-            <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4} w="full">
-              {emergencyNumbers.map((contact, index) => (
-                <Box
-                  key={index}
-                  bg="white"
-                  p={4}
-                  borderRadius="md"
-                  borderWidth="1px"
-                  borderColor="neutral.200"
-                >
-                  <VStack align="start" spacing={3}>
-                    <Text fontWeight="bold" fontSize="sm" color="neutral.800">
-                      {contact.name}
-                    </Text>
-                    <HStack>
-                      <PhoneIcon boxSize={3} />
-                      <Link
-                        href={`tel:${contact.number}`}
-                        color="accent.600"
-                        fontWeight="bold"
-                        fontSize="lg"
-                        _hover={{ color: "accent.500" }}
-                      >
-                        {contact.number}
-                      </Link>
-                    </HStack>
-                    <Text fontSize="xs" color="neutral.600">
-                      {contact.description}
-                    </Text>
-                  </VStack>
-                </Box>
-              ))}
-            </SimpleGrid>
-          </VStack>
-          </Box>
-        </ProgressiveLoader>
-
-        {/* FAQ Section */}
-        <ProgressiveLoader delay={800} type="fade">
-          <Box bg="white" p={6} borderRadius="lg" borderWidth="1px" borderColor="neutral.200">
-          <VStack spacing={4} align="start">
-            <Heading as="h2" size="lg" color="neutral.800">
-              Sık Sorulan Sorular
-            </Heading>
-            
-            <Accordion allowToggle w="full">
-              {faqs.map((faq, index) => (
-                <AccordionItem key={index} borderColor="neutral.200">
-                  <h2>
-                    <AccordionButton py={4} _hover={{ bg: 'neutral.50' }}>
-                      <Box as="span" flex="1" textAlign="left" fontWeight="medium">
-                        {faq.question}
-                      </Box>
-                      <AccordionIcon />
-                    </AccordionButton>
-                  </h2>
-                  <AccordionPanel pb={4} color="neutral.700">
-                    {faq.answer}
-                  </AccordionPanel>
-                </AccordionItem>
-              ))}
-            </Accordion>
-          </VStack>
-          </Box>
-        </ProgressiveLoader>
-
-        {/* Community Guidelines */}
-        <ProgressiveLoader delay={1000} type="fade">
-          <Box bg="neutral.50" p={6} borderRadius="lg">
-          <VStack spacing={4} align="start">
-            <Heading as="h2" size="lg" color="neutral.800">
-              Topluluk Kuralları
-            </Heading>
-            
-            <Text color="neutral.700">
-              "Sesimiz Ol" güvenli bir alan olarak kalması için bu kuralları takip ediyoruz:
+    <Box bg={bgColor} minH="100vh" py={8}>
+      <Container maxW="container.xl">
+        <VStack spacing={12} align="stretch">
+          {/* Header */}
+          <VStack spacing={4} align="center" textAlign="center">
+            <HStack spacing={3}>
+              <Icon as={FiHelpCircle} boxSize={8} color="accent.500" />
+              <Heading size="xl" color="accent.600">
+                Destek Merkezi
+              </Heading>
+            </HStack>
+            <Text fontSize="lg" color="gray.600" maxW="2xl">
+              Size nasıl yardımcı olabiliriz? Sık sorulan soruları inceleyin veya bizimle iletişime geçin.
             </Text>
-            
-            <List spacing={2}>
-              <ListItem>
-                <Text as="span" fontWeight="medium">Saygılı İletişim:</Text>
-                <Text as="span" ml={2}>Birbirimize saygılı ve anlayışlı davranıyoruz</Text>
-              </ListItem>
-              
-              <ListItem>
-                <Text as="span" fontWeight="medium">Gizlilik:</Text>
-                <Text as="span" ml={2}>Kimsenin kişisel bilgilerini paylaşmıyoruz</Text>
-              </ListItem>
-              
-              <ListItem>
-                <Text as="span" fontWeight="medium">Uygun İçerik:</Text>
-                <Text as="span" ml={2}>Nefret söylemi, taciz veya şiddet içerikli paylaşım yapmıyoruz</Text>
-              </ListItem>
-              
-              <ListItem>
-                <Text as="span" fontWeight="medium">Destek:</Text>
-                <Text as="span" ml={2}>Birbirimizi destekliyor, yargılamıyoruz</Text>
-              </ListItem>
-            </List>
-            
-            <Box bg="neutral.100" p={4} borderRadius="md" mt={4}>
-              <Text fontSize="sm" color="neutral.700">
-                Bu kurallara uymayan içerikleri <strong>bildirin</strong>. 
-                Moderatörlerimiz 24 saat içinde değerlendirir.
-              </Text>
-            </Box>
           </VStack>
+
+          {/* Support Categories */}
+          <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={6}>
+            {supportCategories.map((category, index) => (
+              <Box
+                key={index}
+                bg={cardBgColor}
+                p={6}
+                borderRadius="lg"
+                shadow="sm"
+                textAlign="center"
+                transition="all 0.2s"
+                _hover={{ transform: 'translateY(-2px)', shadow: 'md' }}
+              >
+                <VStack spacing={3}>
+                  <Icon as={category.icon} boxSize={8} color="accent.500" />
+                  <Heading size="sm">{category.title}</Heading>
+                  <Text fontSize="sm" color="gray.600">
+                    {category.description}
+                  </Text>
+                </VStack>
+              </Box>
+            ))}
+          </SimpleGrid>
+
+          {/* FAQ Section */}
+          <Box bg={cardBgColor} borderRadius="lg" p={8} shadow="sm">
+            <VStack spacing={6} align="stretch">
+              <Heading size="lg" textAlign="center" color="accent.600">
+                Sık Sorulan Sorular
+              </Heading>
+              
+              <Accordion allowMultiple>
+                {faqData.map((faq, index) => (
+                  <AccordionItem key={index} border="none">
+                    <AccordionButton
+                      py={4}
+                      px={0}
+                      _hover={{ bg: 'gray.50' }}
+                      borderRadius="md"
+                    >
+                      <Box flex="1" textAlign="left">
+                        <Text fontWeight="semibold" color="gray.800">
+                          {faq.question}
+                        </Text>
+                      </Box>
+                      <AccordionIcon color="accent.500" />
+                    </AccordionButton>
+                    <AccordionPanel pb={4} px={0}>
+                      <Text color="gray.600" lineHeight="tall">
+                        {faq.answer}
+                      </Text>
+                    </AccordionPanel>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+            </VStack>
           </Box>
-        </ProgressiveLoader>
 
-        <Divider />
+          {/* Contact Form */}
+          <Box bg={cardBgColor} borderRadius="lg" p={8} shadow="sm">
+            <VStack spacing={6} align="stretch">
+              <VStack spacing={2} textAlign="center">
+                <Heading size="lg" color="accent.600">
+                  Bizimle İletişime Geçin
+                </Heading>
+                <Text color="gray.600">
+                  Sorunuz FAQ'lerde yoksa, aşağıdaki formu doldurarak bize ulaşabilirsiniz
+                </Text>
+              </VStack>
 
-        {/* Back to Home */}
-        <ProgressiveLoader delay={1200} type="fade">
-          <VStack spacing={4} textAlign="center">
-          <Text fontSize="sm" color="neutral.500">
-            Aradığınız yanıtı bulamadınız mı?
-          </Text>
-          
-          <HStack spacing={4}>
-            <Button
-              as={RouterLink}
-              to="/"
-              colorScheme="accent"
-              variant="outline"
-            >
-              Ana Sayfa
-            </Button>
-            
-            <Button
-              as={RouterLink}
-              to="/hikayeler"
-              variant="ghost"
-              color="neutral.600"
-            >
-              Hikâyeleri Görüntüle
-            </Button>
-          </HStack>
-          </VStack>
-        </ProgressiveLoader>
-      </VStack>
-    </Container>
+              <form onSubmit={handleSubmit}>
+                <VStack spacing={4}>
+                  <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4} w="full">
+                    <FormControl isRequired>
+                      <FormLabel>İsim</FormLabel>
+                      <Input
+                        name="name"
+                        value={formData.name}
+                        onChange={handleInputChange}
+                        placeholder="Adınız"
+                      />
+                    </FormControl>
+
+                    <FormControl isRequired>
+                      <FormLabel>E-posta</FormLabel>
+                      <Input
+                        name="email"
+                        type="email"
+                        value={formData.email}
+                        onChange={handleInputChange}
+                        placeholder="ornek@email.com"
+                      />
+                    </FormControl>
+                  </SimpleGrid>
+
+                  <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4} w="full">
+                    <FormControl isRequired>
+                      <FormLabel>Kategori</FormLabel>
+                      <Select
+                        name="category"
+                        value={formData.category}
+                        onChange={handleInputChange}
+                        placeholder="Kategori seçin"
+                      >
+                        <option value="general">Genel Sorular</option>
+                        <option value="technical">Teknik Sorunlar</option>
+                        <option value="account">Hesap Yönetimi</option>
+                        <option value="content">İçerik Moderasyonu</option>
+                        <option value="other">Diğer</option>
+                      </Select>
+                    </FormControl>
+
+                    <FormControl isRequired>
+                      <FormLabel>Konu</FormLabel>
+                      <Input
+                        name="subject"
+                        value={formData.subject}
+                        onChange={handleInputChange}
+                        placeholder="Konu başlığı"
+                      />
+                    </FormControl>
+                  </SimpleGrid>
+
+                  <FormControl isRequired>
+                    <FormLabel>Mesaj</FormLabel>
+                    <Textarea
+                      name="message"
+                      value={formData.message}
+                      onChange={handleInputChange}
+                      placeholder="Sorununuzu detaylı olarak açıklayın..."
+                      rows={6}
+                    />
+                  </FormControl>
+
+                  <Button
+                    type="submit"
+                    colorScheme="accent"
+                    size="lg"
+                    isLoading={isSubmitting}
+                    loadingText="Gönderiliyor..."
+                    w={{ base: 'full', md: 'auto' }}
+                    px={8}
+                  >
+                    Mesaj Gönder
+                  </Button>
+                </VStack>
+              </form>
+            </VStack>
+          </Box>
+
+          {/* Quick Links */}
+          <Box textAlign="center">
+            <VStack spacing={4}>
+              <Text color="gray.600">
+                Daha fazla bilgi için diğer sayfalarımızı ziyaret edebilirsiniz
+              </Text>
+              <HStack spacing={4} flexWrap="wrap" justify="center">
+                <Button as={RouterLink} to="/gizlilik" variant="outline" size="sm">
+                  Gizlilik Politikası
+                </Button>
+                <Button as={RouterLink} to="/hakkinda" variant="outline" size="sm">
+                  Hakkımızda
+                </Button>
+                <Button as={RouterLink} to="/iletisim" variant="outline" size="sm">
+                  İletişim
+                </Button>
+                <Button as={RouterLink} to="/topluluk" variant="outline" size="sm">
+                  Topluluk
+                </Button>
+              </HStack>
+            </VStack>
+          </Box>
+        </VStack>
+      </Container>
+    </Box>
   )
 }
 
