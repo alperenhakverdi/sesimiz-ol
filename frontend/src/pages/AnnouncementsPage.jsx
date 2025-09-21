@@ -2,94 +2,48 @@ import { useState, useEffect } from 'react'
 import {
   Container,
   VStack,
-  HStack,
   Heading,
   Text,
-  Select,
   Box,
   Spinner,
   Center,
   Alert,
   AlertIcon,
-  Badge,
+  Divider,
   useColorModeValue
 } from '@chakra-ui/react'
+import { format, parseISO } from 'date-fns'
+import { tr } from 'date-fns/locale'
 import AnnouncementCard from '../components/announcements/AnnouncementCard'
+import ProgressiveLoader from '../components/animations/ProgressiveLoader'
+import { api } from '../services/api'
 
 const AnnouncementsPage = () => {
   const [announcements, setAnnouncements] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [typeFilter, setTypeFilter] = useState('')
 
   const bgColor = useColorModeValue('gray.50', 'gray.900')
-
-  // Mock data for MVP
-  const mockAnnouncements = [
-    {
-      id: 1,
-      title: 'Yeni STK Kayıt Sistemi Aktif!',
-      content: 'STK\'lar artık platforma daha kolay kayıt olabilir. Yeni kayıt sistemi ile STK\'lar bilgilerini daha detaylı şekilde ekleyebilir ve profillerini zenginleştirebilir. Sistem tamamen kullanıcı dostu olarak tasarlandı.',
-      type: 'GENERAL',
-      status: 'SENT',
-      recipientCount: 2450,
-      createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString() // 2 days ago
-    },
-    {
-      id: 2,
-      title: 'Platform Bakım Duyurusu',
-      content: 'Bu Pazar günü 02:00-04:00 saatleri arasında sistem bakımı yapılacaktır. Bu süre zarfında platforma erişim sağlanamayabilir. Anlayışınız için teşekkür ederiz.',
-      type: 'USER',
-      status: 'SCHEDULED',
-      recipientCount: 5200,
-      createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString() // 5 days ago
-    },
-    {
-      id: 3,
-      title: 'Hikaye Paylaşım Kuralları Güncellendi',
-      content: 'Topluluk standartlarımızı korumak amacıyla hikaye paylaşım kuralları güncellenmiştir. Lütfen yeni kuralları okuyarak hikayelerinizi bu kurallara uygun şekilde paylaşın.',
-      type: 'USER',
-      status: 'SENT',
-      recipientCount: 5200,
-      createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString() // 1 week ago
-    },
-    {
-      id: 4,
-      title: 'STK Profil Doğrulama Süreci',
-      content: 'STK profillerinin doğrulanması için gerekli belgeler ve süreç hakkında detaylı bilgi. Doğrulanan profiller daha fazla özelliğe erişim sağlayabilecek.',
-      type: 'ORGANIZATION',
-      status: 'SENT',
-      recipientCount: 150,
-      createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString() // 10 days ago
-    },
-    {
-      id: 5,
-      title: 'Yeni Özellikler ve İyileştirmeler',
-      content: 'Platform\'a eklenen yeni özellikler: gelişmiş arama, kategori filtreleme, mobil uygulama iyileştirmeleri ve daha fazlası. Detaylar için blog sayfamızı ziyaret edin.',
-      type: 'GENERAL',
-      status: 'SENT',
-      recipientCount: 7800,
-      createdAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString() // 2 weeks ago
-    },
-    {
-      id: 6,
-      title: 'Topluluk Etkinliği: Online Buluşma',
-      content: 'Bu ayın sonunda düzenlenecek online topluluk buluşması için kayıtlar başladı. Etkinlikte STK temsilcileri ve aktif kullanıcılar bir araya gelecek.',
-      type: 'GENERAL',
-      status: 'SENT',
-      recipientCount: 3200,
-      createdAt: new Date(Date.now() - 21 * 24 * 60 * 60 * 1000).toISOString() // 3 weeks ago
-    }
-  ]
+  const headingColor = useColorModeValue('neutral.800', 'neutral.100')
+  const textColor = useColorModeValue('neutral.600', 'neutral.300')
+  const dividerColor = useColorModeValue('gray.200', 'gray.600')
 
   useEffect(() => {
     const fetchAnnouncements = async () => {
       try {
         setLoading(true)
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        setAnnouncements(mockAnnouncements.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)))
+        
+        const response = await api.get('/announcements', {
+          params: {
+            page: 1,
+            limit: 50,
+            visibility: 'PUBLIC'
+          }
+        })
+        
+        setAnnouncements(response.data.data.announcements)
       } catch (err) {
+        console.error('Announcements fetch error:', err)
         setError('Duyurular yüklenirken bir hata oluştu.')
       } finally {
         setLoading(false)
@@ -99,152 +53,81 @@ const AnnouncementsPage = () => {
     fetchAnnouncements()
   }, [])
 
-  // Filter announcements based on type
-  const filteredAnnouncements = announcements.filter(ann => {
-    return typeFilter === '' || ann.type === typeFilter
-  })
-
-  const getTypeCount = (type) => {
-    return announcements.filter(ann => ann.type === type).length
+  const groupAnnouncementsByMonth = (announcementsList) => {
+    const grouped = {}
+    announcementsList.forEach(announcement => {
+      const date = parseISO(announcement.createdAt)
+      const monthYear = format(date, 'MMMM yyyy', { locale: tr })
+      if (!grouped[monthYear]) {
+        grouped[monthYear] = []
+      }
+      grouped[monthYear].push(announcement)
+    })
+    return grouped
   }
 
-  // Group announcements by month
-  const groupedAnnouncements = filteredAnnouncements.reduce((groups, announcement) => {
-    const date = new Date(announcement.createdAt)
-    const monthYear = date.toLocaleDateString('tr-TR', { year: 'numeric', month: 'long' })
-    
-    if (!groups[monthYear]) {
-      groups[monthYear] = []
-    }
-    groups[monthYear].push(announcement)
-    return groups
-  }, {})
+  const groupedAnnouncements = groupAnnouncementsByMonth(announcements)
+  const monthYears = Object.keys(groupedAnnouncements)
 
   if (loading) {
     return (
-      <Box bg={bgColor} minH="100vh" py={8}>
-        <Container maxW="container.xl">
-          <Center py={20}>
-            <VStack spacing={4}>
-              <Spinner size="xl" color="accent.500" thickness="4px" />
-              <Text color="gray.500">Duyurular yükleniyor...</Text>
-            </VStack>
-          </Center>
-        </Container>
-      </Box>
+      <Center py={20}>
+        <Spinner size="xl" color="accent.500" thickness="4px" />
+      </Center>
     )
   }
 
   if (error) {
     return (
-      <Box bg={bgColor} minH="100vh" py={8}>
-        <Container maxW="container.xl">
-          <Alert status="error" borderRadius="lg">
-            <AlertIcon />
-            {error}
-          </Alert>
-        </Container>
-      </Box>
+      <Container maxW="container.xl" py={8}>
+        <Alert status="error" borderRadius="md">
+          <AlertIcon />
+          {error}
+        </Alert>
+      </Container>
     )
   }
 
   return (
     <Box bg={bgColor} minH="100vh" py={8}>
       <Container maxW="container.lg">
-        <VStack spacing={8} align="stretch">
-          {/* Header */}
-          <VStack spacing={4} align="center" textAlign="center">
-            <Heading size="xl" color="accent.600">
-              Duyurular
-            </Heading>
-            <Text fontSize="lg" color="gray.600" maxW="2xl">
-              Platform güncellemeleri, önemli duyurular ve topluluk haberlerini takip edin
-            </Text>
-          </VStack>
+        <VStack spacing={10} align="stretch">
+          <ProgressiveLoader delay={100} type="fade">
+            <VStack spacing={4} textAlign="center">
+              <Heading as="h1" size="xl" color={headingColor}>
+                Duyurular
+              </Heading>
+              <Text fontSize="lg" color={textColor} maxW="2xl">
+                Platformumuzdaki en son güncellemeler, etkinlikler ve önemli bilgilendirmeler.
+              </Text>
+            </VStack>
+          </ProgressiveLoader>
 
-          {/* Stats */}
-          <HStack spacing={4} justify="center" flexWrap="wrap">
-            <Badge colorScheme="blue" px={3} py={1} fontSize="sm">
-              {getTypeCount('GENERAL')} Genel
-            </Badge>
-            <Badge colorScheme="purple" px={3} py={1} fontSize="sm">
-              {getTypeCount('USER')} Kullanıcı
-            </Badge>
-            <Badge colorScheme="teal" px={3} py={1} fontSize="sm">
-              {getTypeCount('ORGANIZATION')} STK
-            </Badge>
-          </HStack>
-
-          {/* Filter */}
-          <HStack spacing={4} maxW="md" mx="auto" w="full">
-            <Select 
-              placeholder="Tüm Duyurular"
-              value={typeFilter}
-              onChange={(e) => setTypeFilter(e.target.value)}
-              bg="white"
-              borderColor="gray.200"
-              _hover={{ borderColor: "gray.300" }}
-            >
-              <option value="GENERAL">Genel Duyurular</option>
-              <option value="USER">Kullanıcı Duyuruları</option>
-              <option value="ORGANIZATION">STK Duyuruları</option>
-            </Select>
-          </HStack>
-
-          {/* Results Count */}
-          <Text textAlign="center" color="gray.600">
-            {filteredAnnouncements.length} duyuru listeleniyor
-          </Text>
-
-          {/* Announcements Timeline */}
-          {Object.keys(groupedAnnouncements).length > 0 ? (
+          {monthYears.length === 0 ? (
+            <Box textAlign="center" py={10}>
+              <Text fontSize="lg" color={textColor}>
+                Henüz duyuru bulunmamaktadır.
+              </Text>
+            </Box>
+          ) : (
             <VStack spacing={8} align="stretch">
-              {Object.entries(groupedAnnouncements).map(([monthYear, monthAnnouncements]) => (
-                <VStack key={monthYear} spacing={4} align="stretch">
-                  {/* Month Header */}
-                  <Box position="relative">
-                    <Heading 
-                      size="md" 
-                      color="accent.600" 
-                      textAlign="center"
-                      bg={bgColor}
-                      px={4}
-                      position="relative"
-                      zIndex={1}
-                    >
+              {monthYears.map((monthYear, monthIndex) => (
+                <ProgressiveLoader key={monthYear} delay={200 + (monthIndex * 100)} type="fade">
+                  <Box>
+                    <Heading as="h2" size="md" mb={4} color={headingColor} borderBottom="1px solid" borderColor={dividerColor} pb={2}>
                       {monthYear}
                     </Heading>
-                    <Box
-                      position="absolute"
-                      top="50%"
-                      left="0"
-                      right="0"
-                      height="1px"
-                      bg="gray.300"
-                      zIndex={0}
-                    />
+                    <VStack spacing={6} align="stretch">
+                      {groupedAnnouncements[monthYear].map((announcement, annIndex) => (
+                        <ProgressiveLoader key={announcement.id} delay={300 + (monthIndex * 100) + (annIndex * 50)} type="fade">
+                          <AnnouncementCard announcement={announcement} />
+                        </ProgressiveLoader>
+                      ))}
+                    </VStack>
                   </Box>
-
-                  {/* Month Announcements */}
-                  <VStack spacing={4} align="stretch">
-                    {monthAnnouncements.map((announcement) => (
-                      <AnnouncementCard key={announcement.id} announcement={announcement} />
-                    ))}
-                  </VStack>
-                </VStack>
+                </ProgressiveLoader>
               ))}
             </VStack>
-          ) : (
-            <Center py={12}>
-              <VStack spacing={4}>
-                <Text fontSize="lg" color="gray.500">
-                  Seçilen kriterlere uygun duyuru bulunamadı
-                </Text>
-                <Text fontSize="sm" color="gray.400">
-                  Farklı filtre seçeneklerini deneyebilirsiniz
-                </Text>
-              </VStack>
-            </Center>
           )}
         </VStack>
       </Container>

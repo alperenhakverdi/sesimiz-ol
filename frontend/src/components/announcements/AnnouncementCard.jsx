@@ -1,123 +1,73 @@
-import {
-  Box,
-  VStack,
-  HStack,
-  Text,
-  Badge,
-  Heading,
-  useColorModeValue,
-  Icon
-} from '@chakra-ui/react'
+import { Box, VStack, HStack, Text, Badge, Icon, useColorModeValue } from '@chakra-ui/react'
 import { Link as RouterLink } from 'react-router-dom'
-import { FiCalendar, FiUsers } from 'react-icons/fi'
-import { formatDistanceToNow } from 'date-fns'
+import { format } from 'date-fns'
 import { tr } from 'date-fns/locale'
+import { FaBullhorn, FaInfoCircle, FaCalendarAlt, FaUsers } from 'react-icons/fa'
 
 const AnnouncementCard = ({ announcement }) => {
-  const bgColor = useColorModeValue('white', 'gray.800')
-  const borderColor = useColorModeValue('gray.200', 'gray.700')
-  const textColor = useColorModeValue('gray.600', 'gray.300')
-  const accentBorderColor = useColorModeValue('accent.200', 'accent.700')
+  const cardBg = useColorModeValue('white', 'gray.700')
+  const borderColor = useColorModeValue('gray.200', 'gray.600')
+  const hoverBorderColor = useColorModeValue('accent.300', 'accent.500')
+  const accentColor = useColorModeValue('accent.500', 'accent.300')
 
-  const getTypeColor = (type) => {
-    const colors = {
-      GENERAL: 'blue',
-      USER: 'purple',
-      ORGANIZATION: 'teal',
-      ADMIN: 'orange'
-    }
-    return colors[type] || 'blue'
+  const typeColors = {
+    GENERAL: 'blue',
+    USER: 'green',
+    ORGANIZATION: 'purple',
+    ADMIN: 'red',
   }
 
-  const getTypeLabel = (type) => {
-    const labels = {
-      GENERAL: 'Genel',
-      USER: 'Kullanıcılar',
-      ORGANIZATION: 'STK\'lar',
-      ADMIN: 'Adminler'
-    }
-    return labels[type] || type
-  }
-
-  const formatDate = (dateString) => {
-    try {
-      return formatDistanceToNow(new Date(dateString), {
-        addSuffix: true,
-        locale: tr
-      })
-    } catch {
-      return ''
-    }
+  const typeIcons = {
+    GENERAL: FaInfoCircle,
+    USER: FaUsers,
+    ORGANIZATION: FaBullhorn,
+    ADMIN: FaCalendarAlt,
   }
 
   return (
     <Box
       as={RouterLink}
       to={`/duyurular/${announcement.id}`}
-      bg={bgColor}
+      bg={cardBg}
       borderWidth="1px"
       borderColor={borderColor}
-      borderLeftWidth="4px"
-      borderLeftColor="accent.500"
       borderRadius="lg"
-      p={6}
-      transition="all 0.2s"
+      shadow="sm"
+      p={5}
+      display="flex"
+      flexDirection="column"
+      transition="all 0.2s ease-in-out"
       _hover={{
+        shadow: 'md',
         transform: 'translateY(-2px)',
-        shadow: 'lg',
-        borderLeftColor: 'accent.600',
-        borderColor: accentBorderColor
+        borderColor: hoverBorderColor,
       }}
-      cursor="pointer"
-      textDecoration="none"
-      _focus={{ boxShadow: 'outline' }}
+      h="full"
     >
-      <VStack spacing={4} align="stretch">
-        {/* Header */}
-        <HStack justify="space-between" align="start">
-          <Badge colorScheme={getTypeColor(announcement.type)} size="sm">
-            {getTypeLabel(announcement.type)}
+      <HStack mb={2} justifyContent="space-between" alignItems="center">
+        <HStack>
+          <Icon as={typeIcons[announcement.type]} color={typeColors[announcement.type] + '.500'} />
+          <Badge colorScheme={typeColors[announcement.type]} variant="subtle" borderRadius="md">
+            {announcement.type === 'GENERAL' ? 'Genel' : 
+             announcement.type === 'USER' ? 'Kullanıcı' : 
+             announcement.type === 'ORGANIZATION' ? 'STK' : 'Yönetici'}
           </Badge>
-          
-          <HStack spacing={2} color={textColor} fontSize="sm">
-            <Icon as={FiCalendar} boxSize={4} />
-            <Text>{formatDate(announcement.createdAt)}</Text>
-          </HStack>
         </HStack>
-
-        {/* Content */}
-        <VStack spacing={3} align="stretch">
-          <Heading size="md" color="accent.600" noOfLines={2}>
-            {announcement.title}
-          </Heading>
-          
-          <Text color={textColor} fontSize="sm" noOfLines={3}>
-            {announcement.content}
-          </Text>
-        </VStack>
-
-        {/* Footer */}
-        <HStack justify="space-between" align="center">
-          <HStack spacing={2} color={textColor} fontSize="sm">
-            <Icon as={FiUsers} boxSize={4} />
-            <Text>
-              {announcement.recipientCount || 0} kişiye gönderildi
-            </Text>
-          </HStack>
-
-          {announcement.status === 'SENT' && (
-            <Badge colorScheme="green" size="sm" variant="subtle">
-              Gönderildi
-            </Badge>
-          )}
-          
-          {announcement.status === 'SCHEDULED' && (
-            <Badge colorScheme="yellow" size="sm" variant="subtle">
-              Zamanlandı
-            </Badge>
-          )}
-        </HStack>
+        <Text fontSize="sm" color="neutral.500">
+          {format(new Date(announcement.createdAt), 'dd MMMM yyyy', { locale: tr })}
+        </Text>
+      </HStack>
+      <VStack align="start" spacing={1} flex="1">
+        <Text fontWeight="bold" fontSize="lg" color="neutral.800" noOfLines={2}>
+          {announcement.title}
+        </Text>
+        <Text fontSize="sm" color="neutral.600" noOfLines={3}>
+          {announcement.body.substring(0, 100) + '...'}
+        </Text>
       </VStack>
+      <Text fontSize="sm" color={accentColor} mt={3}>
+        Devamını Oku →
+      </Text>
     </Box>
   )
 }

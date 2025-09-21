@@ -202,6 +202,7 @@ model Announcement {
   id          Int                    @id @default(autoincrement())
   title       String
   body        String
+  type        AnnouncementType      @default(GENERAL)
   visibility  AnnouncementVisibility @default(PUBLIC)
   startsAt    DateTime?
   endsAt      DateTime?
@@ -214,6 +215,7 @@ model Announcement {
   @@index([visibility])
   @@index([startsAt])
   @@index([endsAt])
+  @@index([type])
   @@map("announcements")
 }
 
@@ -342,6 +344,13 @@ enum NotificationType {
 enum AnnouncementVisibility {
   PUBLIC
   AUTHENTICATED
+  ADMIN
+}
+
+enum AnnouncementType {
+  GENERAL
+  USER
+  ORGANIZATION
   ADMIN
 }
 
