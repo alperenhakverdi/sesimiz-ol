@@ -92,52 +92,25 @@ const AdminStoriesPage = () => {
       setLoading(true);
       setError(null);
 
-      // Mock data since Firebase story moderation is not implemented yet
-      const mockStories = [
-        {
-          id: '1',
-          title: 'Güçlü Kadın Hikayesi',
-          content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit...',
-          authorNickname: 'ayse_k',
-          authorAvatar: null,
-          status: 'PENDING',
-          createdAt: new Date().toISOString(),
-          viewCount: 15
-        },
-        {
-          id: '2',
-          title: 'Mücadele Hikayem',
-          content: 'Sed do eiusmod tempor incididunt ut labore et dolore...',
-          authorNickname: 'fatma_d',
-          authorAvatar: null,
-          status: 'APPROVED',
-          createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-          viewCount: 42
-        },
-        {
-          id: '3',
-          title: 'Hayallerimin Peşinde',
-          content: 'Ut enim ad minim veniam, quis nostrud exercitation...',
-          authorNickname: 'zehra_m',
-          authorAvatar: null,
-          status: 'PENDING',
-          createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-          viewCount: 8
+      const response = await api.get('/stories', {
+        params: {
+          page,
+          limit: 20,
+          status: status || undefined
         }
-      ];
-
-      // Filter by status if provided
-      const filteredStories = status
-        ? mockStories.filter(story => story.status === status)
-        : mockStories;
-
-      setStories(filteredStories);
-      setPagination({
-        page,
-        limit: 20,
-        total: filteredStories.length,
-        totalPages: Math.ceil(filteredStories.length / 20)
       });
+
+      if (response.data.success) {
+        setStories(response.data.stories);
+        setPagination({
+          page: response.data.pagination.page,
+          limit: response.data.pagination.limit,
+          total: response.data.pagination.total,
+          totalPages: response.data.pagination.totalPages
+        });
+      } else {
+        throw new Error(response.data.error?.message || 'Hikayeler yüklenemedi');
+      }
     } catch (error) {
       console.error('Fetch stories error:', error);
       setError(error.message);

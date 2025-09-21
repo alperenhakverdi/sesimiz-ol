@@ -18,69 +18,147 @@ import {
   Alert,
   AlertIcon,
   IconButton,
+  useDisclosure,
+  useToast,
+  Text,
+  Flex,
   Menu,
   MenuButton,
   MenuList,
   MenuItem,
-  Text,
-  Flex,
-  useToast,
-  useDisclosure
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalCloseButton,
+  Divider,
+  SimpleGrid,
+  Stat,
+  StatLabel,
+  StatNumber,
+  StatHelpText,
+  StatArrow
 } from '@chakra-ui/react';
-import { FiMoreVertical, FiSearch, FiEye, FiEdit, FiPlus, FiCheck, FiX } from 'react-icons/fi';
-import AdminLayout from '../components/admin/AdminLayout';
-import OrganizationDetailModal from '../components/admin/modals/OrganizationDetailModal';
-import OrganizationEditModal from '../components/admin/modals/OrganizationEditModal';
+import { FiSearch, FiFilter, FiMoreVertical, FiEye, FiEdit, FiTrash2, FiCheck, FiX } from 'react-icons/fi';
+import AdminLayout from '../../components/admin/AdminLayout';
+import api from '../../services/api';
 
-const OrganizationStatusBadge = ({ status }) => {
+const StatusBadge = ({ status }) => {
   const statusConfig = {
-    ACTIVE: { colorScheme: 'green', label: 'Aktif' },
-    PENDING: { colorScheme: 'yellow', label: 'Bekliyor' },
-    SUSPENDED: { colorScheme: 'red', label: 'Askıya Alınmış' }
+    ACTIVE: { color: 'green', text: 'Aktif' },
+    PENDING: { color: 'yellow', text: 'Beklemede' },
+    SUSPENDED: { color: 'red', text: 'Askıya Alınmış' },
+    REJECTED: { color: 'red', text: 'Reddedildi' }
   };
 
-  const config = statusConfig[status] || statusConfig.PENDING;
-  return <Badge colorScheme={config.colorScheme}>{config.label}</Badge>;
+  const config = statusConfig[status] || { color: 'gray', text: status };
+  
+  return (
+    <Badge colorScheme={config.color} variant="subtle">
+      {config.text}
+    </Badge>
+  );
 };
 
-const OrganizationTypeBadge = ({ type }) => {
+const TypeBadge = ({ type }) => {
   const typeConfig = {
-    NGO: { colorScheme: 'blue', label: 'STK' },
-    FOUNDATION: { colorScheme: 'purple', label: 'Vakıf' },
-    ASSOCIATION: { colorScheme: 'teal', label: 'Dernek' },
-    COOPERATIVE: { colorScheme: 'orange', label: 'Kooperatif' }
+    NGO: { color: 'blue', text: 'STK' },
+    FOUNDATION: { color: 'purple', text: 'Vakıf' },
+    ASSOCIATION: { color: 'teal', text: 'Dernek' },
+    COOPERATIVE: { color: 'orange', text: 'Kooperatif' }
   };
 
-  const config = typeConfig[type] || typeConfig.NGO;
-  return <Badge colorScheme={config.colorScheme}>{config.label}</Badge>;
+  const config = typeConfig[type] || { color: 'gray', text: type };
+  
+  return (
+    <Badge colorScheme={config.color} variant="outline">
+      {config.text}
+    </Badge>
+  );
 };
 
-const OrganizationActionsMenu = ({ organization, onView, onEdit, onApprove, onSuspend }) => {
-  const isPending = organization.status === 'PENDING';
-  const isActive = organization.status === 'ACTIVE';
+const OrganizationDetailModal = ({ isOpen, onClose, organization }) => {
+  if (!organization) return null;
 
   return (
-    <Menu>
-      <MenuButton as={IconButton} icon={<FiMoreVertical />} variant="ghost" size="sm" />
-      <MenuList>
-        <MenuItem icon={<FiEye />} onClick={() => onView(organization)}>
-          Detayları Görüntüle
-        </MenuItem>
-        <MenuItem icon={<FiEdit />} onClick={() => onEdit(organization)}>
-          Düzenle
-        </MenuItem>
-        {isPending && (
-          <MenuItem icon={<FiCheck />} onClick={() => onApprove(organization)} color="green.500">
-            Onayla
-          </MenuItem>
-        )}
-        {isActive && (
-          <MenuItem icon={<FiX />} onClick={() => onSuspend(organization)} color="red.500">
-            Askıya Al
-          </MenuItem>
-        )}
-      </MenuList>
-    </Menu>
+    <Modal isOpen={isOpen} onClose={onClose} size="xl">
+      <ModalOverlay />
+      <ModalContent>
+        <ModalHeader>Organizasyon Detayları</ModalHeader>
+        <ModalCloseButton />
+        <ModalBody pb={6}>
+          <VStack spacing={4} align="start">
+            <Box>
+              <Text fontWeight="bold" fontSize="lg">{organization.name}</Text>
+              <HStack spacing={2} mt={1}>
+                <TypeBadge type={organization.type} />
+                <StatusBadge status={organization.status} />
+              </HStack>
+            </Box>
+            
+            <Divider />
+            
+            <Box>
+              <Text fontWeight="semibold" mb={2}>Açıklama</Text>
+              <Text color="gray.600">{organization.description}</Text>
+            </Box>
+
+            {organization.longDescription && (
+              <Box>
+                <Text fontWeight="semibold" mb={2}>Detaylı Açıklama</Text>
+                <Text color="gray.600">{organization.longDescription}</Text>
+              </Box>
+            )}
+
+            <SimpleGrid columns={2} spacing={4} w="full">
+              <Box>
+                <Text fontWeight="semibold" mb={1}>Konum</Text>
+                <Text color="gray.600">{organization.location || 'Belirtilmemiş'}</Text>
+              </Box>
+              <Box>
+                <Text fontWeight="semibold" mb={1}>Üye Sayısı</Text>
+                <Text color="gray.600">{organization.memberCount || 0}</Text>
+              </Box>
+              <Box>
+                <Text fontWeight="semibold" mb={1}>Kuruluş Yılı</Text>
+                <Text color="gray.600">{organization.foundedYear || 'Belirtilmemiş'}</Text>
+              </Box>
+              <Box>
+                <Text fontWeight="semibold" mb={1}>Website</Text>
+                <Text color="blue.500" as="a" href={organization.website} target="_blank">
+                  {organization.website || 'Belirtilmemiş'}
+                </Text>
+              </Box>
+            </SimpleGrid>
+
+            <Divider />
+
+            <Box w="full">
+              <Text fontWeight="semibold" mb={2}>İletişim Bilgileri</Text>
+              <VStack spacing={2} align="start">
+                <Text><strong>Email:</strong> {organization.email || 'Belirtilmemiş'}</Text>
+                <Text><strong>Telefon:</strong> {organization.phone || 'Belirtilmemiş'}</Text>
+                <Text><strong>Adres:</strong> {organization.address || 'Belirtilmemiş'}</Text>
+              </VStack>
+            </Box>
+
+            <Box w="full">
+              <Text fontWeight="semibold" mb={2}>Oluşturulma Tarihi</Text>
+              <Text color="gray.600">
+                {new Date(organization.createdAt).toLocaleDateString('tr-TR', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}
+              </Text>
+            </Box>
+          </VStack>
+        </ModalBody>
+      </ModalContent>
+    </Modal>
   );
 };
 
@@ -94,11 +172,9 @@ const AdminOrganizationsPage = () => {
     total: 0,
     totalPages: 0
   });
-  const [filters, setFilters] = useState({
-    search: '',
-    status: '',
-    type: ''
-  });
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [typeFilter, setTypeFilter] = useState('');
   const [selectedOrganization, setSelectedOrganization] = useState(null);
 
   const toast = useToast();
@@ -110,77 +186,27 @@ const AdminOrganizationsPage = () => {
       setLoading(true);
       setError(null);
 
-      // Mock data since Firebase/backend organization system is not implemented yet
-      const mockOrganizations = [
-        {
-          id: '1',
-          name: 'Kadın Hakları Derneği',
-          description: 'Kadın haklarını savunan STK',
-          type: 'ASSOCIATION',
-          status: 'ACTIVE',
-          contactPerson: 'Ayşe Yılmaz',
-          email: 'info@kadinhaklari.org',
-          phone: '+90 212 555 0001',
-          website: 'https://kadinhaklari.org',
-          address: 'İstanbul, Türkiye',
-          createdAt: new Date().toISOString(),
-          memberCount: 150,
-          projectCount: 12
-        },
-        {
-          id: '2',
-          name: 'Güçlü Kadın Vakfı',
-          description: 'Kadın girişimciliğini destekleyen vakıf',
-          type: 'FOUNDATION',
-          status: 'PENDING',
-          contactPerson: 'Fatma Demir',
-          email: 'info@guclukadin.org',
-          phone: '+90 312 555 0002',
-          website: 'https://guclukadin.org',
-          address: 'Ankara, Türkiye',
-          createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-          memberCount: 0,
-          projectCount: 0
-        },
-        {
-          id: '3',
-          name: 'Kadın Kooperatifleri Birliği',
-          description: 'Kadın kooperatiflerini destekleyen birlik',
-          type: 'COOPERATIVE',
-          status: 'ACTIVE',
-          contactPerson: 'Zehra Öztürk',
-          email: 'info@kadinkooperatifleri.org',
-          phone: '+90 232 555 0003',
-          website: 'https://kadinkooperatifleri.org',
-          address: 'İzmir, Türkiye',
-          createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-          memberCount: 85,
-          projectCount: 8
+      const response = await api.get('/organizations', {
+        params: {
+          page,
+          limit: 20,
+          search: search || undefined,
+          status: status || undefined,
+          type: type || undefined
         }
-      ];
-
-      // Apply filters
-      let filteredOrgs = mockOrganizations;
-      if (search) {
-        filteredOrgs = filteredOrgs.filter(org =>
-          org.name.toLowerCase().includes(search.toLowerCase()) ||
-          org.description.toLowerCase().includes(search.toLowerCase())
-        );
-      }
-      if (status) {
-        filteredOrgs = filteredOrgs.filter(org => org.status === status);
-      }
-      if (type) {
-        filteredOrgs = filteredOrgs.filter(org => org.type === type);
-      }
-
-      setOrganizations(filteredOrgs);
-      setPagination({
-        page,
-        limit: 20,
-        total: filteredOrgs.length,
-        totalPages: Math.ceil(filteredOrgs.length / 20)
       });
+
+      if (response.data.success) {
+        setOrganizations(response.data.data.organizations);
+        setPagination({
+          page: response.data.data.pagination.page,
+          limit: response.data.data.pagination.limit,
+          total: response.data.data.pagination.total,
+          totalPages: response.data.data.pagination.totalPages
+        });
+      } else {
+        throw new Error(response.data.error?.message || 'Organizasyonlar yüklenemedi');
+      }
     } catch (error) {
       console.error('Fetch organizations error:', error);
       setError(error.message);
@@ -189,52 +215,42 @@ const AdminOrganizationsPage = () => {
     }
   };
 
-  const handleSearch = (searchValue) => {
-    setFilters(prev => ({ ...prev, search: searchValue }));
-    fetchOrganizations(1, searchValue, filters.status, filters.type);
+  const handleSearch = () => {
+    fetchOrganizations(1, searchQuery, statusFilter, typeFilter);
   };
 
   const handleStatusFilter = (statusValue) => {
-    setFilters(prev => ({ ...prev, status: statusValue }));
-    fetchOrganizations(1, filters.search, statusValue, filters.type);
+    setStatusFilter(statusValue);
+    fetchOrganizations(1, searchQuery, statusValue, typeFilter);
   };
 
   const handleTypeFilter = (typeValue) => {
-    setFilters(prev => ({ ...prev, type: typeValue }));
-    fetchOrganizations(1, filters.search, filters.status, typeValue);
+    setTypeFilter(typeValue);
+    fetchOrganizations(1, searchQuery, statusFilter, typeValue);
   };
 
-  const handleViewOrganization = (organization) => {
+  const handleViewDetails = (organization) => {
     setSelectedOrganization(organization);
     detailModal.onOpen();
   };
 
-  const handleEditOrganization = (organization) => {
-    setSelectedOrganization(organization);
-    editModal.onOpen();
-  };
-
-  const handleApproveOrganization = async (organization) => {
+  const handleApprove = async (organization) => {
     try {
-      // Mock approval
-      const updatedOrg = { ...organization, status: 'ACTIVE' };
-      setOrganizations(prevOrgs =>
-        prevOrgs.map(org =>
-          org.id === organization.id ? updatedOrg : org
-        )
-      );
-
+      // API call to approve organization
       toast({
         title: 'Başarılı',
-        description: `${organization.name} onaylandı`,
+        description: `"${organization.name}" organizasyonu onaylandı`,
         status: 'success',
         duration: 3000,
         isClosable: true,
       });
+      
+      // Refresh the list
+      fetchOrganizations(pagination.page, searchQuery, statusFilter, typeFilter);
     } catch (error) {
       toast({
         title: 'Hata',
-        description: error.message || 'STK onaylanamadı',
+        description: error.message || 'Organizasyon onaylanamadı',
         status: 'error',
         duration: 5000,
         isClosable: true,
@@ -242,145 +258,129 @@ const AdminOrganizationsPage = () => {
     }
   };
 
-  const handleSuspendOrganization = async (organization) => {
+  const handleReject = async (organization) => {
     try {
-      // Mock suspension
-      const updatedOrg = { ...organization, status: 'SUSPENDED' };
-      setOrganizations(prevOrgs =>
-        prevOrgs.map(org =>
-          org.id === organization.id ? updatedOrg : org
-        )
-      );
-
+      // API call to reject organization
       toast({
         title: 'Başarılı',
-        description: `${organization.name} askıya alındı`,
+        description: `"${organization.name}" organizasyonu reddedildi`,
         status: 'success',
         duration: 3000,
         isClosable: true,
       });
+      
+      // Refresh the list
+      fetchOrganizations(pagination.page, searchQuery, statusFilter, typeFilter);
     } catch (error) {
       toast({
         title: 'Hata',
-        description: error.message || 'STK askıya alınamadı',
+        description: error.message || 'Organizasyon reddedilemedi',
         status: 'error',
         duration: 5000,
         isClosable: true,
       });
     }
-  };
-
-  const handleOrganizationUpdate = (updatedOrganization) => {
-    setOrganizations(prevOrgs =>
-      prevOrgs.map(org =>
-        org.id === updatedOrganization.id ? { ...org, ...updatedOrganization } : org
-      )
-    );
-  };
-
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('tr-TR');
-  };
-
-  const getStatusCounts = () => {
-    const active = organizations.filter(o => o.status === 'ACTIVE').length;
-    const pending = organizations.filter(o => o.status === 'PENDING').length;
-    const suspended = organizations.filter(o => o.status === 'SUSPENDED').length;
-    return { active, pending, suspended };
   };
 
   useEffect(() => {
     fetchOrganizations();
   }, []);
 
-  const statusCounts = getStatusCounts();
-
   return (
     <AdminLayout>
-      <VStack align="start" spacing={6}>
-        <HStack justify="space-between" w="full">
-          <Heading size="lg" color="brand.600">
-            STK Yönetimi
-          </Heading>
-          <Button leftIcon={<FiPlus />} colorScheme="brand">
-            Yeni STK Ekle
-          </Button>
-        </HStack>
+      <VStack spacing={6} align="start">
+        <Heading size="lg" color="brand.600">
+          Organizasyon Yönetimi
+        </Heading>
 
-        {/* Status Summary */}
-        <HStack spacing={4}>
-          <Badge colorScheme="green" px={3} py={1}>
-            {statusCounts.active} Aktif
-          </Badge>
-          <Badge colorScheme="yellow" px={3} py={1}>
-            {statusCounts.pending} Bekleyen
-          </Badge>
-          <Badge colorScheme="red" px={3} py={1}>
-            {statusCounts.suspended} Askıya Alınmış
-          </Badge>
-        </HStack>
+        {/* Stats Cards */}
+        <SimpleGrid columns={{ base: 1, md: 4 }} spacing={4} w="full">
+          <Stat bg="white" p={4} borderRadius="lg" shadow="sm">
+            <StatLabel fontSize="sm" color="gray.600">Toplam Organizasyon</StatLabel>
+            <StatNumber color="brand.500">{pagination.total}</StatNumber>
+          </Stat>
+          <Stat bg="white" p={4} borderRadius="lg" shadow="sm">
+            <StatLabel fontSize="sm" color="gray.600">Aktif</StatLabel>
+            <StatNumber color="green.500">
+              {organizations.filter(org => org.status === 'ACTIVE').length}
+            </StatNumber>
+          </Stat>
+          <Stat bg="white" p={4} borderRadius="lg" shadow="sm">
+            <StatLabel fontSize="sm" color="gray.600">Beklemede</StatLabel>
+            <StatNumber color="yellow.500">
+              {organizations.filter(org => org.status === 'PENDING').length}
+            </StatNumber>
+          </Stat>
+          <Stat bg="white" p={4} borderRadius="lg" shadow="sm">
+            <StatLabel fontSize="sm" color="gray.600">Reddedilen</StatLabel>
+            <StatNumber color="red.500">
+              {organizations.filter(org => org.status === 'REJECTED').length}
+            </StatNumber>
+          </Stat>
+        </SimpleGrid>
 
         {/* Filters */}
-        <HStack spacing={4} w="full">
-          <Box flex="1">
+        <Box bg="white" p={4} borderRadius="lg" shadow="sm" w="full">
+          <HStack spacing={4} wrap="wrap">
             <Input
-              placeholder="STK adı veya açıklama ile ara..."
-              value={filters.search}
-              onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
-              onKeyPress={(e) => e.key === 'Enter' && handleSearch(e.target.value)}
-              leftElement={<FiSearch />}
+              placeholder="Organizasyon ara..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+              maxW="300px"
             />
-          </Box>
-          <Select
-            placeholder="Tüm Durumlar"
-            value={filters.status}
-            onChange={(e) => handleStatusFilter(e.target.value)}
-            w="200px"
-          >
-            <option value="ACTIVE">Aktif</option>
-            <option value="PENDING">Bekleyen</option>
-            <option value="SUSPENDED">Askıya Alınmış</option>
-          </Select>
-          <Select
-            placeholder="Tüm Tipler"
-            value={filters.type}
-            onChange={(e) => handleTypeFilter(e.target.value)}
-            w="200px"
-          >
-            <option value="NGO">STK</option>
-            <option value="FOUNDATION">Vakıf</option>
-            <option value="ASSOCIATION">Dernek</option>
-            <option value="COOPERATIVE">Kooperatif</option>
-          </Select>
-          <Button
-            onClick={() => handleSearch(filters.search)}
-            colorScheme="brand"
-          >
-            Ara
-          </Button>
-        </HStack>
+            <Button leftIcon={<FiSearch />} onClick={handleSearch} colorScheme="brand">
+              Ara
+            </Button>
+            
+            <Select
+              placeholder="Durum Filtresi"
+              value={statusFilter}
+              onChange={(e) => handleStatusFilter(e.target.value)}
+              maxW="200px"
+            >
+              <option value="">Tüm Durumlar</option>
+              <option value="ACTIVE">Aktif</option>
+              <option value="PENDING">Beklemede</option>
+              <option value="SUSPENDED">Askıya Alınmış</option>
+              <option value="REJECTED">Reddedildi</option>
+            </Select>
+
+            <Select
+              placeholder="Tür Filtresi"
+              value={typeFilter}
+              onChange={(e) => handleTypeFilter(e.target.value)}
+              maxW="200px"
+            >
+              <option value="">Tüm Türler</option>
+              <option value="NGO">STK</option>
+              <option value="FOUNDATION">Vakıf</option>
+              <option value="ASSOCIATION">Dernek</option>
+              <option value="COOPERATIVE">Kooperatif</option>
+            </Select>
+          </HStack>
+        </Box>
 
         {/* Organizations Table */}
-        {loading ? (
-          <Flex justify="center" py={10}>
-            <Spinner size="lg" color="brand.500" />
-          </Flex>
-        ) : error ? (
-          <Alert status="error">
-            <AlertIcon />
-            {error}
-          </Alert>
-        ) : (
-          <Box w="full" overflowX="auto">
+        <Box bg="white" borderRadius="lg" shadow="sm" w="full" overflow="hidden">
+          {loading ? (
+            <Flex justify="center" py={8}>
+              <Spinner size="lg" color="brand.500" />
+            </Flex>
+          ) : error ? (
+            <Alert status="error" borderRadius="lg" m={4}>
+              <AlertIcon />
+              {error}
+            </Alert>
+          ) : (
             <Table variant="simple">
-              <Thead>
+              <Thead bg="gray.50">
                 <Tr>
-                  <Th>STK Adı</Th>
-                  <Th>Tip</Th>
+                  <Th>Organizasyon</Th>
+                  <Th>Tür</Th>
                   <Th>Durum</Th>
-                  <Th>İletişim Kişisi</Th>
                   <Th>Üye Sayısı</Th>
-                  <Th>Kayıt Tarihi</Th>
+                  <Th>Oluşturulma</Th>
                   <Th>İşlemler</Th>
                 </Tr>
               </Thead>
@@ -389,59 +389,74 @@ const AdminOrganizationsPage = () => {
                   <Tr key={organization.id}>
                     <Td>
                       <VStack align="start" spacing={1}>
-                        <Text fontWeight="medium">{organization.name}</Text>
+                        <Text fontWeight="semibold">{organization.name}</Text>
                         <Text fontSize="sm" color="gray.600" noOfLines={1}>
                           {organization.description}
                         </Text>
                       </VStack>
                     </Td>
                     <Td>
-                      <OrganizationTypeBadge type={organization.type} />
+                      <TypeBadge type={organization.type} />
                     </Td>
                     <Td>
-                      <OrganizationStatusBadge status={organization.status} />
+                      <StatusBadge status={organization.status} />
+                    </Td>
+                    <Td>{organization.memberCount || 0}</Td>
+                    <Td>
+                      {new Date(organization.createdAt).toLocaleDateString('tr-TR')}
                     </Td>
                     <Td>
-                      <VStack align="start" spacing={0}>
-                        <Text fontSize="sm">{organization.contactPerson}</Text>
-                        <Text fontSize="xs" color="gray.600">{organization.email}</Text>
-                      </VStack>
-                    </Td>
-                    <Td>{organization.memberCount}</Td>
-                    <Td>{formatDate(organization.createdAt)}</Td>
-                    <Td>
-                      <OrganizationActionsMenu
-                        organization={organization}
-                        onView={handleViewOrganization}
-                        onEdit={handleEditOrganization}
-                        onApprove={handleApproveOrganization}
-                        onSuspend={handleSuspendOrganization}
-                      />
+                      <HStack spacing={2}>
+                        <IconButton
+                          icon={<FiEye />}
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleViewDetails(organization)}
+                        />
+                        {organization.status === 'PENDING' && (
+                          <>
+                            <IconButton
+                              icon={<FiCheck />}
+                              size="sm"
+                              colorScheme="green"
+                              variant="ghost"
+                              onClick={() => handleApprove(organization)}
+                            />
+                            <IconButton
+                              icon={<FiX />}
+                              size="sm"
+                              colorScheme="red"
+                              variant="ghost"
+                              onClick={() => handleReject(organization)}
+                            />
+                          </>
+                        )}
+                      </HStack>
                     </Td>
                   </Tr>
                 ))}
               </Tbody>
             </Table>
-          </Box>
-        )}
+          )}
+        </Box>
 
         {/* Pagination */}
         {pagination.totalPages > 1 && (
-          <HStack spacing={2}>
+          <HStack spacing={2} justify="center" w="full">
             <Button
               size="sm"
-              onClick={() => fetchOrganizations(pagination.page - 1, filters.search, filters.status, filters.type)}
               disabled={pagination.page === 1}
+              onClick={() => fetchOrganizations(pagination.page - 1, searchQuery, statusFilter, typeFilter)}
             >
               Önceki
             </Button>
-            <Text fontSize="sm">
+            <Text fontSize="sm" color="gray.600">
               Sayfa {pagination.page} / {pagination.totalPages}
             </Text>
             <Button
               size="sm"
-              onClick={() => fetchOrganizations(pagination.page + 1, filters.search, filters.status, filters.type)}
               disabled={pagination.page === pagination.totalPages}
+              onClick={() => fetchOrganizations(pagination.page + 1, searchQuery, statusFilter, typeFilter)}
             >
               Sonraki
             </Button>
@@ -449,22 +464,11 @@ const AdminOrganizationsPage = () => {
         )}
       </VStack>
 
-      {/* Modals */}
-      {selectedOrganization && (
-        <>
-          <OrganizationDetailModal
-            isOpen={detailModal.isOpen}
-            onClose={detailModal.onClose}
-            organization={selectedOrganization}
-          />
-          <OrganizationEditModal
-            isOpen={editModal.isOpen}
-            onClose={editModal.onClose}
-            organization={selectedOrganization}
-            onUpdate={handleOrganizationUpdate}
-          />
-        </>
-      )}
+      <OrganizationDetailModal
+        isOpen={detailModal.isOpen}
+        onClose={detailModal.onClose}
+        organization={selectedOrganization}
+      />
     </AdminLayout>
   );
 };

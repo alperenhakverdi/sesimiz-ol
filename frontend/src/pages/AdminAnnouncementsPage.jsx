@@ -12,77 +12,285 @@ import {
   Td,
   Badge,
   Button,
+  Input,
   Select,
   Spinner,
   Alert,
   AlertIcon,
   IconButton,
-  Menu,
-  MenuButton,
-  MenuList,
-  MenuItem,
+  useDisclosure,
+  useToast,
   Text,
   Flex,
-  useToast,
-  useDisclosure
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalCloseButton,
+  Divider,
+  SimpleGrid,
+  Stat,
+  StatLabel,
+  StatNumber,
+  Textarea,
+  FormControl,
+  FormLabel
 } from '@chakra-ui/react';
-import { FiMoreVertical, FiEye, FiEdit, FiPlus, FiSend, FiTrash2 } from 'react-icons/fi';
-import AdminLayout from '../components/admin/AdminLayout';
-import AnnouncementCreateModal from '../components/admin/modals/AnnouncementCreateModal';
-import AnnouncementDetailModal from '../components/admin/modals/AnnouncementDetailModal';
+import { FiSearch, FiPlus, FiEye, FiEdit, FiTrash2, FiSend } from 'react-icons/fi';
+import AdminLayout from '../../components/admin/AdminLayout';
+import api from '../../services/api';
 
-const AnnouncementStatusBadge = ({ status }) => {
-  const statusConfig = {
-    DRAFT: { colorScheme: 'gray', label: 'Taslak' },
-    SCHEDULED: { colorScheme: 'yellow', label: 'Zamanlandı' },
-    SENT: { colorScheme: 'green', label: 'Gönderildi' },
-    CANCELLED: { colorScheme: 'red', label: 'İptal Edildi' }
-  };
-
-  const config = statusConfig[status] || statusConfig.DRAFT;
-  return <Badge colorScheme={config.colorScheme}>{config.label}</Badge>;
-};
-
-const AnnouncementTypeBadge = ({ type }) => {
+const TypeBadge = ({ type }) => {
   const typeConfig = {
-    GENERAL: { colorScheme: 'blue', label: 'Genel' },
-    USER: { colorScheme: 'purple', label: 'Kullanıcılar' },
-    ORGANIZATION: { colorScheme: 'teal', label: 'STK\'lar' },
-    ADMIN: { colorScheme: 'orange', label: 'Adminler' }
+    GENERAL: { color: 'blue', text: 'Genel' },
+    USER: { color: 'green', text: 'Kullanıcı' },
+    ORGANIZATION: { color: 'purple', text: 'Organizasyon' },
+    ADMIN: { color: 'red', text: 'Admin' }
   };
 
-  const config = typeConfig[type] || typeConfig.GENERAL;
-  return <Badge colorScheme={config.colorScheme}>{config.label}</Badge>;
+  const config = typeConfig[type] || { color: 'gray', text: type };
+  
+  return (
+    <Badge colorScheme={config.color} variant="subtle">
+      {config.text}
+    </Badge>
+  );
 };
 
-const AnnouncementActionsMenu = ({ announcement, onView, onEdit, onSend, onDelete }) => {
-  const isDraft = announcement.status === 'DRAFT';
-  const isScheduled = announcement.status === 'SCHEDULED';
+const VisibilityBadge = ({ visibility }) => {
+  const visibilityConfig = {
+    PUBLIC: { color: 'green', text: 'Herkese Açık' },
+    PRIVATE: { color: 'red', text: 'Özel' },
+    ORGANIZATION: { color: 'purple', text: 'Organizasyon' }
+  };
+
+  const config = visibilityConfig[visibility] || { color: 'gray', text: visibility };
+  
+  return (
+    <Badge colorScheme={config.color} variant="outline">
+      {config.text}
+    </Badge>
+  );
+};
+
+const AnnouncementDetailModal = ({ isOpen, onClose, announcement }) => {
+  if (!announcement) return null;
 
   return (
-    <Menu>
-      <MenuButton as={IconButton} icon={<FiMoreVertical />} variant="ghost" size="sm" />
-      <MenuList>
-        <MenuItem icon={<FiEye />} onClick={() => onView(announcement)}>
-          Detayları Görüntüle
-        </MenuItem>
-        {(isDraft || isScheduled) && (
-          <MenuItem icon={<FiEdit />} onClick={() => onEdit(announcement)}>
-            Düzenle
-          </MenuItem>
-        )}
-        {isDraft && (
-          <MenuItem icon={<FiSend />} onClick={() => onSend(announcement)} color="green.500">
-            Gönder
-          </MenuItem>
-        )}
-        {(isDraft || isScheduled) && (
-          <MenuItem icon={<FiTrash2 />} onClick={() => onDelete(announcement)} color="red.500">
-            Sil
-          </MenuItem>
-        )}
-      </MenuList>
-    </Menu>
+    <Modal isOpen={isOpen} onClose={onClose} size="xl">
+      <ModalOverlay />
+      <ModalContent>
+        <ModalHeader>Duyuru Detayları</ModalHeader>
+        <ModalCloseButton />
+        <ModalBody pb={6}>
+          <VStack spacing={4} align="start">
+            <Box>
+              <Text fontWeight="bold" fontSize="lg">{announcement.title}</Text>
+              <HStack spacing={2} mt={1}>
+                <TypeBadge type={announcement.type} />
+                <VisibilityBadge visibility={announcement.visibility} />
+              </HStack>
+            </Box>
+            
+            <Divider />
+            
+            <Box>
+              <Text fontWeight="semibold" mb={2}>İçerik</Text>
+              <Text color="gray.600" whiteSpace="pre-wrap">{announcement.body}</Text>
+            </Box>
+
+            <SimpleGrid columns={2} spacing={4} w="full">
+              <Box>
+                <Text fontWeight="semibold" mb={1}>Başlangıç Tarihi</Text>
+                <Text color="gray.600">
+                  {announcement.startsAt 
+                    ? new Date(announcement.startsAt).toLocaleDateString('tr-TR')
+                    : 'Belirtilmemiş'
+                  }
+                </Text>
+              </Box>
+              <Box>
+                <Text fontWeight="semibold" mb={1}>Bitiş Tarihi</Text>
+                <Text color="gray.600">
+                  {announcement.endsAt 
+                    ? new Date(announcement.endsAt).toLocaleDateString('tr-TR')
+                    : 'Belirtilmemiş'
+                  }
+                </Text>
+              </Box>
+            </SimpleGrid>
+
+            <Divider />
+
+            <Box w="full">
+              <Text fontWeight="semibold" mb={2}>Durum</Text>
+              <Text color="gray.600">
+                {announcement.isActive ? 'Aktif' : 'Pasif'}
+              </Text>
+            </Box>
+
+            <Box w="full">
+              <Text fontWeight="semibold" mb={2}>Oluşturulma Tarihi</Text>
+              <Text color="gray.600">
+                {new Date(announcement.createdAt).toLocaleDateString('tr-TR', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}
+              </Text>
+            </Box>
+          </VStack>
+        </ModalBody>
+      </ModalContent>
+    </Modal>
+  );
+};
+
+const CreateAnnouncementModal = ({ isOpen, onClose, onSuccess }) => {
+  const [formData, setFormData] = useState({
+    title: '',
+    body: '',
+    type: 'GENERAL',
+    visibility: 'PUBLIC',
+    startsAt: '',
+    endsAt: ''
+  });
+  const [loading, setLoading] = useState(false);
+  const toast = useToast();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      setLoading(true);
+      
+      const response = await api.post('/announcements', formData);
+      
+      if (response.data.success) {
+        toast({
+          title: 'Başarılı',
+          description: 'Duyuru başarıyla oluşturuldu',
+          status: 'success',
+          duration: 3000,
+          isClosable: true,
+        });
+        
+        onSuccess();
+        onClose();
+        setFormData({
+          title: '',
+          body: '',
+          type: 'GENERAL',
+          visibility: 'PUBLIC',
+          startsAt: '',
+          endsAt: ''
+        });
+      } else {
+        throw new Error(response.data.error?.message || 'Duyuru oluşturulamadı');
+      }
+    } catch (error) {
+      toast({
+        title: 'Hata',
+        description: error.message || 'Duyuru oluşturulamadı',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} size="xl">
+      <ModalOverlay />
+      <ModalContent>
+        <ModalHeader>Yeni Duyuru Oluştur</ModalHeader>
+        <ModalCloseButton />
+        <ModalBody pb={6}>
+          <form onSubmit={handleSubmit}>
+            <VStack spacing={4}>
+              <FormControl isRequired>
+                <FormLabel>Başlık</FormLabel>
+                <Input
+                  value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  placeholder="Duyuru başlığı"
+                />
+              </FormControl>
+
+              <FormControl isRequired>
+                <FormLabel>İçerik</FormLabel>
+                <Textarea
+                  value={formData.body}
+                  onChange={(e) => setFormData({ ...formData, body: e.target.value })}
+                  placeholder="Duyuru içeriği"
+                  rows={6}
+                />
+              </FormControl>
+
+              <HStack spacing={4} w="full">
+                <FormControl>
+                  <FormLabel>Tür</FormLabel>
+                  <Select
+                    value={formData.type}
+                    onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                  >
+                    <option value="GENERAL">Genel</option>
+                    <option value="USER">Kullanıcı</option>
+                    <option value="ORGANIZATION">Organizasyon</option>
+                    <option value="ADMIN">Admin</option>
+                  </Select>
+                </FormControl>
+
+                <FormControl>
+                  <FormLabel>Görünürlük</FormLabel>
+                  <Select
+                    value={formData.visibility}
+                    onChange={(e) => setFormData({ ...formData, visibility: e.target.value })}
+                  >
+                    <option value="PUBLIC">Herkese Açık</option>
+                    <option value="PRIVATE">Özel</option>
+                    <option value="ORGANIZATION">Organizasyon</option>
+                  </Select>
+                </FormControl>
+              </HStack>
+
+              <HStack spacing={4} w="full">
+                <FormControl>
+                  <FormLabel>Başlangıç Tarihi</FormLabel>
+                  <Input
+                    type="datetime-local"
+                    value={formData.startsAt}
+                    onChange={(e) => setFormData({ ...formData, startsAt: e.target.value })}
+                  />
+                </FormControl>
+
+                <FormControl>
+                  <FormLabel>Bitiş Tarihi</FormLabel>
+                  <Input
+                    type="datetime-local"
+                    value={formData.endsAt}
+                    onChange={(e) => setFormData({ ...formData, endsAt: e.target.value })}
+                  />
+                </FormControl>
+              </HStack>
+
+              <HStack spacing={4} w="full" justify="end">
+                <Button variant="ghost" onClick={onClose}>
+                  İptal
+                </Button>
+                <Button type="submit" colorScheme="brand" isLoading={loading}>
+                  Oluştur
+                </Button>
+              </HStack>
+            </VStack>
+          </form>
+        </ModalBody>
+      </ModalContent>
+    </Modal>
   );
 };
 
@@ -108,57 +316,25 @@ const AdminAnnouncementsPage = () => {
       setLoading(true);
       setError(null);
 
-      // Mock data since announcement system is not implemented yet
-      const mockAnnouncements = [
-        {
-          id: '1',
-          title: 'Platformda Yeni Özellikler',
-          content: 'Sevgili kullanıcılarımız, platformumuzda yeni özellikler eklendi...',
-          type: 'GENERAL',
-          status: 'SENT',
-          targetAudience: 'all',
-          createdAt: new Date().toISOString(),
-          sentAt: new Date().toISOString(),
-          recipientCount: 245,
-          readCount: 156
-        },
-        {
-          id: '2',
-          title: 'STK Başvuru Süreci Güncellendi',
-          content: 'STK başvuru sürecinde önemli değişiklikler yapıldı...',
-          type: 'ORGANIZATION',
-          status: 'SCHEDULED',
-          targetAudience: 'organizations',
-          createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-          scheduledAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-          recipientCount: 15,
-          readCount: 0
-        },
-        {
-          id: '3',
-          title: 'Bakım Duyurusu',
-          content: 'Bu pazartesi gece 02:00-04:00 arası bakım çalışması...',
-          type: 'USER',
-          status: 'DRAFT',
-          targetAudience: 'users',
-          createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-          recipientCount: 0,
-          readCount: 0
+      const response = await api.get('/announcements', {
+        params: {
+          page,
+          limit: 20,
+          status: status || undefined
         }
-      ];
-
-      // Filter by status if provided
-      const filteredAnnouncements = status
-        ? mockAnnouncements.filter(ann => ann.status === status)
-        : mockAnnouncements;
-
-      setAnnouncements(filteredAnnouncements);
-      setPagination({
-        page,
-        limit: 20,
-        total: filteredAnnouncements.length,
-        totalPages: Math.ceil(filteredAnnouncements.length / 20)
       });
+
+      if (response.data.success) {
+        setAnnouncements(response.data.data.announcements);
+        setPagination({
+          page: response.data.data.pagination.page,
+          limit: response.data.data.pagination.limit,
+          total: response.data.data.pagination.total,
+          totalPages: response.data.data.pagination.totalPages
+        });
+      } else {
+        throw new Error(response.data.error?.message || 'Duyurular yüklenemedi');
+      }
     } catch (error) {
       console.error('Fetch announcements error:', error);
       setError(error.message);
@@ -172,62 +348,15 @@ const AdminAnnouncementsPage = () => {
     fetchAnnouncements(1, statusValue);
   };
 
-  const handleCreateAnnouncement = () => {
-    setSelectedAnnouncement(null);
-    createModal.onOpen();
-  };
-
-  const handleViewAnnouncement = (announcement) => {
+  const handleViewDetails = (announcement) => {
     setSelectedAnnouncement(announcement);
     detailModal.onOpen();
   };
 
-  const handleEditAnnouncement = (announcement) => {
-    setSelectedAnnouncement(announcement);
-    createModal.onOpen();
-  };
-
-  const handleSendAnnouncement = async (announcement) => {
+  const handleDelete = async (announcement) => {
     try {
-      // Mock send
-      const updatedAnn = {
-        ...announcement,
-        status: 'SENT',
-        sentAt: new Date().toISOString(),
-        readCount: 0
-      };
-
-      setAnnouncements(prevAnns =>
-        prevAnns.map(ann =>
-          ann.id === announcement.id ? updatedAnn : ann
-        )
-      );
-
-      toast({
-        title: 'Başarılı',
-        description: `"${announcement.title}" duyurusu gönderildi`,
-        status: 'success',
-        duration: 3000,
-        isClosable: true,
-      });
-    } catch (error) {
-      toast({
-        title: 'Hata',
-        description: error.message || 'Duyuru gönderilemedi',
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-      });
-    }
-  };
-
-  const handleDeleteAnnouncement = async (announcement) => {
-    try {
-      // Mock delete
-      setAnnouncements(prevAnns =>
-        prevAnns.filter(ann => ann.id !== announcement.id)
-      );
-
+      await api.delete(`/announcements/${announcement.id}`);
+      
       toast({
         title: 'Başarılı',
         description: `"${announcement.title}" duyurusu silindi`,
@@ -235,6 +364,8 @@ const AdminAnnouncementsPage = () => {
         duration: 3000,
         isClosable: true,
       });
+      
+      fetchAnnouncements(pagination.page, statusFilter);
     } catch (error) {
       toast({
         title: 'Hata',
@@ -246,106 +377,88 @@ const AdminAnnouncementsPage = () => {
     }
   };
 
-  const handleAnnouncementUpdate = (updatedAnnouncement) => {
-    if (updatedAnnouncement.id) {
-      // Update existing
-      setAnnouncements(prevAnns =>
-        prevAnns.map(ann =>
-          ann.id === updatedAnnouncement.id ? { ...ann, ...updatedAnnouncement } : ann
-        )
-      );
-    } else {
-      // Add new
-      const newAnnouncement = {
-        ...updatedAnnouncement,
-        id: Date.now().toString(),
-        createdAt: new Date().toISOString(),
-        recipientCount: 0,
-        readCount: 0
-      };
-      setAnnouncements(prev => [newAnnouncement, ...prev]);
-    }
-  };
-
-  const formatDate = (dateString) => {
-    if (!dateString) return '-';
-    return new Date(dateString).toLocaleDateString('tr-TR');
-  };
-
-  const getStatusCounts = () => {
-    const draft = announcements.filter(a => a.status === 'DRAFT').length;
-    const scheduled = announcements.filter(a => a.status === 'SCHEDULED').length;
-    const sent = announcements.filter(a => a.status === 'SENT').length;
-    return { draft, scheduled, sent };
-  };
-
   useEffect(() => {
     fetchAnnouncements();
   }, []);
 
-  const statusCounts = getStatusCounts();
-
   return (
     <AdminLayout>
-      <VStack align="start" spacing={6}>
+      <VStack spacing={6} align="start">
         <HStack justify="space-between" w="full">
           <Heading size="lg" color="brand.600">
             Duyuru Yönetimi
           </Heading>
-          <Button leftIcon={<FiPlus />} colorScheme="brand" onClick={handleCreateAnnouncement}>
+          <Button
+            leftIcon={<FiPlus />}
+            colorScheme="brand"
+            onClick={createModal.onOpen}
+          >
             Yeni Duyuru
           </Button>
         </HStack>
 
-        {/* Status Summary */}
-        <HStack spacing={4}>
-          <Badge colorScheme="gray" px={3} py={1}>
-            {statusCounts.draft} Taslak
-          </Badge>
-          <Badge colorScheme="yellow" px={3} py={1}>
-            {statusCounts.scheduled} Zamanlandı
-          </Badge>
-          <Badge colorScheme="green" px={3} py={1}>
-            {statusCounts.sent} Gönderildi
-          </Badge>
-        </HStack>
+        {/* Stats Cards */}
+        <SimpleGrid columns={{ base: 1, md: 4 }} spacing={4} w="full">
+          <Stat bg="white" p={4} borderRadius="lg" shadow="sm">
+            <StatLabel fontSize="sm" color="gray.600">Toplam Duyuru</StatLabel>
+            <StatNumber color="brand.500">{pagination.total}</StatNumber>
+          </Stat>
+          <Stat bg="white" p={4} borderRadius="lg" shadow="sm">
+            <StatLabel fontSize="sm" color="gray.600">Aktif</StatLabel>
+            <StatNumber color="green.500">
+              {announcements.filter(ann => ann.isActive).length}
+            </StatNumber>
+          </Stat>
+          <Stat bg="white" p={4} borderRadius="lg" shadow="sm">
+            <StatLabel fontSize="sm" color="gray.600">Genel</StatLabel>
+            <StatNumber color="blue.500">
+              {announcements.filter(ann => ann.type === 'GENERAL').length}
+            </StatNumber>
+          </Stat>
+          <Stat bg="white" p={4} borderRadius="lg" shadow="sm">
+            <StatLabel fontSize="sm" color="gray.600">Organizasyon</StatLabel>
+            <StatNumber color="purple.500">
+              {announcements.filter(ann => ann.type === 'ORGANIZATION').length}
+            </StatNumber>
+          </Stat>
+        </SimpleGrid>
 
         {/* Filters */}
-        <HStack spacing={4} w="full">
-          <Select
-            placeholder="Tüm Durumlar"
-            value={statusFilter}
-            onChange={(e) => handleStatusFilter(e.target.value)}
-            w="200px"
-          >
-            <option value="DRAFT">Taslak</option>
-            <option value="SCHEDULED">Zamanlandı</option>
-            <option value="SENT">Gönderildi</option>
-            <option value="CANCELLED">İptal Edildi</option>
-          </Select>
-        </HStack>
+        <Box bg="white" p={4} borderRadius="lg" shadow="sm" w="full">
+          <HStack spacing={4}>
+            <Select
+              placeholder="Durum Filtresi"
+              value={statusFilter}
+              onChange={(e) => handleStatusFilter(e.target.value)}
+              maxW="200px"
+            >
+              <option value="">Tüm Durumlar</option>
+              <option value="ACTIVE">Aktif</option>
+              <option value="INACTIVE">Pasif</option>
+            </Select>
+          </HStack>
+        </Box>
 
         {/* Announcements Table */}
-        {loading ? (
-          <Flex justify="center" py={10}>
-            <Spinner size="lg" color="brand.500" />
-          </Flex>
-        ) : error ? (
-          <Alert status="error">
-            <AlertIcon />
-            {error}
-          </Alert>
-        ) : (
-          <Box w="full" overflowX="auto">
+        <Box bg="white" borderRadius="lg" shadow="sm" w="full" overflow="hidden">
+          {loading ? (
+            <Flex justify="center" py={8}>
+              <Spinner size="lg" color="brand.500" />
+            </Flex>
+          ) : error ? (
+            <Alert status="error" borderRadius="lg" m={4}>
+              <AlertIcon />
+              {error}
+            </Alert>
+          ) : (
             <Table variant="simple">
-              <Thead>
+              <Thead bg="gray.50">
                 <Tr>
-                  <Th>Duyuru</Th>
-                  <Th>Tip</Th>
+                  <Th>Başlık</Th>
+                  <Th>Tür</Th>
+                  <Th>Görünürlük</Th>
                   <Th>Durum</Th>
-                  <Th>Alıcı Sayısı</Th>
-                  <Th>Okunma</Th>
-                  <Th>Tarih</Th>
+                  <Th>Oluşturulma</Th>
                   <Th>İşlemler</Th>
                 </Tr>
               </Thead>
@@ -354,71 +467,67 @@ const AdminAnnouncementsPage = () => {
                   <Tr key={announcement.id}>
                     <Td>
                       <VStack align="start" spacing={1}>
-                        <Text fontWeight="medium" noOfLines={1}>
-                          {announcement.title}
-                        </Text>
+                        <Text fontWeight="semibold">{announcement.title}</Text>
                         <Text fontSize="sm" color="gray.600" noOfLines={2}>
-                          {announcement.content}
+                          {announcement.body}
                         </Text>
                       </VStack>
                     </Td>
                     <Td>
-                      <AnnouncementTypeBadge type={announcement.type} />
+                      <TypeBadge type={announcement.type} />
                     </Td>
                     <Td>
-                      <AnnouncementStatusBadge status={announcement.status} />
-                    </Td>
-                    <Td>{announcement.recipientCount}</Td>
-                    <Td>
-                      {announcement.status === 'SENT' ? (
-                        <Text fontSize="sm">
-                          {announcement.readCount} / {announcement.recipientCount}
-                        </Text>
-                      ) : (
-                        '-'
-                      )}
+                      <VisibilityBadge visibility={announcement.visibility} />
                     </Td>
                     <Td>
-                      {announcement.status === 'SENT'
-                        ? formatDate(announcement.sentAt)
-                        : announcement.status === 'SCHEDULED'
-                        ? formatDate(announcement.scheduledAt)
-                        : formatDate(announcement.createdAt)
-                      }
+                      <Badge colorScheme={announcement.isActive ? 'green' : 'red'} variant="subtle">
+                        {announcement.isActive ? 'Aktif' : 'Pasif'}
+                      </Badge>
                     </Td>
                     <Td>
-                      <AnnouncementActionsMenu
-                        announcement={announcement}
-                        onView={handleViewAnnouncement}
-                        onEdit={handleEditAnnouncement}
-                        onSend={handleSendAnnouncement}
-                        onDelete={handleDeleteAnnouncement}
-                      />
+                      {new Date(announcement.createdAt).toLocaleDateString('tr-TR')}
+                    </Td>
+                    <Td>
+                      <HStack spacing={2}>
+                        <IconButton
+                          icon={<FiEye />}
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleViewDetails(announcement)}
+                        />
+                        <IconButton
+                          icon={<FiTrash2 />}
+                          size="sm"
+                          colorScheme="red"
+                          variant="ghost"
+                          onClick={() => handleDelete(announcement)}
+                        />
+                      </HStack>
                     </Td>
                   </Tr>
                 ))}
               </Tbody>
             </Table>
-          </Box>
-        )}
+          )}
+        </Box>
 
         {/* Pagination */}
         {pagination.totalPages > 1 && (
-          <HStack spacing={2}>
+          <HStack spacing={2} justify="center" w="full">
             <Button
               size="sm"
-              onClick={() => fetchAnnouncements(pagination.page - 1, statusFilter)}
               disabled={pagination.page === 1}
+              onClick={() => fetchAnnouncements(pagination.page - 1, statusFilter)}
             >
               Önceki
             </Button>
-            <Text fontSize="sm">
+            <Text fontSize="sm" color="gray.600">
               Sayfa {pagination.page} / {pagination.totalPages}
             </Text>
             <Button
               size="sm"
-              onClick={() => fetchAnnouncements(pagination.page + 1, statusFilter)}
               disabled={pagination.page === pagination.totalPages}
+              onClick={() => fetchAnnouncements(pagination.page + 1, statusFilter)}
             >
               Sonraki
             </Button>
@@ -426,21 +535,17 @@ const AdminAnnouncementsPage = () => {
         )}
       </VStack>
 
-      {/* Modals */}
-      <AnnouncementCreateModal
-        isOpen={createModal.isOpen}
-        onClose={createModal.onClose}
+      <AnnouncementDetailModal
+        isOpen={detailModal.isOpen}
+        onClose={detailModal.onClose}
         announcement={selectedAnnouncement}
-        onUpdate={handleAnnouncementUpdate}
       />
 
-      {selectedAnnouncement && (
-        <AnnouncementDetailModal
-          isOpen={detailModal.isOpen}
-          onClose={detailModal.onClose}
-          announcement={selectedAnnouncement}
-        />
-      )}
+      <CreateAnnouncementModal
+        isOpen={createModal.isOpen}
+        onClose={createModal.onClose}
+        onSuccess={() => fetchAnnouncements(pagination.page, statusFilter)}
+      />
     </AdminLayout>
   );
 };
