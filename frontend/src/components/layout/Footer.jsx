@@ -45,6 +45,30 @@ const Footer = () => {
           >
             <Link 
               as={RouterLink} 
+              to="/stklar"
+              color={linkColor}
+              _hover={{ color: linkHoverColor, textDecoration: 'underline' }}
+            >
+              STK'lar
+            </Link>
+            <Link 
+              as={RouterLink} 
+              to="/topluluk"
+              color={linkColor}
+              _hover={{ color: linkHoverColor, textDecoration: 'underline' }}
+            >
+              Topluluk
+            </Link>
+            <Link 
+              as={RouterLink} 
+              to="/duyurular"
+              color={linkColor}
+              _hover={{ color: linkHoverColor, textDecoration: 'underline' }}
+            >
+              Duyurular
+            </Link>
+            <Link 
+              as={RouterLink} 
               to="/hakkinda"
               color={linkColor}
               _hover={{ color: linkHoverColor, textDecoration: 'underline' }}
