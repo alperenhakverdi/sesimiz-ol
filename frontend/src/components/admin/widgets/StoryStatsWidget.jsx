@@ -73,10 +73,10 @@ const StoryStatsWidget = () => {
 
         const response = await api.get('/admin/metrics');
 
-        if (response.success) {
-          setStats(response.data.stories);
+        if (response.data.success) {
+          setStats(response.data.data.stories);
         } else {
-          throw new Error(response.error?.message || 'Veri yüklenemedi');
+          throw new Error(response.data.error?.message || 'Veri yüklenemedi');
         }
       } catch (error) {
         setError(error.message || 'Hikaye istatistikleri yüklenemedi');

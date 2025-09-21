@@ -73,10 +73,10 @@ const UserStatsWidget = () => {
 
         const response = await api.get('/admin/metrics');
 
-        if (response.success) {
-          setStats(response.data.users);
+        if (response.data.success) {
+          setStats(response.data.data.users);
         } else {
-          throw new Error(response.error?.message || 'Veri yüklenemedi');
+          throw new Error(response.data.error?.message || 'Veri yüklenemedi');
         }
       } catch (error) {
         setError(error.message || 'Kullanıcı istatistikleri yüklenemedi');
