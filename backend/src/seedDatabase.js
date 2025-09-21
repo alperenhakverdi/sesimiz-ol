@@ -306,11 +306,109 @@ async function main() {
   }
   
   console.log('💬 ' + comments.length + ' yorum oluşturuldu')
+  
+  // Create organizations
+  console.log('🏢 Organizasyonlar oluşturuluyor...')
+  const organizationsData = [
+    {
+      name: 'Kadın Dayanışma Vakfı',
+      slug: 'kadin-dayanisma-vakfi',
+      type: 'FOUNDATION',
+      status: 'ACTIVE',
+      description: 'Kadınların toplumsal hayatta eşit katılımını destekleyen vakıf.',
+      longDescription: 'Kadın Dayanışma Vakfı, kadınların toplumsal hayatta eşit katılımını desteklemek, kadına yönelik şiddeti önlemek ve kadın dayanışmasını güçlendirmek amacıyla kurulmuştur.',
+      location: 'İstanbul',
+      address: 'Beyoğlu, İstiklal Caddesi No:123, 34433 İstanbul',
+      memberCount: 2500,
+      foundedYear: 1995,
+      website: 'https://kadindayanisma.org',
+      email: 'info@kadindayanisma.org',
+      phone: '+90 212 555 0123',
+      activities: ['Hukuki Danışmanlık', 'Psikolojik Destek', 'Meslek Edindirme Kursları']
+    },
+    {
+      name: 'Çevre Koruma Derneği',
+      slug: 'cevre-koruma-dernegi',
+      type: 'ASSOCIATION',
+      status: 'ACTIVE',
+      description: 'Doğal yaşamı koruma ve çevre bilincini artırma derneği.',
+      longDescription: 'Çevre Koruma Derneği, doğal yaşamı korumak, çevre bilincini artırmak ve sürdürülebilir yaşam tarzını yaygınlaştırmak için kurulmuştur.',
+      location: 'Ankara',
+      address: 'Çankaya, Kızılay Meydanı No:45, 06420 Ankara',
+      memberCount: 1800,
+      foundedYear: 2001,
+      website: 'https://cevrekoruma.org.tr',
+      email: 'iletisim@cevrekoruma.org.tr',
+      phone: '+90 312 555 0456',
+      activities: ['Ağaçlandırma Kampanyaları', 'Çevre Temizliği', 'Eğitim Programları']
+    },
+    {
+      name: 'Eğitim Gönüllüleri STK',
+      slug: 'egitim-gonulluleri-stk',
+      type: 'NGO',
+      status: 'ACTIVE',
+      description: 'Eğitim fırsatlarını eşitleme amacıyla kurulan STK.',
+      longDescription: 'Eğitim Gönüllüleri STK, eğitim fırsatlarını eşitleme ve kaliteli eğitime erişimi artırma amacıyla kurulmuştur.',
+      location: 'İzmir',
+      address: 'Konak, Alsancak Mahallesi No:67, 35220 İzmir',
+      memberCount: 950,
+      foundedYear: 2010,
+      website: 'https://egitimgonulluleri.org',
+      email: 'info@egitimgonulluleri.org',
+      phone: '+90 232 555 0789',
+      activities: ['Eğitim Programları', 'Mentorluk', 'Burs Desteği']
+    }
+  ]
+
+  const organizations = []
+  for (const orgData of organizationsData) {
+    const org = await prisma.organization.create({
+      data: orgData
+    })
+    organizations.push(org)
+  }
+
+  // Create announcements
+  console.log('📢 Duyurular oluşturuluyor...')
+  const announcementsData = [
+    {
+      title: 'Platformumuza Yeni Özellikler Eklendi!',
+      body: 'Sevgili kullanıcılarımız, platformumuza STK ve Topluluk sayfaları gibi birçok yeni özellik eklendi. Bu güncellemelerle birlikte deneyiminiz daha da zenginleşecek.',
+      type: 'GENERAL',
+      visibility: 'PUBLIC',
+      createdById: createdUsers[0].id
+    },
+    {
+      title: 'Ağustos Ayı Etkinlik Takvimi',
+      body: 'Ağustos ayı boyunca düzenleyeceğimiz online seminerler ve atölye çalışmaları için takvimimizi inceleyin. Kayıtlar başlamıştır!',
+      type: 'USER',
+      visibility: 'PUBLIC',
+      createdById: createdUsers[1].id
+    },
+    {
+      title: 'Gizlilik Politikası Güncellemesi',
+      body: 'Kişisel verilerinizin korunması ile ilgili politikamız güncellenmiştir. Detayları incelemek için lütfen gizlilik sayfamızı ziyaret edin.',
+      type: 'GENERAL',
+      visibility: 'PUBLIC',
+      createdById: createdUsers[0].id
+    }
+  ]
+
+  const announcements = []
+  for (const annData of announcementsData) {
+    const ann = await prisma.announcement.create({
+      data: annData
+    })
+    announcements.push(ann)
+  }
+  
   console.log('✅ Veritabanı başarıyla dolduruldu!')
   console.log('📊 Özet:')
   console.log(`   - ${createdUsers.length} kullanıcı (güvenli şifrelerle)`)
   console.log(`   - ${createdStories.length} hikaye`)
   console.log(`   - ${comments.length} yorum`)
+  console.log(`   - ${organizations.length} organizasyon`)
+  console.log(`   - ${announcements.length} duyuru`)
 }
 
 main()
