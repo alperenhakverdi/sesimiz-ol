@@ -114,7 +114,7 @@ const HomePage = () => {
         try {
           const [orgsResponse, usersResponse] = await Promise.all([
             api.get('/organizations', { params: { limit: 3 } }),
-            api.get('/users', { params: { limit: 3 } })
+            api.get('/community/users', { params: { limit: 3 } })
           ])
           
           setOrganizations(orgsResponse.data.data.organizations)
