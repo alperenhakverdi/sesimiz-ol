@@ -3,58 +3,16 @@ import cors from 'cors';
 import helmet from 'helmet';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { readFileSync } from 'fs';
 import cookieParser from 'cookie-parser';
 import swaggerUi from 'swagger-ui-express';
 import swaggerJsdoc from 'swagger-jsdoc';
-import swaggerSpec from '../swagger-docs.json' assert { type: 'json' };
 // Firebase kullanıyoruz artık
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-const swaggerOptions = {
-  swaggerDefinition: {
-    openapi: '3.0.0',
-    info: {
-      title: 'Sesimiz Ol API',
-      version: '2.0.0',
-      description: 'Sesimiz Ol Backend API Documentation',
-      contact: {
-        name: 'Claude Developer',
-        url: 'https://github.com/ClaudeDeveloper',
-      },
-    },
-    servers: [
-      {
-        url: `http://localhost:${process.env.PORT || 3001}/api`,
-        description: 'Development server',
-      },
-    ],
-    components: {
-      securitySchemes: {
-        cookieAuth: {
-          type: 'apiKey',
-          in: 'cookie',
-          name: 'sesimizol.access', // Name of your access token cookie
-        },
-        csrfToken: {
-          type: 'apiKey',
-          in: 'header',
-          name: 'x-csrf-token', // Name of your CSRF token header
-        },
-      },
-    },
-    security: [
-      {
-        cookieAuth: [],
-        csrfToken: [],
-      },
-    ],
-  },
-  apis: ['./src/routes/*.js', './src/controllers/*.js'], // Path to the API docs
-};
-
-const swaggerSpec = swaggerJsdoc(swaggerOptions);
+// Load custom swagger spec from JSON file
+const swaggerSpec = JSON.parse(readFileSync(path.join(__dirname, '../swagger-docs.json'), 'utf-8'));
 
 import userRoutes from './routes/users.js';
 import storyRoutes from './routes/stories.js';
