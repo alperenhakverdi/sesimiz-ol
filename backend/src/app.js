@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url';
 import cookieParser from 'cookie-parser';
 import swaggerUi from 'swagger-ui-express';
 import swaggerJsdoc from 'swagger-jsdoc';
+import swaggerSpec from '../swagger-docs.json' assert { type: 'json' };
 // Firebase kullanıyoruz artık
 
 const __filename = fileURLToPath(import.meta.url);
