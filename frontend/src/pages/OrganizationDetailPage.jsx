@@ -31,6 +31,7 @@ import {
   FiCalendar,
   FiChevronRight
 } from 'react-icons/fi'
+import { api } from '../services/api'
 
 const OrganizationDetailPage = () => {
   const { slug } = useParams()
@@ -42,73 +43,20 @@ const OrganizationDetailPage = () => {
   const cardBgColor = useColorModeValue('white', 'gray.800')
   const borderColor = useColorModeValue('gray.200', 'gray.700')
 
-  // Mock data for MVP
-  const mockOrganizations = {
-    'kadin-dayanisma-vakfi': {
-      id: 1,
-      name: 'Kadın Dayanışma Vakfı',
-      slug: 'kadin-dayanisma-vakfi',
-      type: 'FOUNDATION',
-      status: 'ACTIVE',
-      description: 'Kadınların toplumsal hayatta eşit katılımını destekleyen, şiddetle mücadele eden ve dayanışmayı güçlendiren vakıf. 1995 yılından bu yana kadın hakları alanında çalışmalarını sürdürmektedir.',
-      longDescription: 'Kadın Dayanışma Vakfı, kadınların toplumsal hayatta eşit katılımını desteklemek, kadına yönelik şiddeti önlemek ve kadın dayanışmasını güçlendirmek amacıyla kurulmuştur. Vakfımız, hukuki danışmanlık, psikolojik destek, meslek edindirme kursları ve farkındalık çalışmaları yürütmektedir.',
-      location: 'İstanbul',
-      address: 'Beyoğlu, İstiklal Caddesi No:123, 34433 İstanbul',
-      memberCount: 2500,
-      foundedYear: 1995,
-      website: 'https://kadindayanisma.org',
-      email: 'info@kadindayanisma.org',
-      phone: '+90 212 555 0123',
-      logo: null,
-      activities: [
-        'Hukuki Danışmanlık',
-        'Psikolojik Destek',
-        'Meslek Edindirme Kursları',
-        'Farkındalık Seminerleri',
-        'Kadın Sığınma Evleri'
-      ]
-    },
-    'cevre-koruma-dernegi': {
-      id: 2,
-      name: 'Çevre Koruma Derneği',
-      slug: 'cevre-koruma-dernegi',
-      type: 'ASSOCIATION',
-      status: 'ACTIVE',
-      description: 'Doğal yaşamı koruma, çevre bilincini artırma ve sürdürülebilir yaşam için çalışan dernek.',
-      longDescription: 'Çevre Koruma Derneği, doğal yaşamı korumak, çevre bilincini artırmak ve sürdürülebilir yaşam tarzını yaygınlaştırmak için 2001 yılında kurulmuştur. Ağaçlandırma, temizlik kampanyaları ve çevre eğitimi programları düzenlemektedir.',
-      location: 'Ankara',
-      address: 'Çankaya, Kızılay Meydanı No:45, 06420 Ankara',
-      memberCount: 1800,
-      foundedYear: 2001,
-      website: 'https://cevrekoruma.org.tr',
-      email: 'iletisim@cevrekoruma.org.tr',
-      phone: '+90 312 555 0456',
-      logo: null,
-      activities: [
-        'Ağaçlandırma Kampanyaları',
-        'Çevre Temizliği',
-        'Eğitim Programları',
-        'Geri Dönüşüm Projeleri',
-        'Doğa Yürüyüşleri'
-      ]
-    }
-  }
-
   useEffect(() => {
     const fetchOrganization = async () => {
       try {
         setLoading(true)
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 800))
         
-        const orgData = mockOrganizations[slug]
-        if (orgData) {
-          setOrganization(orgData)
-        } else {
-          setError('STK bulunamadı.')
-        }
+        const response = await api.get(`/organizations/${slug}`)
+        setOrganization(response.data.data)
       } catch (err) {
-        setError('STK bilgileri yüklenirken bir hata oluştu.')
+        console.error('Organization fetch error:', err)
+        if (err.response?.status === 404) {
+          setError('STK bulunamadı.')
+        } else {
+          setError('STK bilgileri yüklenirken bir hata oluştu.')
+        }
       } finally {
         setLoading(false)
       }

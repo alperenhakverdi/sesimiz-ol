@@ -20,6 +20,7 @@ import {
 } from '@chakra-ui/react'
 import { FiSearch } from 'react-icons/fi'
 import OrganizationCard from '../components/organizations/OrganizationCard'
+import { api } from '../services/api'
 
 const OrganizationsPage = () => {
   const [organizations, setOrganizations] = useState([])
@@ -27,93 +28,32 @@ const OrganizationsPage = () => {
   const [error, setError] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [typeFilter, setTypeFilter] = useState('')
+  const [stats, setStats] = useState({})
 
   const bgColor = useColorModeValue('gray.50', 'gray.900')
-
-  // Mock data for MVP
-  const mockOrganizations = [
-    {
-      id: 1,
-      name: 'Kadın Dayanışma Vakfı',
-      slug: 'kadin-dayanisma-vakfi',
-      type: 'FOUNDATION',
-      status: 'ACTIVE',
-      description: 'Kadınların toplumsal hayatta eşit katılımını destekleyen, şiddetle mücadele eden ve dayanışmayı güçlendiren vakıf.',
-      location: 'İstanbul',
-      memberCount: 2500,
-      website: 'https://kadindayanisma.org',
-      logo: null
-    },
-    {
-      id: 2,
-      name: 'Çevre Koruma Derneği',
-      slug: 'cevre-koruma-dernegi',
-      type: 'ASSOCIATION',
-      status: 'ACTIVE',
-      description: 'Doğal yaşamı koruma, çevre bilincini artırma ve sürdürülebilir yaşam için çalışan dernek.',
-      location: 'Ankara',
-      memberCount: 1800,
-      website: 'https://cevrekoruma.org.tr',
-      logo: null
-    },
-    {
-      id: 3,
-      name: 'Eğitim Gönüllüleri STK',
-      slug: 'egitim-gonulluleri-stk',
-      type: 'NGO',
-      status: 'ACTIVE',
-      description: 'Eğitim fırsatlarını eşitleme ve kaliteli eğitime erişimi artırma amacıyla kurulan sivil toplum kuruluşu.',
-      location: 'İzmir',
-      memberCount: 950,
-      website: 'https://egitimgonulluleri.org',
-      logo: null
-    },
-    {
-      id: 4,
-      name: 'Yaşlı Bakım Kooperatifi',
-      slug: 'yasli-bakim-kooperatifi',
-      type: 'COOPERATIVE',
-      status: 'ACTIVE',
-      description: 'Yaşlı bireylerin bakım ihtiyaçlarını karşılama ve sosyal yaşamlarını destekleme kooperatifi.',
-      location: 'Bursa',
-      memberCount: 450,
-      website: null,
-      logo: null
-    },
-    {
-      id: 5,
-      name: 'Engelsiz Yaşam Derneği',
-      slug: 'engelsiz-yasam-dernegi',
-      type: 'ASSOCIATION',
-      status: 'ACTIVE',
-      description: 'Engelli bireylerin toplumsal hayata tam katılımını destekleyen, fırsat eşitliği için çalışan dernek.',
-      location: 'Adana',
-      memberCount: 1200,
-      website: 'https://engelsizyasam.org.tr',
-      logo: null
-    },
-    {
-      id: 6,
-      name: 'Çocuk Hakları Vakfı',
-      slug: 'cocuk-haklari-vakfi',
-      type: 'FOUNDATION',
-      status: 'ACTIVE',
-      description: 'Çocukların haklarını koruma, çocuk istismarını önleme ve çocuk refahını artırma vakfı.',
-      location: 'Gaziantep',
-      memberCount: 3200,
-      website: 'https://cocukhaklari.org',
-      logo: null
-    }
-  ]
 
   useEffect(() => {
     const fetchOrganizations = async () => {
       try {
         setLoading(true)
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        setOrganizations(mockOrganizations)
+        
+        // Fetch organizations and stats in parallel
+        const [orgsResponse, statsResponse] = await Promise.all([
+          api.get('/organizations', {
+            params: {
+              page: 1,
+              limit: 50,
+              search: searchQuery,
+              type: typeFilter
+            }
+          }),
+          api.get('/organizations/stats')
+        ])
+
+        setOrganizations(orgsResponse.data.data.organizations)
+        setStats(statsResponse.data.data)
       } catch (err) {
+        console.error('Organizations fetch error:', err)
         setError('STK listesi yüklenirken bir hata oluştu.')
       } finally {
         setLoading(false)
@@ -121,21 +61,10 @@ const OrganizationsPage = () => {
     }
 
     fetchOrganizations()
-  }, [])
-
-  // Filter organizations based on search and type
-  const filteredOrganizations = organizations.filter(org => {
-    const matchesSearch = searchQuery === '' || 
-      org.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      org.description.toLowerCase().includes(searchQuery.toLowerCase())
-    
-    const matchesType = typeFilter === '' || org.type === typeFilter
-    
-    return matchesSearch && matchesType
-  })
+  }, [searchQuery, typeFilter])
 
   const getTypeCount = (type) => {
-    return organizations.filter(org => org.type === type).length
+    return stats.typeBreakdown?.[type] || 0
   }
 
   if (loading) {
@@ -231,13 +160,13 @@ const OrganizationsPage = () => {
 
           {/* Results Count */}
           <Text textAlign="center" color="gray.600">
-            {filteredOrganizations.length} STK listeleniyor
+            {organizations.length} STK listeleniyor
           </Text>
 
           {/* Organizations Grid */}
-          {filteredOrganizations.length > 0 ? (
+          {organizations.length > 0 ? (
             <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6}>
-              {filteredOrganizations.map((organization) => (
+              {organizations.map((organization) => (
                 <OrganizationCard key={organization.id} organization={organization} />
               ))}
             </SimpleGrid>

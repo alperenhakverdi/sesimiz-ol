@@ -24,6 +24,7 @@ import commentRoutes from './routes/comments.js';
 import activityRoutes from './routes/activity.js';
 import notificationRoutes from './routes/notifications.js';
 import bookmarkRoutes from './routes/bookmarks.js';
+import organizationRoutes from './routes/organizations.js';
 import { recordSecurityMetric } from './services/metrics.js';
 import { refreshFeatureFlags } from './services/featureFlags.js';
 
@@ -426,6 +427,7 @@ const mountApiRoutes = (router) => {
   router.use('/activity', activityRoutes);
   router.use('/notifications', notificationRoutes);
   router.use('/bookmarks', bookmarkRoutes);
+  router.use('/organizations', organizationRoutes);
   return router;
 };
 

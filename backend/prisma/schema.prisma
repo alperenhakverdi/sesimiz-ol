@@ -145,16 +145,26 @@ model PasswordResetToken {
 }
 
 model Organization {
-  id           Int                  @id @default(autoincrement())
-  name         String
-  slug         String               @unique
-  description  String?
-  website      String?
-  contactEmail String?
-  isActive     Boolean              @default(true)
-  createdAt    DateTime             @default(now())
-  updatedAt    DateTime             @updatedAt
-  members      OrganizationMember[]
+  id               Int                  @id @default(autoincrement())
+  name             String
+  slug             String               @unique
+  type             OrgType              @default(NGO)
+  status           OrgStatus            @default(PENDING)
+  description      String?
+  longDescription  String?
+  location         String?
+  address          String?
+  memberCount      Int                  @default(0)
+  foundedYear      Int?
+  website          String?
+  email            String?
+  phone            String?
+  logo             String?
+  activities       Json?                // Array of activity strings
+  isActive         Boolean              @default(true)
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+  members          OrganizationMember[]
 
   @@map("organizations")
 }
@@ -357,4 +367,18 @@ enum FontSizePreference {
   SMALL
   MEDIUM
   LARGE
+}
+
+enum OrgType {
+  NGO
+  FOUNDATION
+  ASSOCIATION
+  COOPERATIVE
+}
+
+enum OrgStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+  REJECTED
 }

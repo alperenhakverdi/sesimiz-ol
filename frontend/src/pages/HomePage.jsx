@@ -18,7 +18,7 @@ import {
 } from '@chakra-ui/react'
 import { Link as RouterLink } from 'react-router-dom'
 import { AddIcon } from '@chakra-ui/icons'
-import { storyAPI } from '../services/api'
+import { storyAPI, api } from '../services/api'
 import StoryCard from '../components/common/StoryCard'
 import EnhancedStoryCard from '../components/common/EnhancedStoryCard'
 import AnimatedButton from '../components/common/AnimatedButton'
@@ -110,9 +110,21 @@ const HomePage = () => {
         console.log('📚 Stories data:', response.stories)
         setStories(response.stories)
         
-        // Set mock data for organizations and users
-        setOrganizations(mockOrganizations)
-        setActiveUsers(mockActiveUsers)
+        // Fetch organizations and users from API
+        try {
+          const [orgsResponse, usersResponse] = await Promise.all([
+            api.get('/organizations', { params: { limit: 3 } }),
+            api.get('/users', { params: { limit: 3 } })
+          ])
+          
+          setOrganizations(orgsResponse.data.data.organizations)
+          setActiveUsers(usersResponse.data.data.users || [])
+        } catch (err) {
+          console.error('Homepage data fetch error:', err)
+          // Fallback to mock data if API fails
+          setOrganizations(mockOrganizations)
+          setActiveUsers(mockActiveUsers)
+        }
       } catch (err) {
         console.error('❌ API Error:', err)
         setError(err.message)
