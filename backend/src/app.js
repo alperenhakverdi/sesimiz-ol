@@ -4,10 +4,56 @@ import helmet from 'helmet';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import cookieParser from 'cookie-parser';
+import swaggerUi from 'swagger-ui-express';
+import swaggerJsdoc from 'swagger-jsdoc';
 // Firebase kullanıyoruz artık
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+const swaggerOptions = {
+  swaggerDefinition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'Sesimiz Ol API',
+      version: '2.0.0',
+      description: 'Sesimiz Ol Backend API Documentation',
+      contact: {
+        name: 'Claude Developer',
+        url: 'https://github.com/ClaudeDeveloper',
+      },
+    },
+    servers: [
+      {
+        url: `http://localhost:${process.env.PORT || 3001}/api`,
+        description: 'Development server',
+      },
+    ],
+    components: {
+      securitySchemes: {
+        cookieAuth: {
+          type: 'apiKey',
+          in: 'cookie',
+          name: 'sesimizol.access', // Name of your access token cookie
+        },
+        csrfToken: {
+          type: 'apiKey',
+          in: 'header',
+          name: 'x-csrf-token', // Name of your CSRF token header
+        },
+      },
+    },
+    security: [
+      {
+        cookieAuth: [],
+        csrfToken: [],
+      },
+    ],
+  },
+  apis: ['./src/routes/*.js', './src/controllers/*.js'], // Path to the API docs
+};
+
+const swaggerSpec = swaggerJsdoc(swaggerOptions);
 
 import userRoutes from './routes/users.js';
 import storyRoutes from './routes/stories.js';
@@ -289,6 +335,9 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
+// Serve Swagger UI
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
 // Handle preflight requests explicitly
 app.options('*', cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
@@ -493,7 +542,7 @@ refreshFeatureFlags({ force: true }).catch((error) => {
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
   console.log(`📊 Health check: http://localhost:${PORT}/health`);
-  console.log(`📚 API docs: http://localhost:${PORT}/api`);
+  console.log(`📚 API docs: http://localhost:${PORT}/api-docs`);
 });
 
 export default app;

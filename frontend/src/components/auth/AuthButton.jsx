@@ -12,7 +12,8 @@ import {
   useDisclosure,
   Badge,
   Box,
-  Image
+  Image,
+  useColorModeValue
 } from '@chakra-ui/react'
 import { ChevronDownIcon, AddIcon, SettingsIcon } from '@chakra-ui/icons'
 import { Link } from 'react-router-dom'
@@ -22,6 +23,10 @@ import LoginModal from './LoginModal'
 const AuthButton = ({ size = "md", variant = "outline" }) => {
   const { user, isAuthenticated, logout } = useAuth()
   const { isOpen, onOpen, onClose } = useDisclosure()
+
+  const textColor = useColorModeValue('neutral.800', 'neutral.100')
+  const emailColor = useColorModeValue('neutral.500', 'neutral.400')
+  const logoutColor = useColorModeValue('red.600', 'red.400')
   
   const getAvatarUrl = (avatarPath) => {
     if (!avatarPath) return null
@@ -81,11 +86,11 @@ const AuthButton = ({ size = "md", variant = "outline" }) => {
             />
           )}
           <VStack spacing={0} align="start">
-            <Text fontSize="sm" fontWeight="medium" color="neutral.800">
+            <Text fontSize="sm" fontWeight="medium" color={textColor}>
               @{user.nickname}
             </Text>
             {user.email && (
-              <Text fontSize="xs" color="neutral.500">
+              <Text fontSize="xs" color={emailColor}>
                 {user.email}
               </Text>
             )}
@@ -97,7 +102,7 @@ const AuthButton = ({ size = "md", variant = "outline" }) => {
         <MenuItem isDisabled>
           <VStack spacing={1} align="start">
             <Text fontWeight="medium">@{user.nickname}</Text>
-            <Text fontSize="xs" color="neutral.500">
+            <Text fontSize="xs" color={emailColor}>
               {user.email || 'Email adresi yok'}
             </Text>
           </VStack>
@@ -111,7 +116,7 @@ const AuthButton = ({ size = "md", variant = "outline" }) => {
         
         <MenuDivider />
         
-        <MenuItem onClick={logout} color="red.600">
+        <MenuItem onClick={logout} color={logoutColor}>
           Çıkış Yap
         </MenuItem>
       </MenuList>

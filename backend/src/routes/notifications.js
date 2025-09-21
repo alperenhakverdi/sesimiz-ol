@@ -191,4 +191,3 @@ router.put('/:notificationId/read', async (req, res) => {
 });
 
 export default router;
-EOF

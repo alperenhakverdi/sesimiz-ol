@@ -22,7 +22,8 @@ import {
   TagLabel,
   TagCloseButton,
   Badge,
-  Spinner
+  Spinner,
+  useColorModeValue
 } from '@chakra-ui/react'
 import { Link as RouterLink, useNavigate } from 'react-router-dom'
 import { ArrowBackIcon } from '@chakra-ui/icons'
@@ -45,6 +46,13 @@ const StoryCreatePage = () => {
   const [tagSuggestions, setTagSuggestions] = useState([])
   const [popularTags, setPopularTags] = useState([])
   const [isLoadingTags, setIsLoadingTags] = useState(false)
+
+  // Color mode values for mobile forms UX
+  const bg = useColorModeValue('white', 'neutral.800')
+  const formBg = useColorModeValue('gray.50', 'neutral.900')
+  const borderColor = useColorModeValue('neutral.200', 'neutral.700')
+  const labelColor = useColorModeValue('neutral.700', 'neutral.200')
+  const textColor = useColorModeValue('neutral.800', 'neutral.100')
   
   const toast = useToast()
   const navigate = useNavigate()
@@ -242,8 +250,8 @@ const StoryCreatePage = () => {
 
   return (
     <ProtectedRoute>
-      <Container maxW="container.md" py={8}>
-          <VStack spacing={8} align="stretch">
+      <Container maxW="container.md" py={{ base: 4, md: 8 }} px={{ base: 4, md: 6 }}>
+          <VStack spacing={{ base: 6, md: 8 }} align="stretch">
             {/* Back Button */}
             <Box>
           <Button 
@@ -260,10 +268,10 @@ const StoryCreatePage = () => {
 
         {/* Page Header */}
         <VStack spacing={4} textAlign="center">
-          <Heading as="h1" size="xl" color="brand.500">
+          <Heading as="h1" size={{ base: "lg", md: "xl" }} color="accent.500">
             Hikâyeni Paylaş
           </Heading>
-          <Text color="gray.600" maxW="lg">
+          <Text color={textColor} maxW="lg" fontSize={{ base: "sm", md: "md" }}>
             Merhaba {user?.nickname}! Hikâyeni burada paylaşabilirsin.
           </Text>
         </VStack>
@@ -283,18 +291,27 @@ const StoryCreatePage = () => {
         </Alert>
 
         {/* Story Form */}
-        <Box bg="white" p={8} borderRadius="lg" shadow="sm">
+        <Box
+          bg={bg}
+          p={{ base: 4, md: 8 }}
+          borderRadius="lg"
+          shadow="sm"
+          borderWidth="1px"
+          borderColor={borderColor}
+        >
           <form onSubmit={handleSubmit}>
-            <VStack spacing={6} align="stretch">
+            <VStack spacing={{ base: 4, md: 6 }} align="stretch">
               {/* Title Field */}
               <FormControl isRequired isInvalid={!!errors.title}>
-                <FormLabel>Hikâye Başlığı</FormLabel>
-                <Input 
+                <FormLabel color={labelColor} fontSize={{ base: "sm", md: "md" }}>Hikâye Başlığı</FormLabel>
+                <Input
                   name="title"
                   value={formData.title}
                   onChange={handleInputChange}
                   placeholder="Hikâyen için çekici bir başlık seç"
-                  size="lg"
+                  size={{ base: "md", md: "lg" }}
+                  fontSize={{ base: "sm", md: "md" }}
+                  _focus={{ borderColor: "accent.500", boxShadow: "0 0 0 1px var(--chakra-colors-accent-500)" }}
                 />
                 {errors.title ? (
                   <FormErrorMessage>{errors.title}</FormErrorMessage>
@@ -307,15 +324,17 @@ const StoryCreatePage = () => {
 
               {/* Content Field */}
               <FormControl isRequired isInvalid={!!errors.content}>
-                <FormLabel>Hikâyeni Anlat</FormLabel>
-                <Textarea 
+                <FormLabel color={labelColor} fontSize={{ base: "sm", md: "md" }}>Hikâyeni Anlat</FormLabel>
+                <Textarea
                   name="content"
                   value={formData.content}
                   onChange={handleInputChange}
                   placeholder="Hikâyeni burada paylaş. Yaşadıklarını, düşüncelerini, deneyimlerini özgürce anlat..."
-                  minHeight="300px"
+                  minHeight={{ base: "200px", md: "300px" }}
                   resize="vertical"
-                  size="lg"
+                  size={{ base: "md", md: "lg" }}
+                  fontSize={{ base: "sm", md: "md" }}
+                  _focus={{ borderColor: "accent.500", boxShadow: "0 0 0 1px var(--chakra-colors-accent-500)" }}
                 />
                 {errors.content ? (
                   <FormErrorMessage>{errors.content}</FormErrorMessage>
@@ -447,22 +466,35 @@ const StoryCreatePage = () => {
               </FormControl>
 
               {/* Submit Buttons */}
-              <HStack spacing={4} justify="flex-end" pt={4}>
-                <Button 
-                  variant="outline" 
+              <HStack
+                spacing={{ base: 2, md: 4 }}
+                justify="flex-end"
+                pt={4}
+                flexDirection={{ base: "column", sm: "row" }}
+                w="full"
+              >
+                <Button
+                  variant="outline"
                   colorScheme="gray"
                   as={RouterLink}
                   to="/"
+                  size={{ base: "md", md: "lg" }}
+                  w={{ base: "full", sm: "auto" }}
+                  order={{ base: 2, sm: 1 }}
                 >
                   İptal
                 </Button>
-                <Button 
-                  type="submit" 
-                  colorScheme="brand" 
-                  size="lg"
+                <Button
+                  type="submit"
+                  colorScheme="accent"
+                  size={{ base: "md", md: "lg" }}
                   isLoading={isSubmitting}
                   loadingText="Paylaşılıyor..."
-                  px={8}
+                  px={{ base: 6, md: 8 }}
+                  w={{ base: "full", sm: "auto" }}
+                  order={{ base: 1, sm: 2 }}
+                  minH="48px"
+                  fontSize={{ base: "sm", md: "md" }}
                 >
                   Hikâyemi Paylaş
                 </Button>

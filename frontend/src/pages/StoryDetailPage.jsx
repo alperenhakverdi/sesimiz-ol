@@ -14,7 +14,8 @@ import {
   AlertIcon,
   Spinner,
   Center,
-  Button
+  Button,
+  useColorModeValue
 } from '@chakra-ui/react'
 import { Link as RouterLink } from 'react-router-dom'
 import { ArrowBackIcon } from '@chakra-ui/icons'
@@ -31,6 +32,12 @@ const StoryDetailPage = () => {
   const [story, setStory] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+
+  // Color mode values for mobile reading experience
+  const bg = useColorModeValue('white', 'neutral.800')
+  const textColor = useColorModeValue('neutral.800', 'neutral.100')
+  const metaColor = useColorModeValue('neutral.600', 'neutral.400')
+  const borderColor = useColorModeValue('neutral.200', 'neutral.700')
 
   // useMemo must be called before any conditional returns
   const timeAgo = useMemo(() => {
@@ -130,15 +137,28 @@ const StoryDetailPage = () => {
         </Box>
 
         {/* Story Content */}
-        <Box bg="white" p={8} borderRadius="lg" shadow="sm">
+        <Box
+          bg={bg}
+          p={{ base: 4, md: 8 }}
+          borderRadius="lg"
+          shadow="sm"
+          borderWidth="1px"
+          borderColor={borderColor}
+        >
           <VStack spacing={6} align="stretch">
             {/* Story Header */}
             <VStack spacing={4} align="start">
-              <Heading as="h1" size="xl" color="brand.500">
+              <Heading
+                as="h1"
+                size={{ base: "lg", md: "xl" }}
+                color="accent.500"
+                lineHeight="shorter"
+                fontWeight="bold"
+              >
                 {story.title}
               </Heading>
               
-              <HStack justify="space-between" w="full" align="center">
+              <HStack justify="space-between" w="full" align="center" flexWrap={{ base: "wrap", md: "nowrap" }} gap={4}>
                 <HStack spacing={3}>
                   <Avatar
                     size="md"
@@ -148,10 +168,10 @@ const StoryDetailPage = () => {
                     color="brand.500"
                   />
                   <VStack align="start" spacing={0}>
-                    <Text fontWeight="medium" color="neutral.700">
+                    <Text fontWeight="medium" color={textColor}>
                       @{story.authorNickname || story.author?.nickname}
                     </Text>
-                    <Text fontSize="sm" color="neutral.500">
+                    <Text fontSize="sm" color={metaColor}>
                       {timeAgo}
                     </Text>
                   </VStack>
@@ -178,25 +198,27 @@ const StoryDetailPage = () => {
               </HStack>
             </VStack>
 
-            <Divider />
+            <Divider borderColor={borderColor} />
 
             {/* Story Content */}
-            <Box>
-              <Text 
-                fontSize="lg"
-                lineHeight="tall"
-                color="neutral.700"
+            <Box py={2}>
+              <Text
+                fontSize={{ base: "md", md: "lg" }}
+                lineHeight={{ base: "1.6", md: "1.8" }}
+                color={textColor}
                 whiteSpace="pre-wrap"
+                letterSpacing="0.02em"
+                wordBreak="break-word"
               >
                 {story.content}
               </Text>
             </Box>
 
-            <Divider />
+            <Divider borderColor={borderColor} />
 
             {/* Story Footer */}
             <HStack justify="space-between" align="center">
-              <Text fontSize="sm" color="neutral.500">
+              <Text fontSize="sm" color={metaColor}>
                 Paylaşım tarihi: {(() => {
                   try {
                     let date

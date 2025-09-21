@@ -1,33 +1,43 @@
+import { Suspense, lazy } from 'react'
 import { Routes, Route } from 'react-router-dom'
-import { Box } from '@chakra-ui/react'
+import { Box, Spinner, Center } from '@chakra-ui/react'
 import { AuthProvider } from './contexts/AuthContext'
 import Header from './components/layout/Header'
 import Footer from './components/layout/Footer'
-import HomePage from './pages/HomePage'
-import StoriesPage from './pages/StoriesPage'
-import StoryDetailPage from './pages/StoryDetailPage'
-import StoryCreatePage from './pages/StoryCreatePage'
-import ProfilePage from './pages/ProfilePage'
-import AboutPage from './pages/AboutPage'
-import PrivacyPage from './pages/PrivacyPage'
-import SupportPage from './pages/SupportPage'
-import ContactPage from './pages/ContactPage'
-import RegisterPage from './pages/RegisterPage'
-import SettingsPage from './pages/SettingsPage'
-import MessagesPage from './pages/MessagesPage'
-import NotificationsPage from './pages/NotificationsPage'
-import ForgotPasswordPage from './pages/ForgotPasswordPage'
-import ResetPasswordPage from './pages/ResetPasswordPage'
-import AdminDashboardPage from './pages/AdminDashboardPage'
-import AdminUsersPage from './pages/AdminUsersPage'
-import AdminStoriesPage from './pages/AdminStoriesPage'
-import AdminOrganizationsPage from './pages/AdminOrganizationsPage'
-import AdminAnnouncementsPage from './pages/AdminAnnouncementsPage'
-import AdminSettingsPage from './pages/AdminSettingsPage'
-import AdminFeatureFlagsPage from './pages/AdminFeatureFlagsPage'
 import ErrorBoundary from './components/common/ErrorBoundary'
 import ProtectedRoute from './components/common/ProtectedRoute'
 import { SkipToMain } from './components/common/AccessibilityEnhancements'
+
+// Lazy load pages for code splitting
+const HomePage = lazy(() => import('./pages/HomePage'))
+const StoriesPage = lazy(() => import('./pages/StoriesPage'))
+const StoryDetailPage = lazy(() => import('./pages/StoryDetailPage'))
+const StoryCreatePage = lazy(() => import('./pages/StoryCreatePage'))
+const ProfilePage = lazy(() => import('./pages/ProfilePage'))
+const AboutPage = lazy(() => import('./pages/AboutPage'))
+const PrivacyPage = lazy(() => import('./pages/PrivacyPage'))
+const SupportPage = lazy(() => import('./pages/SupportPage'))
+const ContactPage = lazy(() => import('./pages/ContactPage'))
+const RegisterPage = lazy(() => import('./pages/RegisterPage'))
+const SettingsPage = lazy(() => import('./pages/SettingsPage'))
+const MessagesPage = lazy(() => import('./pages/MessagesPage'))
+const NotificationsPage = lazy(() => import('./pages/NotificationsPage'))
+const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'))
+const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'))
+const AdminDashboardPage = lazy(() => import('./pages/AdminDashboardPage'))
+const AdminUsersPage = lazy(() => import('./pages/AdminUsersPage'))
+const AdminStoriesPage = lazy(() => import('./pages/AdminStoriesPage'))
+const AdminOrganizationsPage = lazy(() => import('./pages/AdminOrganizationsPage'))
+const AdminAnnouncementsPage = lazy(() => import('./pages/AdminAnnouncementsPage'))
+const AdminSettingsPage = lazy(() => import('./pages/AdminSettingsPage'))
+const AdminFeatureFlagsPage = lazy(() => import('./pages/AdminFeatureFlagsPage'))
+
+// Loading component
+const PageLoader = () => (
+  <Center py={20}>
+    <Spinner size="xl" color="accent.500" thickness="4px" />
+  </Center>
+)
 
 function App() {
   return (
@@ -36,14 +46,15 @@ function App() {
         <SkipToMain />
         <Box minH="100vh" display="flex" flexDirection="column">
           <Header />
-          <Box 
-            flex="1" 
-            as="main" 
+          <Box
+            flex="1"
+            as="main"
             id="main-content"
             tabIndex="-1"
             outline="none"
           >
-            <Routes>
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
               <Route path="/" element={<HomePage />} />
               <Route path="/hikayeler" element={<StoriesPage />} />
               <Route path="/hikayeler/:id" element={<StoryDetailPage />} />
@@ -122,7 +133,8 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-            </Routes>
+              </Routes>
+            </Suspense>
           </Box>
           <Footer />
         </Box>

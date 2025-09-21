@@ -1,4 +1,5 @@
 import { extendTheme } from '@chakra-ui/react'
+import { mode } from '@chakra-ui/theme-tools'
 
 // Modern, minimal color palette
 const colors = {
@@ -108,103 +109,105 @@ const components = {
           transform: 'translateY(0)'
         }
       },
-      outline: {
+      outline: (props) => ({
         borderColor: 'accent.500',
         color: 'accent.500',
         _hover: {
-          bg: 'accent.50',
+          bg: mode('accent.50', 'accent.900')(props),
           borderColor: 'accent.600',
           transform: 'translateY(-1px)'
         }
-      },
-      ghost: {
-        color: 'primary.700',
+      }),
+      ghost: (props) => ({
+        color: mode('primary.700', 'neutral.200')(props),
         _hover: {
-          bg: 'neutral.100',
-          color: 'primary.800'
+          bg: mode('neutral.100', 'neutral.800')(props),
+          color: mode('primary.800', 'neutral.100')(props)
         }
-      }
+      })
     }
   },
-  
+
   Card: {
-    baseStyle: {
+    baseStyle: (props) => ({
       container: {
-        bg: 'white',
+        bg: mode('white', 'neutral.800')(props),
         borderRadius: 'xl',
         border: '1px solid',
-        borderColor: 'neutral.200',
-        boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.02)',
+        borderColor: mode('neutral.200', 'neutral.700')(props),
+        boxShadow: mode('0px 2px 4px rgba(0, 0, 0, 0.02)', '0px 2px 4px rgba(0, 0, 0, 0.3)')(props),
         _hover: {
-          borderColor: 'neutral.300',
-          boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.08)'
+          borderColor: mode('neutral.300', 'neutral.600')(props),
+          boxShadow: mode('0px 4px 12px rgba(0, 0, 0, 0.08)', '0px 4px 12px rgba(0, 0, 0, 0.4)')(props)
         }
       }
-    }
+    })
   },
-  
+
   Input: {
-    baseStyle: {
+    baseStyle: (props) => ({
       field: {
         borderRadius: 'lg',
         border: '1px solid',
-        borderColor: 'neutral.300',
-        bg: 'neutral.50',
+        borderColor: mode('neutral.300', 'neutral.600')(props),
+        bg: mode('neutral.50', 'neutral.800')(props),
+        color: mode('primary.700', 'neutral.100')(props),
         _hover: {
-          borderColor: 'neutral.400',
-          bg: 'white'
+          borderColor: mode('neutral.400', 'neutral.500')(props),
+          bg: mode('white', 'neutral.700')(props)
         },
         _focus: {
           borderColor: 'accent.500',
-          bg: 'white',
+          bg: mode('white', 'neutral.700')(props),
           boxShadow: '0 0 0 1px var(--chakra-colors-accent-500)'
         }
       }
-    }
+    })
   },
-  
+
   Alert: {
     variants: {
-      subtle: {
+      subtle: (props) => ({
         container: {
           borderRadius: 'lg',
           border: '1px solid',
-          borderColor: 'neutral.200'
+          borderColor: mode('neutral.200', 'neutral.700')(props),
+          bg: mode('white', 'neutral.800')(props)
         }
-      }
+      })
     }
   },
-  
+
   Heading: {
-    baseStyle: {
-      color: 'primary.800',
+    baseStyle: (props) => ({
+      color: mode('primary.800', 'neutral.100')(props),
       fontWeight: 'bold'
-    }
+    })
   },
-  
+
   Text: {
-    baseStyle: {
-      color: 'primary.700'
-    }
+    baseStyle: (props) => ({
+      color: mode('primary.700', 'neutral.200')(props)
+    })
   }
 }
 
 // Global styles
 const styles = {
-  global: {
+  global: (props) => ({
     body: {
-      bg: 'neutral.50',
-      color: 'primary.700',
+      bg: mode('neutral.50', 'neutral.900')(props),
+      color: mode('primary.700', 'neutral.100')(props),
       fontSize: 'md',
       lineHeight: 'base'
     },
     '*::placeholder': {
-      color: 'neutral.400'
+      color: mode('neutral.400', 'neutral.500')(props)
     },
     '*, *::before, &::after': {
-      borderColor: 'neutral.200'
+      borderColor: mode('neutral.200', 'neutral.700')(props)
     }
-  }
+  })
 }
 
 // Breakpoints
@@ -230,7 +233,15 @@ const shadows = {
   inner: 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.06)'
 }
 
+// Color mode configuration
+const config = {
+  initialColorMode: 'system',
+  useSystemColorMode: true,
+  disableTransitionOnChange: false
+}
+
 const theme = extendTheme({
+  config,
   colors,
   fonts,
   components,

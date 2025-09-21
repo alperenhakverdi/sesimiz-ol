@@ -1416,8 +1416,8 @@ router.get('/trending', async (req, res) => {
             }
           },
           breakdown: entry.supportBreakdown
-        }
-      })),
+        };
+      }),
       pagination: {
         page,
         limit,

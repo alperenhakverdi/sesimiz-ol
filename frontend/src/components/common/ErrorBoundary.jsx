@@ -73,8 +73,10 @@ const ErrorFallback = ({
   title = "Bir şeyler ters gitti",
   message = "Beklenmeyen bir hata oluştu. Lütfen sayfayı yenilemeyi deneyin."
 }) => {
-  const bgColor = useColorModeValue('white', 'gray.800')
+  const bgColor = useColorModeValue('white', 'neutral.800')
   const borderColor = useColorModeValue('red.200', 'red.600')
+  const textColor = useColorModeValue('neutral.600', 'neutral.300')
+  const headingColor = useColorModeValue('red.600', 'red.400')
 
   return (
     <Box
@@ -90,25 +92,25 @@ const ErrorFallback = ({
     >
       <VStack spacing={6}>
         {/* Error Icon */}
-        <Icon 
-          as={WarningIcon} 
-          boxSize={16} 
-          color="red.500" 
+        <Icon
+          as={WarningIcon}
+          boxSize={16}
+          color={headingColor}
         />
         
         {/* Error Message */}
         <VStack spacing={3}>
-          <Heading 
-            as="h2" 
-            size="lg" 
-            color="red.600"
+          <Heading
+            as="h2"
+            size="lg"
+            color={headingColor}
           >
             {title}
           </Heading>
           
-          <Text 
-            fontSize="md" 
-            color="neutral.600"
+          <Text
+            fontSize="md"
+            color={textColor}
             maxW="lg"
             lineHeight="tall"
           >
@@ -121,6 +123,8 @@ const ErrorFallback = ({
           <Button
             colorScheme="red"
             onClick={() => window.location.reload()}
+            size="lg"
+            minW="160px"
           >
             Sayfayı Yenile
           </Button>

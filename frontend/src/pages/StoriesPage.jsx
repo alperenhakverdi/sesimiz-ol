@@ -31,8 +31,8 @@ const StoriesPage = () => {
     try {
       setLoading(true)
       const response = await storyAPI.getAll(page, 12)
-      setStories(response.data.stories)
-      setPagination(response.data.pagination)
+      setStories(response.stories)
+      setPagination(response.pagination)
       setError(null)
     } catch (err) {
       setError('Hikâyeler yüklenirken bir hata oluştu.')

@@ -1,0 +1,29 @@
+{
+  "name": "sesimiz-ol-security-tests",
+  "version": "1.0.0",
+  "description": "Comprehensive security testing suite for Sesimiz Ol application",
+  "type": "module",
+  "scripts": {
+    "test": "node run-security-tests.js",
+    "test:auth": "node 01-authentication-security-test.js",
+    "test:input": "node 02-input-validation-test.js",
+    "test:authz": "node 03-authorization-test.js",
+    "test:upload": "node 04-file-upload-security-test.js",
+    "install-deps": "npm install axios form-data file-type"
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "form-data": "^4.0.0",
+    "file-type": "^19.0.0"
+  },
+  "devDependencies": {},
+  "keywords": [
+    "security",
+    "testing",
+    "vulnerability",
+    "assessment",
+    "penetration-testing"
+  ],
+  "author": "Security Team",
+  "license": "MIT"
+}

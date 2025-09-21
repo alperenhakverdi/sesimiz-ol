@@ -1,4 +1,13 @@
 import axios from 'axios';
+import {
+  logoutHandler,
+  csrfTokenHandler,
+  isRefreshing,
+  setIsRefreshing,
+  getFailedQueue,
+  addToFailedQueue,
+  clearFailedQueue,
+} from './authHandlers';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api';
 
@@ -21,16 +30,64 @@ api.interceptors.request.use(
   }
 );
 
+const processQueue = (error) => {
+  getFailedQueue().forEach(({ reject, resolve }) => {
+    if (error) {
+      reject(error);
+    } else {
+      resolve();
+    }
+  });
+  clearFailedQueue();
+};
+
 // Response interceptor
 api.interceptors.response.use(
   (response) => {
     return response.data;
   },
-  (error) => {
-    const errorMessage = error.response?.data?.error?.message || 'Bir hata oluştu';
+  async (error) => {
+    const originalRequest = error.config || {};
+    const status = error.response?.status;
+
+    if (status === 401 && !originalRequest._retry) {
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          addToFailedQueue({ resolve, reject });
+        }).then(() => api(originalRequest));
+      }
+
+      originalRequest._retry = true;
+      setIsRefreshing(true);
+
+      try {
+        console.log("Attempting token refresh...");
+        const refreshResponse = await axios.post(
+          `${API_BASE_URL}/auth/refresh`,
+          {},
+          { withCredentials: true }
+        );
+        const newCsrf = refreshResponse.data?.data?.csrfToken;
+        if (newCsrf) {
+          csrfTokenHandler(newCsrf);
+        }
+        processQueue(null);
+        return api(originalRequest);
+      } catch (refreshError) {
+        console.error("Token refresh failed:", refreshError);
+        processQueue(refreshError);
+        await logoutHandler({ skipServer: true });
+        return Promise.reject(refreshError);
+      } finally {
+        setIsRefreshing(false);
+      }
+    }
+
+    const errorMessage = error.response?.data?.message || error.message || 'Bir hata oluştu';
     return Promise.reject(new Error(errorMessage));
   }
 );
+
 
 // User API functions
 export const userAPI = {

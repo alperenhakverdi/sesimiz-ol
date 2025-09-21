@@ -425,7 +425,7 @@ router.get('/blocked/list', async (req, res) => {
 });
 
 // Search messages
-router.get('/search', auth, async (req, res) => {
+router.get('/search', async (req, res) => {
   try {
     const userId = req.user.id;
     const { q, page = 1, limit = 20 } = req.query;

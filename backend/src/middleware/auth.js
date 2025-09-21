@@ -127,6 +127,10 @@ export const refreshTokenMiddleware = async (req, res, next) => {
   const cookieToken = req.cookies ? req.cookies[REFRESH_COOKIE] : undefined;
   const refreshToken = bodyToken || cookieToken;
 
+  console.log('Refresh token from cookie:', cookieToken);
+  console.log('Refresh token from body:', bodyToken);
+  console.log('Using refresh token:', refreshToken);
+
   if (!refreshToken) {
     return res.status(401).json({
       success: false,
@@ -157,6 +161,7 @@ export const refreshTokenMiddleware = async (req, res, next) => {
 
     req.userId = Number(decoded.sub);
     req.sessionId = decoded.sid || null;
+    req.refreshToken = refreshToken;
     next();
   } catch (error) {
     if (error.name === 'TokenExpiredError') {

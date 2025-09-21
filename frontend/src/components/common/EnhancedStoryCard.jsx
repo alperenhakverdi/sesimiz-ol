@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, memo } from 'react'
 import {
   Box,
   VStack,
@@ -14,6 +14,7 @@ import { formatDistanceToNow } from 'date-fns'
 import { tr } from 'date-fns/locale'
 import { ViewIcon } from '@chakra-ui/icons'
 import { storyAPI } from '../../services/api'
+import LazyImage from './LazyImage'
 
 // Keyframes for animations
 const shimmer = keyframes`
@@ -67,11 +68,15 @@ const EnhancedStoryCard = ({ story }) => {
   }
 
   // Responsive colors
-  const cardBg = useColorModeValue('white', 'gray.800')
-  const borderColor = useColorModeValue('neutral.200', 'neutral.600')
+  const cardBg = useColorModeValue('white', 'neutral.800')
+  const borderColor = useColorModeValue('neutral.200', 'neutral.700')
   const hoverBorderColor = useColorModeValue('accent.300', 'accent.400')
   const shadowColor = useColorModeValue('0px 4px 12px rgba(0, 0, 0, 0.05)', '0px 4px 12px rgba(0, 0, 0, 0.3)')
   const hoverShadowColor = useColorModeValue('0px 8px 20px rgba(0, 0, 0, 0.12)', '0px 8px 20px rgba(0, 0, 0, 0.4)')
+  const titleColor = useColorModeValue('neutral.800', 'neutral.100')
+  const textColor = useColorModeValue('neutral.600', 'neutral.300')
+  const authorColor = useColorModeValue('neutral.700', 'neutral.200')
+  const timeColor = useColorModeValue('neutral.500', 'neutral.400')
 
   return (
     <Box
@@ -141,7 +146,7 @@ const EnhancedStoryCard = ({ story }) => {
             className="story-title"
             fontSize="xl"
             fontWeight="bold"
-            color="neutral.800"
+            color={titleColor}
             lineHeight="short"
             noOfLines={2}
             transition="color 0.3s ease"
@@ -149,9 +154,9 @@ const EnhancedStoryCard = ({ story }) => {
             {story.title}
           </Text>
           
-          <Text 
-            fontSize="md" 
-            color="neutral.600" 
+          <Text
+            fontSize="md"
+            color={textColor}
             lineHeight="tall"
             noOfLines={3}
             minH="72px"
@@ -165,22 +170,36 @@ const EnhancedStoryCard = ({ story }) => {
           {/* Author Info */}
           <HStack justify="space-between" w="full" align="center">
             <HStack spacing={3}>
-              <Avatar 
-                size="sm" 
-                name={story.authorNickname || story.author?.nickname}
-                src={story.authorAvatar || story.author?.avatar}
-                bg="brand.100"
-                color="brand.500"
-                transition="transform 0.2s ease"
-                _groupHover={{
-                  animation: `${pulse} 1s ease-in-out infinite`,
-                }}
-              />
+              {story.authorAvatar || story.author?.avatar ? (
+                <LazyImage
+                  src={story.authorAvatar || story.author?.avatar}
+                  alt={`${story.authorNickname || story.author?.nickname} profil fotoğrafı`}
+                  boxSize="32px"
+                  borderRadius="full"
+                  objectFit="cover"
+                  fallbackSrc="/default-avatar.png"
+                  transition="transform 0.2s ease"
+                  _groupHover={{
+                    animation: `${pulse} 1s ease-in-out infinite`,
+                  }}
+                />
+              ) : (
+                <Avatar
+                  size="sm"
+                  name={story.authorNickname || story.author?.nickname}
+                  bg="brand.100"
+                  color="brand.500"
+                  transition="transform 0.2s ease"
+                  _groupHover={{
+                    animation: `${pulse} 1s ease-in-out infinite`,
+                  }}
+                />
+              )}
               <VStack align="start" spacing={0}>
-                <Text fontSize="sm" fontWeight="medium" color="neutral.700">
+                <Text fontSize="sm" fontWeight="medium" color={authorColor}>
                   @{story.authorNickname || story.author?.nickname}
                 </Text>
-                <Text fontSize="xs" color="neutral.500">
+                <Text fontSize="xs" color={timeColor}>
                   {timeAgo}
                 </Text>
               </VStack>
@@ -195,8 +214,8 @@ const EnhancedStoryCard = ({ story }) => {
               p={1}
               borderRadius="md"
             >
-              <ViewIcon boxSize={3} color="neutral.400" />
-              <Text fontSize="xs" color="neutral.500">
+              <ViewIcon boxSize={3} color={timeColor} />
+              <Text fontSize="xs" color={timeColor}>
                 {localViewCount}
               </Text>
             </HStack>
@@ -244,4 +263,4 @@ const EnhancedStoryCard = ({ story }) => {
   )
 }
 
-export default EnhancedStoryCard
+export default memo(EnhancedStoryCard)

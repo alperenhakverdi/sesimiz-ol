@@ -392,7 +392,7 @@ export const refreshToken = async (req, res) => {
   try {
     const userId = req.userId; // From refresh token middleware
     const sessionId = req.sessionId;
-    const { refreshToken: incomingRefreshToken } = req.body;
+    const incomingRefreshToken = req.refreshToken;
 
     const user = await prisma.user.findUnique({
       where: { id: userId },

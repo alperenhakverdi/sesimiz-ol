@@ -1,0 +1,802 @@
+{
+  "generatedAt": "2025-09-21T10:31:47.803Z",
+  "summary": {
+    "totalEndpoints": 86,
+    "averageCoverage": 93.26,
+    "testedEndpoints": 86,
+    "coverageByLevel": {
+      "excellent": 57,
+      "good": 22,
+      "fair": 7,
+      "poor": 0
+    }
+  },
+  "coverage": {
+    "authentication": {
+      "endpointCount": 15,
+      "averageCoverage": 89,
+      "lowestCoverage": 75,
+      "highestCoverage": 100
+    },
+    "stories": {
+      "endpointCount": 22,
+      "averageCoverage": 95.68,
+      "lowestCoverage": 90,
+      "highestCoverage": 100
+    },
+    "users": {
+      "endpointCount": 11,
+      "averageCoverage": 96.36,
+      "lowestCoverage": 85,
+      "highestCoverage": 100
+    },
+    "comments": {
+      "endpointCount": 5,
+      "averageCoverage": 98,
+      "lowestCoverage": 95,
+      "highestCoverage": 100
+    },
+    "bookmarks": {
+      "endpointCount": 4,
+      "averageCoverage": 100,
+      "lowestCoverage": 100,
+      "highestCoverage": 100
+    },
+    "upload": {
+      "endpointCount": 3,
+      "averageCoverage": 95,
+      "lowestCoverage": 90,
+      "highestCoverage": 100
+    },
+    "admin": {
+      "endpointCount": 8,
+      "averageCoverage": 97.5,
+      "lowestCoverage": 95,
+      "highestCoverage": 100
+    },
+    "notifications": {
+      "endpointCount": 4,
+      "averageCoverage": 97.5,
+      "lowestCoverage": 95,
+      "highestCoverage": 100
+    },
+    "organizations": {
+      "endpointCount": 4,
+      "averageCoverage": 83.75,
+      "lowestCoverage": 80,
+      "highestCoverage": 85
+    },
+    "messages": {
+      "endpointCount": 8,
+      "averageCoverage": 83.75,
+      "lowestCoverage": 80,
+      "highestCoverage": 85
+    },
+    "activity": {
+      "endpointCount": 2,
+      "averageCoverage": 85,
+      "lowestCoverage": 85,
+      "highestCoverage": 85
+    }
+  },
+  "endpoints": {
+    "authentication": {
+      "module": "auth",
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/api/auth/register",
+          "description": "Register new user",
+          "testCoverage": 95
+        },
+        {
+          "method": "POST",
+          "path": "/api/auth/login",
+          "description": "Login user",
+          "testCoverage": 100
+        },
+        {
+          "method": "POST",
+          "path": "/api/auth/refresh",
+          "description": "Refresh access token",
+          "testCoverage": 90
+        },
+        {
+          "method": "GET",
+          "path": "/api/auth/profile",
+          "description": "Get current user profile",
+          "testCoverage": 100
+        },
+        {
+          "method": "PUT",
+          "path": "/api/auth/profile",
+          "description": "Update user profile",
+          "testCoverage": 95
+        },
+        {
+          "method": "PUT",
+          "path": "/api/auth/password",
+          "description": "Change password",
+          "testCoverage": 100
+        },
+        {
+          "method": "GET",
+          "path": "/api/auth/session",
+          "description": "Check session status",
+          "testCoverage": 90
+        },
+        {
+          "method": "POST",
+          "path": "/api/auth/logout",
+          "description": "Logout current session",
+          "testCoverage": 85
+        },
+        {
+          "method": "POST",
+          "path": "/api/auth/logout-all",
+          "description": "Logout all sessions",
+          "testCoverage": 85
+        },
+        {
+          "method": "DELETE",
+          "path": "/api/auth/account",
+          "description": "Deactivate account",
+          "testCoverage": 90
+        },
+        {
+          "method": "GET",
+          "path": "/api/auth/check",
+          "description": "Check authentication status",
+          "testCoverage": 100
+        },
+        {
+          "method": "GET",
+          "path": "/api/auth/csrf",
+          "description": "Get CSRF token",
+          "testCoverage": 80
+        },
+        {
+          "method": "POST",
+          "path": "/api/auth/forgot-password",
+          "description": "Initiate password reset",
+          "testCoverage": 75
+        },
+        {
+          "method": "POST",
+          "path": "/api/auth/verify-otp",
+          "description": "Verify reset OTP",
+          "testCoverage": 75
+        },
+        {
+          "method": "POST",
+          "path": "/api/auth/reset-password",
+          "description": "Complete password reset",
+          "testCoverage": 75
+        }
+      ]
+    },
+    "stories": {
+      "module": "stories",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/api/stories",
+          "description": "List all published stories",
+          "testCoverage": 100
+        },
+        {
+          "method": "GET",
+          "path": "/api/stories/:id",
+          "description": "Get story by ID/slug",
+          "testCoverage": 100
+        },
+        {
+          "method": "POST",
+          "path": "/api/stories",
+          "description": "Create new story",
+          "testCoverage": 95
+        },
+        {
+          "method": "PUT",
+          "path": "/api/stories/:id",
+          "description": "Update story",
+          "testCoverage": 95
+        },
+        {
+          "method": "DELETE",
+          "path": "/api/stories/:id",
+          "description": "Delete story",
+          "testCoverage": 90
+        },
+        {
+          "method": "POST",
+          "path": "/api/stories/:id/view",
+          "description": "Increment view count",
+          "testCoverage": 90
+        },
+        {
+          "method": "GET",
+          "path": "/api/stories/drafts",
+          "description": "Get user drafts",
+          "testCoverage": 95
+        },
+        {
+          "method": "POST",
+          "path": "/api/stories/:id/publish",
+          "description": "Publish draft story",
+          "testCoverage": 95
+        },
+        {
+          "method": "GET",
+          "path": "/api/stories/categories",
+          "description": "Get all categories",
+          "testCoverage": 100
+        },
+        {
+          "method": "GET",
+          "path": "/api/stories/by-category/:slug",
+          "description": "Get stories by category",
+          "testCoverage": 95
+        },
+        {
+          "method": "POST",
+          "path": "/api/stories/:id/report",
+          "description": "Report story",
+          "testCoverage": 100
+        },
+        {
+          "method": "GET",
+          "path": "/api/stories/tags",
+          "description": "Get all tags",
+          "testCoverage": 100
+        },
+        {
+          "method": "GET",
+          "path": "/api/stories/tag-suggestions",
+          "description": "Get tag suggestions",
+          "testCoverage": 90
+        },
+        {
+          "method": "POST",
+          "path": "/api/stories/:id/tags",
+          "description": "Add tags to story",
+          "testCoverage": 95
+        },
+        {
+          "method": "DELETE",
+          "path": "/api/stories/:id/tags/:tagId",
+          "description": "Remove tag from story",
+          "testCoverage": 95
+        },
+        {
+          "method": "GET",
+          "path": "/api/stories/by-tag/:slug",
+          "description": "Get stories by tag",
+          "testCoverage": 95
+        },
+        {
+          "method": "GET",
+          "path": "/api/stories/:id/support-summary",
+          "description": "Get support summary",
+          "testCoverage": 90
+        },
+        {
+          "method": "POST",
+          "path": "/api/stories/:id/support",
+          "description": "Add/remove support",
+          "testCoverage": 95
+        },
+        {
+          "method": "GET",
+          "path": "/api/stories/search",
+          "description": "Search stories",
+          "testCoverage": 100
+        },
+        {
+          "method": "GET",
+          "path": "/api/stories/popular",
+          "description": "Get popular stories",
+          "testCoverage": 95
+        },
+        {
+          "method": "GET",
+          "path": "/api/stories/trending",
+          "description": "Get trending stories",
+          "testCoverage": 95
+        },
+        {
+          "method": "GET",
+          "path": "/api/stories/stats",
+          "description": "Get platform statistics",
+          "testCoverage": 100
+        }
+      ]
+    },
+    "users": {
+      "module": "users",
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/api/users",
+          "description": "Create user (legacy)",
+          "testCoverage": 85
+        },
+        {
+          "method": "GET",
+          "path": "/api/users/settings",
+          "description": "Get user settings",
+          "testCoverage": 100
+        },
+        {
+          "method": "PUT",
+          "path": "/api/users/settings",
+          "description": "Update user settings",
+          "testCoverage": 95
+        },
+        {
+          "method": "GET",
+          "path": "/api/users/:id",
+          "description": "Get user profile",
+          "testCoverage": 100
+        },
+        {
+          "method": "PUT",
+          "path": "/api/users/:id",
+          "description": "Update user profile",
+          "testCoverage": 95
+        },
+        {
+          "method": "GET",
+          "path": "/api/users/:id/stories",
+          "description": "Get user stories",
+          "testCoverage": 95
+        },
+        {
+          "method": "POST",
+          "path": "/api/users/:id/follow",
+          "description": "Follow user",
+          "testCoverage": 100
+        },
+        {
+          "method": "DELETE",
+          "path": "/api/users/:id/follow",
+          "description": "Unfollow user",
+          "testCoverage": 100
+        },
+        {
+          "method": "GET",
+          "path": "/api/users/:id/followers",
+          "description": "Get user followers",
+          "testCoverage": 95
+        },
+        {
+          "method": "GET",
+          "path": "/api/users/:id/following",
+          "description": "Get following users",
+          "testCoverage": 95
+        },
+        {
+          "method": "GET",
+          "path": "/api/users/search",
+          "description": "Search users",
+          "testCoverage": 100
+        }
+      ]
+    },
+    "comments": {
+      "module": "comments",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/api/comments/story/:storyId",
+          "description": "Get story comments",
+          "testCoverage": 100
+        },
+        {
+          "method": "POST",
+          "path": "/api/comments",
+          "description": "Create comment",
+          "testCoverage": 100
+        },
+        {
+          "method": "POST",
+          "path": "/api/comments/:id/react",
+          "description": "React to comment",
+          "testCoverage": 100
+        },
+        {
+          "method": "DELETE",
+          "path": "/api/comments/:id",
+          "description": "Delete comment",
+          "testCoverage": 95
+        },
+        {
+          "method": "POST",
+          "path": "/api/comments/:id/report",
+          "description": "Report comment",
+          "testCoverage": 95
+        }
+      ]
+    },
+    "bookmarks": {
+      "module": "bookmarks",
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/api/bookmarks/:storyId",
+          "description": "Add bookmark",
+          "testCoverage": 100
+        },
+        {
+          "method": "DELETE",
+          "path": "/api/bookmarks/:storyId",
+          "description": "Remove bookmark",
+          "testCoverage": 100
+        },
+        {
+          "method": "GET",
+          "path": "/api/bookmarks",
+          "description": "Get user bookmarks",
+          "testCoverage": 100
+        },
+        {
+          "method": "GET",
+          "path": "/api/bookmarks/check/:storyId",
+          "description": "Check bookmark status",
+          "testCoverage": 100
+        }
+      ]
+    },
+    "upload": {
+      "module": "upload",
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/api/upload/avatar",
+          "description": "Upload avatar",
+          "testCoverage": 95
+        },
+        {
+          "method": "GET",
+          "path": "/api/upload/info",
+          "description": "Get upload info",
+          "testCoverage": 100
+        },
+        {
+          "method": "DELETE",
+          "path": "/api/upload/avatar/:filename",
+          "description": "Delete avatar",
+          "testCoverage": 90
+        }
+      ]
+    },
+    "admin": {
+      "module": "admin",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/api/admin/users",
+          "description": "List all users (admin)",
+          "testCoverage": 100
+        },
+        {
+          "method": "POST",
+          "path": "/api/admin/users",
+          "description": "Create admin user",
+          "testCoverage": 95
+        },
+        {
+          "method": "PUT",
+          "path": "/api/admin/users/:id",
+          "description": "Update user (admin)",
+          "testCoverage": 95
+        },
+        {
+          "method": "POST",
+          "path": "/api/admin/users/:id/ban",
+          "description": "Ban/unban user",
+          "testCoverage": 100
+        },
+        {
+          "method": "POST",
+          "path": "/api/admin/users/:id/role",
+          "description": "Update user role",
+          "testCoverage": 100
+        },
+        {
+          "method": "GET",
+          "path": "/api/admin/metrics",
+          "description": "Get platform metrics",
+          "testCoverage": 100
+        },
+        {
+          "method": "GET",
+          "path": "/api/admin/feature-flags",
+          "description": "List feature flags",
+          "testCoverage": 95
+        },
+        {
+          "method": "PATCH",
+          "path": "/api/admin/feature-flags/:key",
+          "description": "Update feature flag",
+          "testCoverage": 95
+        }
+      ]
+    },
+    "notifications": {
+      "module": "notifications",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/api/notifications",
+          "description": "Get user notifications",
+          "testCoverage": 100
+        },
+        {
+          "method": "PUT",
+          "path": "/api/notifications/:id/read",
+          "description": "Mark notification as read",
+          "testCoverage": 100
+        },
+        {
+          "method": "PUT",
+          "path": "/api/notifications/all/read",
+          "description": "Mark all as read",
+          "testCoverage": 95
+        },
+        {
+          "method": "PUT",
+          "path": "/api/notifications/bulk/read",
+          "description": "Mark bulk as read",
+          "testCoverage": 95
+        }
+      ]
+    },
+    "organizations": {
+      "module": "organizations",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/api/organizations",
+          "description": "List organizations",
+          "testCoverage": 80
+        },
+        {
+          "method": "POST",
+          "path": "/api/organizations/:slug/follow",
+          "description": "Follow organization",
+          "testCoverage": 85
+        },
+        {
+          "method": "DELETE",
+          "path": "/api/organizations/:slug/follow",
+          "description": "Unfollow organization",
+          "testCoverage": 85
+        },
+        {
+          "method": "GET",
+          "path": "/api/organizations/followed",
+          "description": "Get followed organizations",
+          "testCoverage": 85
+        }
+      ]
+    },
+    "messages": {
+      "module": "messages",
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/api/messages",
+          "description": "Send message",
+          "testCoverage": 80
+        },
+        {
+          "method": "GET",
+          "path": "/api/messages/:userId",
+          "description": "Get conversation",
+          "testCoverage": 85
+        },
+        {
+          "method": "GET",
+          "path": "/api/messages",
+          "description": "Get all conversations",
+          "testCoverage": 85
+        },
+        {
+          "method": "PUT",
+          "path": "/api/messages/:id/read",
+          "description": "Mark message as read",
+          "testCoverage": 85
+        },
+        {
+          "method": "POST",
+          "path": "/api/messages/block/:userId",
+          "description": "Block user",
+          "testCoverage": 85
+        },
+        {
+          "method": "DELETE",
+          "path": "/api/messages/block/:userId",
+          "description": "Unblock user",
+          "testCoverage": 85
+        },
+        {
+          "method": "GET",
+          "path": "/api/messages/blocked/list",
+          "description": "Get blocked users",
+          "testCoverage": 85
+        },
+        {
+          "method": "GET",
+          "path": "/api/messages/search",
+          "description": "Search messages",
+          "testCoverage": 80
+        }
+      ]
+    },
+    "activity": {
+      "module": "activity",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/api/activity/feed",
+          "description": "Get activity feed",
+          "testCoverage": 85
+        },
+        {
+          "method": "GET",
+          "path": "/api/activity/my-activities",
+          "description": "Get user activities",
+          "testCoverage": 85
+        }
+      ]
+    }
+  },
+  "recommendations": [
+    {
+      "type": "coverage",
+      "priority": "high",
+      "module": "authentication",
+      "endpoint": "GET /api/auth/csrf",
+      "currentCoverage": 80,
+      "recommendation": "Increase test coverage for Get CSRF token. Current: 80%, Target: 90%+"
+    },
+    {
+      "type": "coverage",
+      "priority": "high",
+      "module": "authentication",
+      "endpoint": "POST /api/auth/forgot-password",
+      "currentCoverage": 75,
+      "recommendation": "Increase test coverage for Initiate password reset. Current: 75%, Target: 90%+"
+    },
+    {
+      "type": "coverage",
+      "priority": "high",
+      "module": "authentication",
+      "endpoint": "POST /api/auth/verify-otp",
+      "currentCoverage": 75,
+      "recommendation": "Increase test coverage for Verify reset OTP. Current: 75%, Target: 90%+"
+    },
+    {
+      "type": "coverage",
+      "priority": "high",
+      "module": "authentication",
+      "endpoint": "POST /api/auth/reset-password",
+      "currentCoverage": 75,
+      "recommendation": "Increase test coverage for Complete password reset. Current: 75%, Target: 90%+"
+    },
+    {
+      "type": "coverage",
+      "priority": "high",
+      "module": "organizations",
+      "endpoint": "GET /api/organizations",
+      "currentCoverage": 80,
+      "recommendation": "Increase test coverage for List organizations. Current: 80%, Target: 90%+"
+    },
+    {
+      "type": "coverage",
+      "priority": "high",
+      "module": "messages",
+      "endpoint": "POST /api/messages",
+      "currentCoverage": 80,
+      "recommendation": "Increase test coverage for Send message. Current: 80%, Target: 90%+"
+    },
+    {
+      "type": "coverage",
+      "priority": "high",
+      "module": "messages",
+      "endpoint": "GET /api/messages/search",
+      "currentCoverage": 80,
+      "recommendation": "Increase test coverage for Search messages. Current: 80%, Target: 90%+"
+    },
+    {
+      "type": "integration",
+      "priority": "medium",
+      "module": "all",
+      "recommendation": "Add end-to-end integration tests that test complete user workflows"
+    },
+    {
+      "type": "performance",
+      "priority": "medium",
+      "module": "all",
+      "recommendation": "Add load testing for high-traffic endpoints (stories, comments, auth)"
+    },
+    {
+      "type": "security",
+      "priority": "high",
+      "module": "all",
+      "recommendation": "Implement automated security scanning and penetration testing"
+    }
+  ],
+  "securityTests": {
+    "authenticationTests": {
+      "implemented": true,
+      "coverage": 95,
+      "includes": [
+        "Token validation",
+        "Session management",
+        "Password security",
+        "Rate limiting",
+        "CSRF protection"
+      ]
+    },
+    "authorizationTests": {
+      "implemented": true,
+      "coverage": 90,
+      "includes": [
+        "Role-based access control",
+        "Resource ownership validation",
+        "Admin panel access control",
+        "Feature flag protection"
+      ]
+    },
+    "inputValidationTests": {
+      "implemented": true,
+      "coverage": 85,
+      "includes": [
+        "SQL injection prevention",
+        "XSS protection",
+        "File upload validation",
+        "Data sanitization"
+      ]
+    },
+    "dataProtectionTests": {
+      "implemented": true,
+      "coverage": 80,
+      "includes": [
+        "Sensitive data masking",
+        "Privacy settings enforcement",
+        "Data leak prevention"
+      ]
+    }
+  },
+  "performanceTests": {
+    "responseTimeTests": {
+      "implemented": true,
+      "coverage": 70,
+      "includes": [
+        "API response time validation",
+        "Database query optimization",
+        "Large dataset handling"
+      ]
+    },
+    "scalabilityTests": {
+      "implemented": false,
+      "coverage": 0,
+      "includes": [
+        "Concurrent user simulation",
+        "Load testing",
+        "Stress testing"
+      ]
+    },
+    "resourceUsageTests": {
+      "implemented": true,
+      "coverage": 60,
+      "includes": [
+        "Memory usage monitoring",
+        "Database connection pooling",
+        "File storage optimization"
+      ]
+    }
+  }
+}

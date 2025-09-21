@@ -1,0 +1,56 @@
+{
+  "name": "sesimiz-ol-performance-analysis",
+  "version": "1.0.0",
+  "description": "Performance analysis and optimization tools for Sesimiz Ol platform",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "setup": "npm install && mkdir -p reports",
+    "perf:baseline": "npm run perf:db && npm run perf:api && npm run perf:frontend",
+    "perf:db": "node benchmarks/db-performance-benchmark.js",
+    "perf:api": "node benchmarks/api-load-tester.js",
+    "perf:frontend": "node benchmarks/frontend-bundle-analyzer.js",
+    "perf:load-test": "node load-tests/comprehensive-load-test.js",
+    "perf:monitor": "node monitoring/performance-dashboard.js",
+    "perf:report": "npm run perf:generate-report",
+    "perf:generate-report": "node scripts/generate-performance-report.js",
+    "test:load:light": "API_BASE_URL=${API_BASE_URL:-http://localhost:3001} node load-tests/comprehensive-load-test.js",
+    "test:load:heavy": "API_BASE_URL=${API_BASE_URL:-http://localhost:3001} LOAD_TEST_DURATION=300000 node load-tests/comprehensive-load-test.js",
+    "monitor:start": "node monitoring/performance-dashboard.js",
+    "monitor:stop": "pkill -f performance-dashboard.js",
+    "benchmark:single": "node benchmarks/api-load-tester.js",
+    "benchmark:concurrent": "CONCURRENT_USERS=50 node benchmarks/api-load-tester.js",
+    "analyze:bundle": "cd ../frontend && npm run build && cd ../performance-analysis && node benchmarks/frontend-bundle-analyzer.js",
+    "analyze:db": "DATABASE_URL=${DATABASE_URL} node benchmarks/db-performance-benchmark.js",
+    "clean": "rm -rf reports/* temp/*",
+    "help": "echo 'Available commands:' && npm run | grep perf:"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.15.0",
+    "axios": "^1.11.0",
+    "prisma": "^6.15.0"
+  },
+  "devDependencies": {
+    "eslint": "^9.34.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "performance",
+    "benchmarking",
+    "monitoring",
+    "optimization",
+    "load-testing"
+  ],
+  "author": "Performance Engineering Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sesimiz-ol/performance-analysis.git"
+  },
+  "bugs": {
+    "url": "https://github.com/sesimiz-ol/performance-analysis/issues"
+  },
+  "homepage": "https://github.com/sesimiz-ol/performance-analysis#readme"
+}

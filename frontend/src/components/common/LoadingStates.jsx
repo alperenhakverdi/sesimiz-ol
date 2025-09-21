@@ -39,8 +39,10 @@ const dots = keyframes`
 
 // Story Card Skeleton
 export const StoryCardSkeleton = ({ count = 1 }) => {
-  const cardBg = useColorModeValue('white', 'gray.800')
-  const borderColor = useColorModeValue('neutral.200', 'neutral.600')
+  const cardBg = useColorModeValue('white', 'neutral.800')
+  const borderColor = useColorModeValue('neutral.200', 'neutral.700')
+  const skeletonStartColor = useColorModeValue('neutral.100', 'neutral.700')
+  const skeletonEndColor = useColorModeValue('neutral.300', 'neutral.600')
 
   return (
     <>
@@ -56,25 +58,60 @@ export const StoryCardSkeleton = ({ count = 1 }) => {
         >
           <VStack spacing={6} align="stretch">
             {/* Title skeleton */}
-            <Skeleton height="24px" borderRadius="md" />
+            <Skeleton
+              height="24px"
+              borderRadius="md"
+              startColor={skeletonStartColor}
+              endColor={skeletonEndColor}
+            />
             
             {/* Content skeleton */}
-            <SkeletonText noOfLines={3} spacing="3" skeletonHeight="16px" />
+            <SkeletonText
+              noOfLines={3}
+              spacing="3"
+              skeletonHeight="16px"
+              startColor={skeletonStartColor}
+              endColor={skeletonEndColor}
+            />
             
             {/* Author info skeleton */}
             <HStack justify="space-between" align="center">
               <HStack spacing={3}>
-                <SkeletonCircle size="40px" />
+                <SkeletonCircle
+                  size="40px"
+                  startColor={skeletonStartColor}
+                  endColor={skeletonEndColor}
+                />
                 <VStack align="start" spacing={1}>
-                  <Skeleton height="14px" width="80px" />
-                  <Skeleton height="12px" width="60px" />
+                  <Skeleton
+                    height="14px"
+                    width="80px"
+                    startColor={skeletonStartColor}
+                    endColor={skeletonEndColor}
+                  />
+                  <Skeleton
+                    height="12px"
+                    width="60px"
+                    startColor={skeletonStartColor}
+                    endColor={skeletonEndColor}
+                  />
                 </VStack>
               </HStack>
-              <Skeleton height="12px" width="40px" />
+              <Skeleton
+                height="12px"
+                width="40px"
+                startColor={skeletonStartColor}
+                endColor={skeletonEndColor}
+              />
             </HStack>
             
             {/* Button skeleton */}
-            <Skeleton height="40px" borderRadius="md" />
+            <Skeleton
+              height="40px"
+              borderRadius="md"
+              startColor={skeletonStartColor}
+              endColor={skeletonEndColor}
+            />
           </VStack>
         </Box>
       ))}
@@ -84,6 +121,10 @@ export const StoryCardSkeleton = ({ count = 1 }) => {
 
 // Comment Skeleton
 export const CommentSkeleton = ({ count = 3 }) => {
+  const cardBg = useColorModeValue('white', 'neutral.800')
+  const borderColor = useColorModeValue('neutral.200', 'neutral.700')
+  const skeletonStartColor = useColorModeValue('neutral.100', 'neutral.700')
+  const skeletonEndColor = useColorModeValue('neutral.300', 'neutral.600')
   return (
     <VStack spacing={4} align="stretch">
       {Array.from({ length: count }).map((_, index) => (
@@ -92,8 +133,8 @@ export const CommentSkeleton = ({ count = 3 }) => {
           p={4}
           borderRadius="lg"
           borderWidth="1px"
-          borderColor="neutral.200"
-          bg="white"
+          borderColor={borderColor}
+          bg={cardBg}
           animation={`${slideUp} 0.4s ease-out ${index * 0.1}s both`}
         >
           <HStack align="start" spacing={3}>
@@ -130,7 +171,7 @@ export const CustomSpinner = ({
       {showText && (
         <Text
           fontSize="sm"
-          color="neutral.500"
+          color={useColorModeValue('neutral.500', 'neutral.400')}
           animation={`${fadeInOut} 1.5s ease-in-out infinite`}
         >
           {text}
@@ -148,7 +189,7 @@ export const DotLoading = ({
 }) => {
   return (
     <HStack spacing={2} justify="center" py={6}>
-      <Text fontSize="sm" color="neutral.600">
+      <Text fontSize="sm" color={useColorModeValue('neutral.600', 'neutral.400')}>
         {text}
       </Text>
       <HStack spacing={1}>
@@ -169,7 +210,9 @@ export const DotLoading = ({
 
 // Profile Page Skeleton
 export const ProfileSkeleton = () => {
-  const cardBg = useColorModeValue('white', 'gray.800')
+  const cardBg = useColorModeValue('white', 'neutral.800')
+  const borderColor = useColorModeValue('neutral.200', 'neutral.700')
+  const bgColor = useColorModeValue('neutral.50', 'neutral.900')
 
   return (
     <VStack spacing={12} align="stretch">

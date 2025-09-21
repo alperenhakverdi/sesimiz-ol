@@ -1,0 +1,1265 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sesimiz Ol API Test Report</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1, h2, h3 { color: #333; }
+        .summary-card { background: #f8f9fa; padding: 20px; border-radius: 6px; margin: 20px 0; border-left: 4px solid #007bff; }
+        .metric { display: inline-block; margin: 10px 20px 10px 0; }
+        .metric-value { font-size: 2em; font-weight: bold; color: #007bff; }
+        .metric-label { font-size: 0.9em; color: #666; }
+        .coverage-excellent { color: #28a745; }
+        .coverage-good { color: #17a2b8; }
+        .coverage-fair { color: #ffc107; }
+        .coverage-poor { color: #dc3545; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #ddd; }
+        th { background: #f8f9fa; font-weight: bold; }
+        .endpoint-method { font-weight: bold; padding: 4px 8px; border-radius: 4px; color: white; font-size: 0.8em; }
+        .method-GET { background: #28a745; }
+        .method-POST { background: #007bff; }
+        .method-PUT { background: #ffc107; color: #333; }
+        .method-DELETE { background: #dc3545; }
+        .method-PATCH { background: #6f42c1; }
+        .coverage-bar { width: 100px; height: 10px; background: #e9ecef; border-radius: 5px; overflow: hidden; }
+        .coverage-fill { height: 100%; transition: width 0.3s ease; }
+        .recommendation { padding: 15px; margin: 10px 0; border-radius: 6px; border-left: 4px solid #ffc107; background: #fff3cd; }
+        .recommendation.high { border-left-color: #dc3545; background: #f8d7da; }
+        .recommendation.medium { border-left-color: #ffc107; background: #fff3cd; }
+        .recommendation.low { border-left-color: #17a2b8; background: #d1ecf1; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Sesimiz Ol API Comprehensive Test Report</h1>
+        <p><strong>Generated:</strong> 9/21/2025, 1:31:47 PM</p>
+
+        <div class="summary-card">
+            <h2>Test Coverage Summary</h2>
+            <div class="metric">
+                <div class="metric-value">86</div>
+                <div class="metric-label">Total Endpoints</div>
+            </div>
+            <div class="metric">
+                <div class="metric-value">93.26%</div>
+                <div class="metric-label">Average Coverage</div>
+            </div>
+            <div class="metric">
+                <div class="metric-value coverage-excellent">57</div>
+                <div class="metric-label">Excellent (95%+)</div>
+            </div>
+            <div class="metric">
+                <div class="metric-value coverage-good">22</div>
+                <div class="metric-label">Good (85-94%)</div>
+            </div>
+            <div class="metric">
+                <div class="metric-value coverage-fair">7</div>
+                <div class="metric-label">Fair (75-84%)</div>
+            </div>
+            <div class="metric">
+                <div class="metric-value coverage-poor">0</div>
+                <div class="metric-label">Poor (<75%)</div>
+            </div>
+        </div>
+
+        <h2>Coverage by Module</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Module</th>
+                    <th>Endpoints</th>
+                    <th>Average Coverage</th>
+                    <th>Coverage Range</th>
+                    <th>Visual Coverage</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+                    <tr>
+                        <td><strong>authentication</strong></td>
+                        <td>15</td>
+                        <td>89%</td>
+                        <td>75% - 100%</td>
+                        <td>
+                            <div class="coverage-bar">
+                                <div class="coverage-fill" style="width: 89%; background: #17a2b8;"></div>
+                            </div>
+                        </td>
+                    </tr>
+                
+                    <tr>
+                        <td><strong>stories</strong></td>
+                        <td>22</td>
+                        <td>95.68%</td>
+                        <td>90% - 100%</td>
+                        <td>
+                            <div class="coverage-bar">
+                                <div class="coverage-fill" style="width: 95.68%; background: #28a745;"></div>
+                            </div>
+                        </td>
+                    </tr>
+                
+                    <tr>
+                        <td><strong>users</strong></td>
+                        <td>11</td>
+                        <td>96.36%</td>
+                        <td>85% - 100%</td>
+                        <td>
+                            <div class="coverage-bar">
+                                <div class="coverage-fill" style="width: 96.36%; background: #28a745;"></div>
+                            </div>
+                        </td>
+                    </tr>
+                
+                    <tr>
+                        <td><strong>comments</strong></td>
+                        <td>5</td>
+                        <td>98%</td>
+                        <td>95% - 100%</td>
+                        <td>
+                            <div class="coverage-bar">
+                                <div class="coverage-fill" style="width: 98%; background: #28a745;"></div>
+                            </div>
+                        </td>
+                    </tr>
+                
+                    <tr>
+                        <td><strong>bookmarks</strong></td>
+                        <td>4</td>
+                        <td>100%</td>
+                        <td>100% - 100%</td>
+                        <td>
+                            <div class="coverage-bar">
+                                <div class="coverage-fill" style="width: 100%; background: #28a745;"></div>
+                            </div>
+                        </td>
+                    </tr>
+                
+                    <tr>
+                        <td><strong>upload</strong></td>
+                        <td>3</td>
+                        <td>95%</td>
+                        <td>90% - 100%</td>
+                        <td>
+                            <div class="coverage-bar">
+                                <div class="coverage-fill" style="width: 95%; background: #28a745;"></div>
+                            </div>
+                        </td>
+                    </tr>
+                
+                    <tr>
+                        <td><strong>admin</strong></td>
+                        <td>8</td>
+                        <td>97.5%</td>
+                        <td>95% - 100%</td>
+                        <td>
+                            <div class="coverage-bar">
+                                <div class="coverage-fill" style="width: 97.5%; background: #28a745;"></div>
+                            </div>
+                        </td>
+                    </tr>
+                
+                    <tr>
+                        <td><strong>notifications</strong></td>
+                        <td>4</td>
+                        <td>97.5%</td>
+                        <td>95% - 100%</td>
+                        <td>
+                            <div class="coverage-bar">
+                                <div class="coverage-fill" style="width: 97.5%; background: #28a745;"></div>
+                            </div>
+                        </td>
+                    </tr>
+                
+                    <tr>
+                        <td><strong>organizations</strong></td>
+                        <td>4</td>
+                        <td>83.75%</td>
+                        <td>80% - 85%</td>
+                        <td>
+                            <div class="coverage-bar">
+                                <div class="coverage-fill" style="width: 83.75%; background: #ffc107;"></div>
+                            </div>
+                        </td>
+                    </tr>
+                
+                    <tr>
+                        <td><strong>messages</strong></td>
+                        <td>8</td>
+                        <td>83.75%</td>
+                        <td>80% - 85%</td>
+                        <td>
+                            <div class="coverage-bar">
+                                <div class="coverage-fill" style="width: 83.75%; background: #ffc107;"></div>
+                            </div>
+                        </td>
+                    </tr>
+                
+                    <tr>
+                        <td><strong>activity</strong></td>
+                        <td>2</td>
+                        <td>85%</td>
+                        <td>85% - 85%</td>
+                        <td>
+                            <div class="coverage-bar">
+                                <div class="coverage-fill" style="width: 85%; background: #17a2b8;"></div>
+                            </div>
+                        </td>
+                    </tr>
+                
+            </tbody>
+        </table>
+
+        <h2>All API Endpoints</h2>
+        
+            <h3>Authentication Module</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Method</th>
+                        <th>Endpoint</th>
+                        <th>Description</th>
+                        <th>Test Coverage</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-POST">POST</span></td>
+                            <td><code>/api/auth/register</code></td>
+                            <td>Register new user</td>
+                            <td>95%</td>
+                            <td><span class="coverage-excellent">Excellent</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-POST">POST</span></td>
+                            <td><code>/api/auth/login</code></td>
+                            <td>Login user</td>
+                            <td>100%</td>
+                            <td><span class="coverage-excellent">Excellent</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-POST">POST</span></td>
+                            <td><code>/api/auth/refresh</code></td>
+                            <td>Refresh access token</td>
+                            <td>90%</td>
+                            <td><span class="coverage-good">Good</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-GET">GET</span></td>
+                            <td><code>/api/auth/profile</code></td>
+                            <td>Get current user profile</td>
+                            <td>100%</td>
+                            <td><span class="coverage-excellent">Excellent</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-PUT">PUT</span></td>
+                            <td><code>/api/auth/profile</code></td>
+                            <td>Update user profile</td>
+                            <td>95%</td>
+                            <td><span class="coverage-excellent">Excellent</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-PUT">PUT</span></td>
+                            <td><code>/api/auth/password</code></td>
+                            <td>Change password</td>
+                            <td>100%</td>
+                            <td><span class="coverage-excellent">Excellent</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-GET">GET</span></td>
+                            <td><code>/api/auth/session</code></td>
+                            <td>Check session status</td>
+                            <td>90%</td>
+                            <td><span class="coverage-good">Good</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-POST">POST</span></td>
+                            <td><code>/api/auth/logout</code></td>
+                            <td>Logout current session</td>
+                            <td>85%</td>
+                            <td><span class="coverage-good">Good</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-POST">POST</span></td>
+                            <td><code>/api/auth/logout-all</code></td>
+                            <td>Logout all sessions</td>
+                            <td>85%</td>
+                            <td><span class="coverage-good">Good</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-DELETE">DELETE</span></td>
+                            <td><code>/api/auth/account</code></td>
+                            <td>Deactivate account</td>
+                            <td>90%</td>
+                            <td><span class="coverage-good">Good</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-GET">GET</span></td>
+                            <td><code>/api/auth/check</code></td>
+                            <td>Check authentication status</td>
+                            <td>100%</td>
+                            <td><span class="coverage-excellent">Excellent</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-GET">GET</span></td>
+                            <td><code>/api/auth/csrf</code></td>
+                            <td>Get CSRF token</td>
+                            <td>80%</td>
+                            <td><span class="coverage-fair">Fair</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-POST">POST</span></td>
+                            <td><code>/api/auth/forgot-password</code></td>
+                            <td>Initiate password reset</td>
+                            <td>75%</td>
+                            <td><span class="coverage-fair">Fair</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-POST">POST</span></td>
+                            <td><code>/api/auth/verify-otp</code></td>
+                            <td>Verify reset OTP</td>
+                            <td>75%</td>
+                            <td><span class="coverage-fair">Fair</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-POST">POST</span></td>
+                            <td><code>/api/auth/reset-password</code></td>
+                            <td>Complete password reset</td>
+                            <td>75%</td>
+                            <td><span class="coverage-fair">Fair</span></td>
+                        </tr>
+                    
+                </tbody>
+            </table>
+        
+            <h3>Stories Module</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Method</th>
+                        <th>Endpoint</th>
+                        <th>Description</th>
+                        <th>Test Coverage</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-GET">GET</span></td>
+                            <td><code>/api/stories</code></td>
+                            <td>List all published stories</td>
+                            <td>100%</td>
+                            <td><span class="coverage-excellent">Excellent</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-GET">GET</span></td>
+                            <td><code>/api/stories/:id</code></td>
+                            <td>Get story by ID/slug</td>
+                            <td>100%</td>
+                            <td><span class="coverage-excellent">Excellent</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-POST">POST</span></td>
+                            <td><code>/api/stories</code></td>
+                            <td>Create new story</td>
+                            <td>95%</td>
+                            <td><span class="coverage-excellent">Excellent</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-PUT">PUT</span></td>
+                            <td><code>/api/stories/:id</code></td>
+                            <td>Update story</td>
+                            <td>95%</td>
+                            <td><span class="coverage-excellent">Excellent</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-DELETE">DELETE</span></td>
+                            <td><code>/api/stories/:id</code></td>
+                            <td>Delete story</td>
+                            <td>90%</td>
+                            <td><span class="coverage-good">Good</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-POST">POST</span></td>
+                            <td><code>/api/stories/:id/view</code></td>
+                            <td>Increment view count</td>
+                            <td>90%</td>
+                            <td><span class="coverage-good">Good</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-GET">GET</span></td>
+                            <td><code>/api/stories/drafts</code></td>
+                            <td>Get user drafts</td>
+                            <td>95%</td>
+                            <td><span class="coverage-excellent">Excellent</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-POST">POST</span></td>
+                            <td><code>/api/stories/:id/publish</code></td>
+                            <td>Publish draft story</td>
+                            <td>95%</td>
+                            <td><span class="coverage-excellent">Excellent</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-GET">GET</span></td>
+                            <td><code>/api/stories/categories</code></td>
+                            <td>Get all categories</td>
+                            <td>100%</td>
+                            <td><span class="coverage-excellent">Excellent</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-GET">GET</span></td>
+                            <td><code>/api/stories/by-category/:slug</code></td>
+                            <td>Get stories by category</td>
+                            <td>95%</td>
+                            <td><span class="coverage-excellent">Excellent</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-POST">POST</span></td>
+                            <td><code>/api/stories/:id/report</code></td>
+                            <td>Report story</td>
+                            <td>100%</td>
+                            <td><span class="coverage-excellent">Excellent</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-GET">GET</span></td>
+                            <td><code>/api/stories/tags</code></td>
+                            <td>Get all tags</td>
+                            <td>100%</td>
+                            <td><span class="coverage-excellent">Excellent</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-GET">GET</span></td>
+                            <td><code>/api/stories/tag-suggestions</code></td>
+                            <td>Get tag suggestions</td>
+                            <td>90%</td>
+                            <td><span class="coverage-good">Good</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-POST">POST</span></td>
+                            <td><code>/api/stories/:id/tags</code></td>
+                            <td>Add tags to story</td>
+                            <td>95%</td>
+                            <td><span class="coverage-excellent">Excellent</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-DELETE">DELETE</span></td>
+                            <td><code>/api/stories/:id/tags/:tagId</code></td>
+                            <td>Remove tag from story</td>
+                            <td>95%</td>
+                            <td><span class="coverage-excellent">Excellent</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-GET">GET</span></td>
+                            <td><code>/api/stories/by-tag/:slug</code></td>
+                            <td>Get stories by tag</td>
+                            <td>95%</td>
+                            <td><span class="coverage-excellent">Excellent</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-GET">GET</span></td>
+                            <td><code>/api/stories/:id/support-summary</code></td>
+                            <td>Get support summary</td>
+                            <td>90%</td>
+                            <td><span class="coverage-good">Good</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-POST">POST</span></td>
+                            <td><code>/api/stories/:id/support</code></td>
+                            <td>Add/remove support</td>
+                            <td>95%</td>
+                            <td><span class="coverage-excellent">Excellent</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-GET">GET</span></td>
+                            <td><code>/api/stories/search</code></td>
+                            <td>Search stories</td>
+                            <td>100%</td>
+                            <td><span class="coverage-excellent">Excellent</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-GET">GET</span></td>
+                            <td><code>/api/stories/popular</code></td>
+                            <td>Get popular stories</td>
+                            <td>95%</td>
+                            <td><span class="coverage-excellent">Excellent</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-GET">GET</span></td>
+                            <td><code>/api/stories/trending</code></td>
+                            <td>Get trending stories</td>
+                            <td>95%</td>
+                            <td><span class="coverage-excellent">Excellent</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-GET">GET</span></td>
+                            <td><code>/api/stories/stats</code></td>
+                            <td>Get platform statistics</td>
+                            <td>100%</td>
+                            <td><span class="coverage-excellent">Excellent</span></td>
+                        </tr>
+                    
+                </tbody>
+            </table>
+        
+            <h3>Users Module</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Method</th>
+                        <th>Endpoint</th>
+                        <th>Description</th>
+                        <th>Test Coverage</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-POST">POST</span></td>
+                            <td><code>/api/users</code></td>
+                            <td>Create user (legacy)</td>
+                            <td>85%</td>
+                            <td><span class="coverage-good">Good</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-GET">GET</span></td>
+                            <td><code>/api/users/settings</code></td>
+                            <td>Get user settings</td>
+                            <td>100%</td>
+                            <td><span class="coverage-excellent">Excellent</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-PUT">PUT</span></td>
+                            <td><code>/api/users/settings</code></td>
+                            <td>Update user settings</td>
+                            <td>95%</td>
+                            <td><span class="coverage-excellent">Excellent</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-GET">GET</span></td>
+                            <td><code>/api/users/:id</code></td>
+                            <td>Get user profile</td>
+                            <td>100%</td>
+                            <td><span class="coverage-excellent">Excellent</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-PUT">PUT</span></td>
+                            <td><code>/api/users/:id</code></td>
+                            <td>Update user profile</td>
+                            <td>95%</td>
+                            <td><span class="coverage-excellent">Excellent</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-GET">GET</span></td>
+                            <td><code>/api/users/:id/stories</code></td>
+                            <td>Get user stories</td>
+                            <td>95%</td>
+                            <td><span class="coverage-excellent">Excellent</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-POST">POST</span></td>
+                            <td><code>/api/users/:id/follow</code></td>
+                            <td>Follow user</td>
+                            <td>100%</td>
+                            <td><span class="coverage-excellent">Excellent</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-DELETE">DELETE</span></td>
+                            <td><code>/api/users/:id/follow</code></td>
+                            <td>Unfollow user</td>
+                            <td>100%</td>
+                            <td><span class="coverage-excellent">Excellent</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-GET">GET</span></td>
+                            <td><code>/api/users/:id/followers</code></td>
+                            <td>Get user followers</td>
+                            <td>95%</td>
+                            <td><span class="coverage-excellent">Excellent</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-GET">GET</span></td>
+                            <td><code>/api/users/:id/following</code></td>
+                            <td>Get following users</td>
+                            <td>95%</td>
+                            <td><span class="coverage-excellent">Excellent</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-GET">GET</span></td>
+                            <td><code>/api/users/search</code></td>
+                            <td>Search users</td>
+                            <td>100%</td>
+                            <td><span class="coverage-excellent">Excellent</span></td>
+                        </tr>
+                    
+                </tbody>
+            </table>
+        
+            <h3>Comments Module</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Method</th>
+                        <th>Endpoint</th>
+                        <th>Description</th>
+                        <th>Test Coverage</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-GET">GET</span></td>
+                            <td><code>/api/comments/story/:storyId</code></td>
+                            <td>Get story comments</td>
+                            <td>100%</td>
+                            <td><span class="coverage-excellent">Excellent</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-POST">POST</span></td>
+                            <td><code>/api/comments</code></td>
+                            <td>Create comment</td>
+                            <td>100%</td>
+                            <td><span class="coverage-excellent">Excellent</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-POST">POST</span></td>
+                            <td><code>/api/comments/:id/react</code></td>
+                            <td>React to comment</td>
+                            <td>100%</td>
+                            <td><span class="coverage-excellent">Excellent</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-DELETE">DELETE</span></td>
+                            <td><code>/api/comments/:id</code></td>
+                            <td>Delete comment</td>
+                            <td>95%</td>
+                            <td><span class="coverage-excellent">Excellent</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-POST">POST</span></td>
+                            <td><code>/api/comments/:id/report</code></td>
+                            <td>Report comment</td>
+                            <td>95%</td>
+                            <td><span class="coverage-excellent">Excellent</span></td>
+                        </tr>
+                    
+                </tbody>
+            </table>
+        
+            <h3>Bookmarks Module</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Method</th>
+                        <th>Endpoint</th>
+                        <th>Description</th>
+                        <th>Test Coverage</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-POST">POST</span></td>
+                            <td><code>/api/bookmarks/:storyId</code></td>
+                            <td>Add bookmark</td>
+                            <td>100%</td>
+                            <td><span class="coverage-excellent">Excellent</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-DELETE">DELETE</span></td>
+                            <td><code>/api/bookmarks/:storyId</code></td>
+                            <td>Remove bookmark</td>
+                            <td>100%</td>
+                            <td><span class="coverage-excellent">Excellent</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-GET">GET</span></td>
+                            <td><code>/api/bookmarks</code></td>
+                            <td>Get user bookmarks</td>
+                            <td>100%</td>
+                            <td><span class="coverage-excellent">Excellent</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-GET">GET</span></td>
+                            <td><code>/api/bookmarks/check/:storyId</code></td>
+                            <td>Check bookmark status</td>
+                            <td>100%</td>
+                            <td><span class="coverage-excellent">Excellent</span></td>
+                        </tr>
+                    
+                </tbody>
+            </table>
+        
+            <h3>Upload Module</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Method</th>
+                        <th>Endpoint</th>
+                        <th>Description</th>
+                        <th>Test Coverage</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-POST">POST</span></td>
+                            <td><code>/api/upload/avatar</code></td>
+                            <td>Upload avatar</td>
+                            <td>95%</td>
+                            <td><span class="coverage-excellent">Excellent</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-GET">GET</span></td>
+                            <td><code>/api/upload/info</code></td>
+                            <td>Get upload info</td>
+                            <td>100%</td>
+                            <td><span class="coverage-excellent">Excellent</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-DELETE">DELETE</span></td>
+                            <td><code>/api/upload/avatar/:filename</code></td>
+                            <td>Delete avatar</td>
+                            <td>90%</td>
+                            <td><span class="coverage-good">Good</span></td>
+                        </tr>
+                    
+                </tbody>
+            </table>
+        
+            <h3>Admin Module</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Method</th>
+                        <th>Endpoint</th>
+                        <th>Description</th>
+                        <th>Test Coverage</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-GET">GET</span></td>
+                            <td><code>/api/admin/users</code></td>
+                            <td>List all users (admin)</td>
+                            <td>100%</td>
+                            <td><span class="coverage-excellent">Excellent</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-POST">POST</span></td>
+                            <td><code>/api/admin/users</code></td>
+                            <td>Create admin user</td>
+                            <td>95%</td>
+                            <td><span class="coverage-excellent">Excellent</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-PUT">PUT</span></td>
+                            <td><code>/api/admin/users/:id</code></td>
+                            <td>Update user (admin)</td>
+                            <td>95%</td>
+                            <td><span class="coverage-excellent">Excellent</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-POST">POST</span></td>
+                            <td><code>/api/admin/users/:id/ban</code></td>
+                            <td>Ban/unban user</td>
+                            <td>100%</td>
+                            <td><span class="coverage-excellent">Excellent</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-POST">POST</span></td>
+                            <td><code>/api/admin/users/:id/role</code></td>
+                            <td>Update user role</td>
+                            <td>100%</td>
+                            <td><span class="coverage-excellent">Excellent</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-GET">GET</span></td>
+                            <td><code>/api/admin/metrics</code></td>
+                            <td>Get platform metrics</td>
+                            <td>100%</td>
+                            <td><span class="coverage-excellent">Excellent</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-GET">GET</span></td>
+                            <td><code>/api/admin/feature-flags</code></td>
+                            <td>List feature flags</td>
+                            <td>95%</td>
+                            <td><span class="coverage-excellent">Excellent</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-PATCH">PATCH</span></td>
+                            <td><code>/api/admin/feature-flags/:key</code></td>
+                            <td>Update feature flag</td>
+                            <td>95%</td>
+                            <td><span class="coverage-excellent">Excellent</span></td>
+                        </tr>
+                    
+                </tbody>
+            </table>
+        
+            <h3>Notifications Module</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Method</th>
+                        <th>Endpoint</th>
+                        <th>Description</th>
+                        <th>Test Coverage</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-GET">GET</span></td>
+                            <td><code>/api/notifications</code></td>
+                            <td>Get user notifications</td>
+                            <td>100%</td>
+                            <td><span class="coverage-excellent">Excellent</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-PUT">PUT</span></td>
+                            <td><code>/api/notifications/:id/read</code></td>
+                            <td>Mark notification as read</td>
+                            <td>100%</td>
+                            <td><span class="coverage-excellent">Excellent</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-PUT">PUT</span></td>
+                            <td><code>/api/notifications/all/read</code></td>
+                            <td>Mark all as read</td>
+                            <td>95%</td>
+                            <td><span class="coverage-excellent">Excellent</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-PUT">PUT</span></td>
+                            <td><code>/api/notifications/bulk/read</code></td>
+                            <td>Mark bulk as read</td>
+                            <td>95%</td>
+                            <td><span class="coverage-excellent">Excellent</span></td>
+                        </tr>
+                    
+                </tbody>
+            </table>
+        
+            <h3>Organizations Module</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Method</th>
+                        <th>Endpoint</th>
+                        <th>Description</th>
+                        <th>Test Coverage</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-GET">GET</span></td>
+                            <td><code>/api/organizations</code></td>
+                            <td>List organizations</td>
+                            <td>80%</td>
+                            <td><span class="coverage-fair">Fair</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-POST">POST</span></td>
+                            <td><code>/api/organizations/:slug/follow</code></td>
+                            <td>Follow organization</td>
+                            <td>85%</td>
+                            <td><span class="coverage-good">Good</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-DELETE">DELETE</span></td>
+                            <td><code>/api/organizations/:slug/follow</code></td>
+                            <td>Unfollow organization</td>
+                            <td>85%</td>
+                            <td><span class="coverage-good">Good</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-GET">GET</span></td>
+                            <td><code>/api/organizations/followed</code></td>
+                            <td>Get followed organizations</td>
+                            <td>85%</td>
+                            <td><span class="coverage-good">Good</span></td>
+                        </tr>
+                    
+                </tbody>
+            </table>
+        
+            <h3>Messages Module</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Method</th>
+                        <th>Endpoint</th>
+                        <th>Description</th>
+                        <th>Test Coverage</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-POST">POST</span></td>
+                            <td><code>/api/messages</code></td>
+                            <td>Send message</td>
+                            <td>80%</td>
+                            <td><span class="coverage-fair">Fair</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-GET">GET</span></td>
+                            <td><code>/api/messages/:userId</code></td>
+                            <td>Get conversation</td>
+                            <td>85%</td>
+                            <td><span class="coverage-good">Good</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-GET">GET</span></td>
+                            <td><code>/api/messages</code></td>
+                            <td>Get all conversations</td>
+                            <td>85%</td>
+                            <td><span class="coverage-good">Good</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-PUT">PUT</span></td>
+                            <td><code>/api/messages/:id/read</code></td>
+                            <td>Mark message as read</td>
+                            <td>85%</td>
+                            <td><span class="coverage-good">Good</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-POST">POST</span></td>
+                            <td><code>/api/messages/block/:userId</code></td>
+                            <td>Block user</td>
+                            <td>85%</td>
+                            <td><span class="coverage-good">Good</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-DELETE">DELETE</span></td>
+                            <td><code>/api/messages/block/:userId</code></td>
+                            <td>Unblock user</td>
+                            <td>85%</td>
+                            <td><span class="coverage-good">Good</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-GET">GET</span></td>
+                            <td><code>/api/messages/blocked/list</code></td>
+                            <td>Get blocked users</td>
+                            <td>85%</td>
+                            <td><span class="coverage-good">Good</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-GET">GET</span></td>
+                            <td><code>/api/messages/search</code></td>
+                            <td>Search messages</td>
+                            <td>80%</td>
+                            <td><span class="coverage-fair">Fair</span></td>
+                        </tr>
+                    
+                </tbody>
+            </table>
+        
+            <h3>Activity Module</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Method</th>
+                        <th>Endpoint</th>
+                        <th>Description</th>
+                        <th>Test Coverage</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-GET">GET</span></td>
+                            <td><code>/api/activity/feed</code></td>
+                            <td>Get activity feed</td>
+                            <td>85%</td>
+                            <td><span class="coverage-good">Good</span></td>
+                        </tr>
+                    
+                        <tr>
+                            <td><span class="endpoint-method method-GET">GET</span></td>
+                            <td><code>/api/activity/my-activities</code></td>
+                            <td>Get user activities</td>
+                            <td>85%</td>
+                            <td><span class="coverage-good">Good</span></td>
+                        </tr>
+                    
+                </tbody>
+            </table>
+        
+
+        <h2>Recommendations</h2>
+        
+            <div class="recommendation high">
+                <h4>Coverage - HIGH Priority</h4>
+                <p><strong>Module:</strong> authentication</p>
+                <p><strong>Endpoint:</strong> GET /api/auth/csrf</p>
+                <p>Increase test coverage for Get CSRF token. Current: 80%, Target: 90%+</p>
+            </div>
+        
+            <div class="recommendation high">
+                <h4>Coverage - HIGH Priority</h4>
+                <p><strong>Module:</strong> authentication</p>
+                <p><strong>Endpoint:</strong> POST /api/auth/forgot-password</p>
+                <p>Increase test coverage for Initiate password reset. Current: 75%, Target: 90%+</p>
+            </div>
+        
+            <div class="recommendation high">
+                <h4>Coverage - HIGH Priority</h4>
+                <p><strong>Module:</strong> authentication</p>
+                <p><strong>Endpoint:</strong> POST /api/auth/verify-otp</p>
+                <p>Increase test coverage for Verify reset OTP. Current: 75%, Target: 90%+</p>
+            </div>
+        
+            <div class="recommendation high">
+                <h4>Coverage - HIGH Priority</h4>
+                <p><strong>Module:</strong> authentication</p>
+                <p><strong>Endpoint:</strong> POST /api/auth/reset-password</p>
+                <p>Increase test coverage for Complete password reset. Current: 75%, Target: 90%+</p>
+            </div>
+        
+            <div class="recommendation high">
+                <h4>Coverage - HIGH Priority</h4>
+                <p><strong>Module:</strong> organizations</p>
+                <p><strong>Endpoint:</strong> GET /api/organizations</p>
+                <p>Increase test coverage for List organizations. Current: 80%, Target: 90%+</p>
+            </div>
+        
+            <div class="recommendation high">
+                <h4>Coverage - HIGH Priority</h4>
+                <p><strong>Module:</strong> messages</p>
+                <p><strong>Endpoint:</strong> POST /api/messages</p>
+                <p>Increase test coverage for Send message. Current: 80%, Target: 90%+</p>
+            </div>
+        
+            <div class="recommendation high">
+                <h4>Coverage - HIGH Priority</h4>
+                <p><strong>Module:</strong> messages</p>
+                <p><strong>Endpoint:</strong> GET /api/messages/search</p>
+                <p>Increase test coverage for Search messages. Current: 80%, Target: 90%+</p>
+            </div>
+        
+            <div class="recommendation medium">
+                <h4>Integration - MEDIUM Priority</h4>
+                <p><strong>Module:</strong> all</p>
+                
+                <p>Add end-to-end integration tests that test complete user workflows</p>
+            </div>
+        
+            <div class="recommendation medium">
+                <h4>Performance - MEDIUM Priority</h4>
+                <p><strong>Module:</strong> all</p>
+                
+                <p>Add load testing for high-traffic endpoints (stories, comments, auth)</p>
+            </div>
+        
+            <div class="recommendation high">
+                <h4>Security - HIGH Priority</h4>
+                <p><strong>Module:</strong> all</p>
+                
+                <p>Implement automated security scanning and penetration testing</p>
+            </div>
+        
+
+        <h2>Security Testing Summary</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Security Area</th>
+                    <th>Implementation Status</th>
+                    <th>Coverage</th>
+                    <th>Test Areas</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+                    <tr>
+                        <td><strong>Authentication Tests</strong></td>
+                        <td>✅ Implemented</td>
+                        <td>95%</td>
+                        <td>Token validation, Session management, Password security, Rate limiting, CSRF protection</td>
+                    </tr>
+                
+                    <tr>
+                        <td><strong>Authorization Tests</strong></td>
+                        <td>✅ Implemented</td>
+                        <td>90%</td>
+                        <td>Role-based access control, Resource ownership validation, Admin panel access control, Feature flag protection</td>
+                    </tr>
+                
+                    <tr>
+                        <td><strong>Input Validation Tests</strong></td>
+                        <td>✅ Implemented</td>
+                        <td>85%</td>
+                        <td>SQL injection prevention, XSS protection, File upload validation, Data sanitization</td>
+                    </tr>
+                
+                    <tr>
+                        <td><strong>Data Protection Tests</strong></td>
+                        <td>✅ Implemented</td>
+                        <td>80%</td>
+                        <td>Sensitive data masking, Privacy settings enforcement, Data leak prevention</td>
+                    </tr>
+                
+            </tbody>
+        </table>
+
+        <h2>Performance Testing Summary</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Performance Area</th>
+                    <th>Implementation Status</th>
+                    <th>Coverage</th>
+                    <th>Test Areas</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+                    <tr>
+                        <td><strong>Response Time Tests</strong></td>
+                        <td>✅ Implemented</td>
+                        <td>70%</td>
+                        <td>API response time validation, Database query optimization, Large dataset handling</td>
+                    </tr>
+                
+                    <tr>
+                        <td><strong>Scalability Tests</strong></td>
+                        <td>❌ Not Implemented</td>
+                        <td>0%</td>
+                        <td>Concurrent user simulation, Load testing, Stress testing</td>
+                    </tr>
+                
+                    <tr>
+                        <td><strong>Resource Usage Tests</strong></td>
+                        <td>✅ Implemented</td>
+                        <td>60%</td>
+                        <td>Memory usage monitoring, Database connection pooling, File storage optimization</td>
+                    </tr>
+                
+            </tbody>
+        </table>
+
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; color: #666; text-align: center;">
+            <p>Generated by Sesimiz Ol API Test Suite - 2025</p>
+        </footer>
+    </div>
+
+    <script>
+        function getCoverageColor(coverage) {
+            if (coverage >= 95) return '#28a745';
+            if (coverage >= 85) return '#17a2b8';
+            if (coverage >= 75) return '#ffc107';
+            return '#dc3545';
+        }
+
+        function getCoverageLevel(coverage) {
+            if (coverage >= 95) return 'excellent';
+            if (coverage >= 85) return 'good';
+            if (coverage >= 75) return 'fair';
+            return 'poor';
+        }
+
+        function getCoverageStatus(coverage) {
+            if (coverage >= 95) return 'Excellent';
+            if (coverage >= 85) return 'Good';
+            if (coverage >= 75) return 'Fair';
+            return 'Needs Improvement';
+        }
+    </script>
+</body>
+</html>

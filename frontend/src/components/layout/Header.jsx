@@ -7,6 +7,7 @@ import {
   Button,
   Link,
   useBreakpointValue,
+  useColorModeValue,
   IconButton,
   Menu,
   MenuButton,
@@ -30,12 +31,19 @@ import AuthButton from '../auth/AuthButton'
 import LoginModal from '../auth/LoginModal'
 import AnimatedButton from '../animations/AnimatedButton'
 import NotificationBell from '../notifications/NotificationBell'
+import ColorModeToggle from '../common/ColorModeToggle'
 
 const Header = () => {
   const { isOpen, onOpen, onClose } = useDisclosure()
   const { isOpen: isLoginOpen, onOpen: onLoginOpen, onClose: onLoginClose } = useLoginDisclosure()
   const { isAuthenticated, isAdmin } = useAuth()
   const isMobile = useBreakpointValue({ base: true, md: false })
+
+  // Color mode values
+  const bg = useColorModeValue('white', 'neutral.800')
+  const borderColor = useColorModeValue('gray.200', 'neutral.700')
+  const linkColor = useColorModeValue('neutral.800', 'neutral.200')
+  const linkHoverColor = useColorModeValue('accent.600', 'accent.400')
   
   const handleShareClick = () => {
     if (!isAuthenticated) {
@@ -45,17 +53,17 @@ const Header = () => {
 
   const NavLinks = () => (
     <>
-      <Link as={RouterLink} to="/" color="neutral.800" _hover={{ color: 'accent.600', textDecoration: 'underline' }}>
+      <Link as={RouterLink} to="/" color={linkColor} _hover={{ color: linkHoverColor, textDecoration: 'underline' }}>
         Ana Sayfa
       </Link>
-      <Link as={RouterLink} to="/hikayeler" color="neutral.800" _hover={{ color: 'accent.600', textDecoration: 'underline' }}>
+      <Link as={RouterLink} to="/hikayeler" color={linkColor} _hover={{ color: linkHoverColor, textDecoration: 'underline' }}>
         Hikâyeler
       </Link>
-      <Link as={RouterLink} to="/hakkinda" color="neutral.800" _hover={{ color: 'accent.600', textDecoration: 'underline' }}>
+      <Link as={RouterLink} to="/hakkinda" color={linkColor} _hover={{ color: linkHoverColor, textDecoration: 'underline' }}>
         Hakkında
       </Link>
       {isAdmin && (
-        <Link as={RouterLink} to="/admin/dashboard" color="neutral.800" _hover={{ color: 'accent.600', textDecoration: 'underline' }}>
+        <Link as={RouterLink} to="/admin/dashboard" color={linkColor} _hover={{ color: linkHoverColor, textDecoration: 'underline' }}>
           Admin Paneli
         </Link>
       )}
@@ -63,7 +71,7 @@ const Header = () => {
   )
 
   return (
-    <Box bg="white" borderBottom="1px" borderColor="gray.200" position="sticky" top="0" zIndex="sticky">
+    <Box bg={bg} borderBottom="1px" borderColor={borderColor} position="sticky" top="0" zIndex="sticky">
       <Container maxW="container.xl" px={4}>
         <Flex h={16} alignItems="center" justifyContent="space-between">
           {/* Logo */}
@@ -94,13 +102,17 @@ const Header = () => {
                     to="/mesajlar"
                     icon={<FiMessageCircle />}
                     variant="ghost"
-                    size="sm"
+                    size="md"
                     aria-label="Mesajlar"
-                    color="gray.600"
-                    _hover={{ color: 'accent.600', bg: 'gray.100' }}
+                    color={linkColor}
+                    _hover={{ color: linkHoverColor, bg: useColorModeValue('gray.100', 'neutral.700') }}
+                    _focus={{ boxShadow: 'outline' }}
+                    minW="40px"
+                    minH="40px"
                   />
                 )}
                 {isAuthenticated && <NotificationBell />}
+                <ColorModeToggle size="sm" />
                 <AuthButton size="sm" />
                 <AnimatedButton
                   colorScheme="accent"
@@ -125,16 +137,21 @@ const Header = () => {
                   to="/mesajlar"
                   icon={<FiMessageCircle />}
                   variant="ghost"
-                  size="sm"
+                  size="lg"
                   aria-label="Mesajlar"
-                  color="gray.600"
-                  _hover={{ color: 'accent.600', bg: 'gray.100' }}
+                  color={linkColor}
+                  _hover={{ color: linkHoverColor, bg: useColorModeValue('gray.100', 'neutral.700') }}
+                  _focus={{ boxShadow: 'outline' }}
+                  _active={{ bg: useColorModeValue('gray.200', 'neutral.600') }}
+                  minW="44px"
+                  minH="44px"
                 />
               )}
               {isAuthenticated && <NotificationBell />}
+              <ColorModeToggle size="sm" />
               <AuthButton size="sm" />
               <AnimatedButton
-                colorScheme="brand"
+                colorScheme="accent"
                 leftIcon={<AddIcon />}
                 as={isAuthenticated ? RouterLink : 'button'}
                 to={isAuthenticated ? "/hikaye-olustur" : undefined}
@@ -144,57 +161,93 @@ const Header = () => {
                 Paylaş
               </AnimatedButton>
               <IconButton
-                size="sm"
+                size="lg"
                 icon={<HamburgerIcon />}
                 aria-label="Menü"
                 onClick={onOpen}
+                variant="ghost"
+                color={linkColor}
+                _hover={{ color: linkHoverColor, bg: useColorModeValue('gray.100', 'neutral.700') }}
+                _focus={{ boxShadow: 'outline' }}
+                _active={{ bg: useColorModeValue('gray.200', 'neutral.600') }}
+                borderRadius="md"
+                minW="44px"
+                minH="44px"
               />
             </HStack>
           )}
 
           {/* Mobile Drawer */}
-          <Drawer isOpen={isOpen} placement="right" onClose={onClose} size="sm">
-            <DrawerOverlay />
-            <DrawerContent>
-              <DrawerCloseButton />
-              <DrawerHeader borderBottomWidth="1px">
+          <Drawer isOpen={isOpen} placement="right" onClose={onClose} size="md">
+            <DrawerOverlay bg={useColorModeValue('blackAlpha.600', 'blackAlpha.800')} />
+            <DrawerContent bg={useColorModeValue('white', 'neutral.800')} maxW="320px">
+              <DrawerCloseButton
+                size="lg"
+                color={linkColor}
+                _hover={{ color: linkHoverColor, bg: useColorModeValue('gray.100', 'neutral.700') }}
+                _focus={{ boxShadow: 'outline' }}
+                top="16px"
+                right="16px"
+              />
+              <DrawerHeader borderBottomWidth="1px" borderColor={borderColor} py={6}>
                 <Heading size="md" color="accent.500">
                   Sesimiz Ol
                 </Heading>
               </DrawerHeader>
-              <DrawerBody>
-                <VStack spacing={6} align="stretch" pt={4}>
-                  <VStack spacing={4} align="stretch">
-                    <Link 
-                      as={RouterLink} 
-                      to="/" 
-                      fontSize="lg"
-                      fontWeight="medium"
-                      color="neutral.800"
-                      _hover={{ color: 'accent.600', textDecoration: 'underline' }}
+              <DrawerBody py={6}>
+                <VStack spacing={6} align="stretch">
+                  <VStack spacing={6} align="stretch">
+                    <Link
+                      as={RouterLink}
+                      to="/"
+                      fontSize="xl"
+                      fontWeight="semibold"
+                      color={linkColor}
+                      _hover={{ color: linkHoverColor, textDecoration: 'none', bg: useColorModeValue('gray.50', 'neutral.700') }}
+                      _focus={{ boxShadow: 'outline' }}
                       onClick={onClose}
+                      p={3}
+                      borderRadius="lg"
+                      transition="all 0.2s"
+                      minH="56px"
+                      display="flex"
+                      alignItems="center"
                     >
                       Ana Sayfa
                     </Link>
-                    <Link 
-                      as={RouterLink} 
-                      to="/hikayeler" 
-                      fontSize="lg"
-                      fontWeight="medium"
-                      color="neutral.800"
-                      _hover={{ color: 'accent.600', textDecoration: 'underline' }}
+                    <Link
+                      as={RouterLink}
+                      to="/hikayeler"
+                      fontSize="xl"
+                      fontWeight="semibold"
+                      color={linkColor}
+                      _hover={{ color: linkHoverColor, textDecoration: 'none', bg: useColorModeValue('gray.50', 'neutral.700') }}
+                      _focus={{ boxShadow: 'outline' }}
                       onClick={onClose}
+                      p={3}
+                      borderRadius="lg"
+                      transition="all 0.2s"
+                      minH="56px"
+                      display="flex"
+                      alignItems="center"
                     >
                       Hikâyeler
                     </Link>
-                    <Link 
-                      as={RouterLink} 
-                      to="/hakkinda" 
-                      fontSize="lg"
-                      fontWeight="medium"
-                      color="neutral.800"
-                      _hover={{ color: 'accent.600', textDecoration: 'underline' }}
+                    <Link
+                      as={RouterLink}
+                      to="/hakkinda"
+                      fontSize="xl"
+                      fontWeight="semibold"
+                      color={linkColor}
+                      _hover={{ color: linkHoverColor, textDecoration: 'none', bg: useColorModeValue('gray.50', 'neutral.700') }}
+                      _focus={{ boxShadow: 'outline' }}
                       onClick={onClose}
+                      p={3}
+                      borderRadius="lg"
+                      transition="all 0.2s"
+                      minH="56px"
+                      display="flex"
+                      alignItems="center"
                     >
                       Hakkında
                     </Link>
@@ -202,11 +255,18 @@ const Header = () => {
                       <Link
                         as={RouterLink}
                         to="/mesajlar"
-                        fontSize="lg"
-                        fontWeight="medium"
-                        color="neutral.800"
-                        _hover={{ color: 'accent.600', textDecoration: 'underline' }}
+                        fontSize="xl"
+                        fontWeight="semibold"
+                        color={linkColor}
+                        _hover={{ color: linkHoverColor, textDecoration: 'none', bg: useColorModeValue('gray.50', 'neutral.700') }}
+                        _focus={{ boxShadow: 'outline' }}
                         onClick={onClose}
+                        p={3}
+                        borderRadius="lg"
+                        transition="all 0.2s"
+                        minH="56px"
+                        display="flex"
+                        alignItems="center"
                       >
                         Mesajlar
                       </Link>
@@ -215,31 +275,45 @@ const Header = () => {
                       <Link
                         as={RouterLink}
                         to="/admin/dashboard"
-                        fontSize="lg"
-                        fontWeight="medium"
-                        color="neutral.800"
-                        _hover={{ color: 'accent.600', textDecoration: 'underline' }}
+                        fontSize="xl"
+                        fontWeight="semibold"
+                        color={linkColor}
+                        _hover={{ color: linkHoverColor, textDecoration: 'none', bg: useColorModeValue('gray.50', 'neutral.700') }}
+                        _focus={{ boxShadow: 'outline' }}
                         onClick={onClose}
+                        p={3}
+                        borderRadius="lg"
+                        transition="all 0.2s"
+                        minH="56px"
+                        display="flex"
+                        alignItems="center"
                       >
                         Admin Paneli
                       </Link>
                     )}
                   </VStack>
-                  
-                  <Box pt={4} borderTopWidth="1px">
-                    <Box mb={3}>
-                      <AuthButton size="md" />
-                    </Box>
-                    <AnimatedButton 
-                      colorScheme="accent" 
-                      leftIcon={<AddIcon />}
-                      as={isAuthenticated ? RouterLink : 'button'}
-                      to={isAuthenticated ? "/hikaye-olustur" : undefined}
-                      onClick={isAuthenticated ? onClose : () => { onClose(); handleShareClick(); }}
-                      w="full"
-                    >
-                      Hikâyeni Paylaş
-                    </AnimatedButton>
+
+                  <Box pt={6} borderTopWidth="1px" borderColor={borderColor}>
+                    <VStack spacing={4} align="stretch">
+                      <HStack justify="space-between">
+                        <ColorModeToggle size="lg" />
+                        <AuthButton size="md" />
+                      </HStack>
+                      <AnimatedButton
+                        colorScheme="accent"
+                        leftIcon={<AddIcon />}
+                        as={isAuthenticated ? RouterLink : 'button'}
+                        to={isAuthenticated ? "/hikaye-olustur" : undefined}
+                        onClick={isAuthenticated ? onClose : () => { onClose(); handleShareClick(); }}
+                        w="full"
+                        size="lg"
+                        minH="56px"
+                        fontSize="lg"
+                        fontWeight="semibold"
+                      >
+                        Hikâyeni Paylaş
+                      </AnimatedButton>
+                    </VStack>
                   </Box>
                 </VStack>
               </DrawerBody>

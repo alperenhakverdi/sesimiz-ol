@@ -69,7 +69,10 @@ export const createSessionWithTokens = async ({ user, userAgent, ipAddress }) =>
 };
 
 export const findActiveSessionForRefresh = async ({ userId, sessionId, refreshToken }) => {
+  console.log('Incoming refresh token:', refreshToken);
   const hashed = hashToken(refreshToken);
+  console.log('Hashed incoming token:', hashed);
+
   const session = await prisma.userSession.findFirst({
     where: {
       userId,
@@ -78,11 +81,17 @@ export const findActiveSessionForRefresh = async ({ userId, sessionId, refreshTo
     }
   });
 
+  console.log('Session found in DB:', session);
+  if (session) {
+    console.log('DB refresh token hash:', session.refreshTokenHash);
+  }
+
   if (!session) {
     return null;
   }
 
   if (session.refreshTokenHash !== hashed) {
+    console.error('Refresh token hash mismatch!');
     return null;
   }
 

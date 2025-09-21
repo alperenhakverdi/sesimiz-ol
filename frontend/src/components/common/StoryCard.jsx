@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import {
   Card,
   CardHeader,
@@ -8,22 +9,29 @@ import {
   VStack,
   Avatar,
   Button,
-  Badge
+  Badge,
+  useColorModeValue
 } from '@chakra-ui/react'
 import { Link as RouterLink } from 'react-router-dom'
 import { formatDistanceToNow } from 'date-fns'
 import { tr } from 'date-fns/locale'
 
 const StoryCard = ({ story }) => {
+  // Color mode values
+  const headingColor = useColorModeValue('neutral.800', 'neutral.100')
+  const textColor = useColorModeValue('neutral.700', 'neutral.200')
+  const authorColor = useColorModeValue('neutral.700', 'neutral.300')
+  const timeColor = useColorModeValue('neutral.500', 'neutral.400')
+
   // Format date to Turkish
-  const timeAgo = formatDistanceToNow(new Date(story.createdAt), { 
-    addSuffix: true, 
-    locale: tr 
+  const timeAgo = formatDistanceToNow(new Date(story.createdAt), {
+    addSuffix: true,
+    locale: tr
   })
 
   // Truncate content for preview
-  const truncatedContent = story.content.length > 150 
-    ? story.content.substring(0, 150) + '...' 
+  const truncatedContent = story.content.length > 150
+    ? story.content.substring(0, 150) + '...'
     : story.content
 
   return (
@@ -44,7 +52,7 @@ const StoryCard = ({ story }) => {
     >
       <CardHeader pb={2}>
         <VStack align="start" spacing={3}>
-          <Heading size="md" color="neutral.800" noOfLines={2}>
+          <Heading size="md" color={headingColor} noOfLines={2}>
             {story.title}
           </Heading>
           
@@ -58,10 +66,10 @@ const StoryCard = ({ story }) => {
                 color="brand.500"
               />
               <VStack align="start" spacing={0}>
-                <Text fontSize="sm" fontWeight="medium" color="neutral.700">
+                <Text fontSize="sm" fontWeight="medium" color={authorColor}>
                   @{story.author.nickname}
                 </Text>
-                <Text fontSize="xs" color="neutral.500">
+                <Text fontSize="xs" color={timeColor}>
                   {timeAgo}
                 </Text>
               </VStack>
@@ -73,8 +81,8 @@ const StoryCard = ({ story }) => {
 
       <CardBody pt={0}>
         <VStack align="start" spacing={4}>
-          <Text 
-            color="neutral.700" 
+          <Text
+            color={textColor}
             fontSize="sm"
             lineHeight="tall"
             noOfLines={4}
@@ -99,4 +107,4 @@ const StoryCard = ({ story }) => {
   )
 }
 
-export default StoryCard
+export default memo(StoryCard)

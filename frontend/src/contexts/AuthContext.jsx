@@ -1,93 +1,12 @@
-/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useEffect, useCallback } from 'react'
 import { useColorMode } from '@chakra-ui/react'
 import axios from 'axios'
+import api from '../services/api'
+import { setLogoutHandler, setCsrfTokenHandler } from '../services/authHandlers'
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api'
-const REQUEST_TIMEOUT = Number(import.meta.env.VITE_API_TIMEOUT || 30000)
 const CSRF_HEADER_NAME = (import.meta.env.VITE_CSRF_HEADER_NAME || 'x-csrf-token').toLowerCase()
 
 const AuthContext = createContext({})
-
-const api = axios.create({
-  baseURL: API_BASE_URL,
-  timeout: REQUEST_TIMEOUT,
-  withCredentials: true
-})
-
-let logoutHandler = () => {}
-let csrfTokenHandler = () => {}
-let isRefreshing = false
-let failedQueue = []
-
-const processQueue = (error) => {
-  failedQueue.forEach(({ reject, resolve }) => {
-    if (error) {
-      reject(error)
-    } else {
-      resolve()
-    }
-  })
-  failedQueue = []
-}
-
-api.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const originalRequest = error.config || {}
-    const status = error.response?.status
-    const errorCode = error.response?.data?.error?.code
-
-    if (status === 401) {
-      const shouldAttemptRefresh = ['TOKEN_EXPIRED', 'INVALID_TOKEN'].includes(errorCode)
-
-      if (!shouldAttemptRefresh) {
-        return Promise.reject(error)
-      }
-
-      if (!originalRequest._retry) {
-        if (isRefreshing) {
-          return new Promise((resolve, reject) => {
-            failedQueue.push({ resolve, reject })
-          }).then(() => api(originalRequest))
-        }
-      }
-    }
-
-    if (status === 401 && !originalRequest._retry) {
-      if (isRefreshing) {
-        return new Promise((resolve, reject) => {
-          failedQueue.push({ resolve, reject })
-        }).then(() => api(originalRequest))
-      }
-
-      originalRequest._retry = true
-      isRefreshing = true
-
-      try {
-        const refreshResponse = await axios.post(
-          `${API_BASE_URL}/auth/refresh`,
-          {},
-          { withCredentials: true }
-        )
-        const newCsrf = refreshResponse.data?.data?.csrfToken
-        if (newCsrf) {
-          csrfTokenHandler(newCsrf)
-        }
-        processQueue(null)
-        return api(originalRequest)
-      } catch (refreshError) {
-        processQueue(refreshError)
-        await logoutHandler({ skipServer: true })
-        return Promise.reject(refreshError)
-      } finally {
-        isRefreshing = false
-      }
-    }
-
-    return Promise.reject(error)
-  }
-)
 
 export const useAuth = () => {
   const context = useContext(AuthContext)
@@ -149,7 +68,7 @@ export const AuthProvider = ({ children }) => {
   const fetchProfile = useCallback(async () => {
     try {
       const response = await api.get('/auth/session')
-      const data = response.data?.data || {}
+      const data = response.data || {}
 
       if (data?.csrfToken) {
         applyCsrfToken(data.csrfToken)
@@ -228,8 +147,8 @@ export const AuthProvider = ({ children }) => {
   }, [])
 
   useEffect(() => {
-    logoutHandler = forceLogout
-    csrfTokenHandler = (token) => applyCsrfToken(token)
+    setLogoutHandler(() => forceLogout)
+    setCsrfTokenHandler((token) => applyCsrfToken(token))
   }, [forceLogout, applyCsrfToken])
 
   const register = useCallback(async (payload) => {
@@ -252,7 +171,7 @@ export const AuthProvider = ({ children }) => {
     setIsLoading(true)
     try {
       const response = await api.post('/auth/register', requestData)
-      const token = response.data?.data?.csrfToken
+      const token = response.data?.csrfToken
       if (token) {
         applyCsrfToken(token)
       }
@@ -271,20 +190,27 @@ export const AuthProvider = ({ children }) => {
         password
       })
 
-      const loggedInUser = response.data?.data?.user || null
-      const token = response.data?.data?.csrfToken
+      const loggedInUser = response.data?.user || null
+      const token = response.data?.csrfToken
+
       if (token) {
         applyCsrfToken(token)
       }
-      if (!loggedInUser) {
-        return null
+
+      if (loggedInUser) {
+        setUser(loggedInUser)
+        return loggedInUser
       }
-      const profile = await fetchProfile()
-      return profile
+      
+      setUser(null)
+      return null
+    } catch (error) {
+      setUser(null)
+      throw error
     } finally {
       setIsLoading(false)
     }
-  }, [applyCsrfToken, fetchProfile])
+  }, [applyCsrfToken, setUser])
 
   const logout = useCallback(async () => {
     await forceLogout()
@@ -333,7 +259,7 @@ export const AuthProvider = ({ children }) => {
 
   const updateSettings = useCallback(async (settingsPayload) => {
     const response = await api.put('/users/settings', settingsPayload)
-    const updatedSettings = response.data?.data?.settings || null
+    const updatedSettings = response.data?.settings || null
     if (updatedSettings) {
       setUser((prev) => (prev ? { ...prev, settings: updatedSettings } : prev))
     }

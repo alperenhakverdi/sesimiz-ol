@@ -15,7 +15,13 @@
     "prisma:studio": "prisma studio",
     "build": "npm run prisma:generate",
     "postinstall": "npm run prisma:generate",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "NODE_ENV=test NODE_OPTIONS='--experimental-vm-modules' jest --runInBand --detectOpenHandles",
+    "test:watch": "NODE_ENV=test NODE_OPTIONS='--experimental-vm-modules' jest --watch --runInBand",
+    "test:coverage": "NODE_ENV=test NODE_OPTIONS='--experimental-vm-modules' jest --coverage --runInBand",
+    "test:endpoints": "NODE_ENV=test NODE_OPTIONS='--experimental-vm-modules' jest tests/endpoints --runInBand",
+    "test:auth": "NODE_ENV=test NODE_OPTIONS='--experimental-vm-modules' jest tests/endpoints/auth.test.js --runInBand",
+    "test:stories": "NODE_ENV=test NODE_OPTIONS='--experimental-vm-modules' jest tests/endpoints/stories.test.js --runInBand",
+    "test:users": "NODE_ENV=test NODE_OPTIONS='--experimental-vm-modules' jest tests/endpoints/users.test.js --runInBand",
     "feature-flags": "node scripts/featureFlags.js"
   },
   "keywords": [
@@ -42,13 +48,42 @@
     "nodemailer": "^6.9.15",
     "pino": "^9.3.2",
     "prisma": "^6.15.0",
-    "sharp": "^0.34.3"
+    "sharp": "^0.34.3",
+    "swagger-ui-express": "^5.0.0",
+    "swagger-jsdoc": "^6.2.8"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/multer": "^2.0.0",
     "eslint": "^9.34.0",
-    "prettier": "^3.6.2"
+    "jest": "^29.7.0",
+    "prettier": "^3.6.2",
+    "supertest": "^7.1.4"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "setupFilesAfterEnv": [
+      "<rootDir>/tests/setup.js"
+    ],
+    "testMatch": [
+      "**/tests/**/*.test.js"
+    ],
+    "collectCoverageFrom": [
+      "src/**/*.js",
+      "!src/seedDatabase.js",
+      "!src/**/__tests__/**",
+      "!**/node_modules/**"
+    ],
+    "coverageReporters": [
+      "text",
+      "lcov",
+      "html"
+    ],
+    "verbose": true,
+    "forceExit": true,
+    "clearMocks": true,
+    "resetMocks": true,
+    "restoreMocks": true
   }
 }

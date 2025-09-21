@@ -25,7 +25,7 @@ import {
   ModalCloseButton,
   useDisclosure
 } from '@chakra-ui/react';
-import { FiSend, FiMoreVertical, FiBlock, FiSearch } from 'react-icons/fi';
+import { FiSend, FiMoreVertical, FiSlash, FiSearch } from 'react-icons/fi';
 import { useAuth } from '../contexts/AuthContext';
 
 const MessagesPage = () => {
@@ -390,7 +390,7 @@ const MessagesPage = () => {
                   <IconButton
                     size="sm"
                     variant="ghost"
-                    icon={<FiBlock />}
+                    icon={<FiSlash />}
                     aria-label="Kullanıcıyı engelle"
                     onClick={() => blockUser(selectedConversation.user.id)}
                   />
