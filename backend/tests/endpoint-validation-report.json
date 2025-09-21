@@ -1,12 +1,12 @@
 {
-  "timestamp": "2025-09-21T14:12:21.332Z",
+  "timestamp": "2025-09-21T23:44:11.508Z",
   "summary": {
-    "totalFiles": 11,
-    "validFiles": 11,
-    "totalEndpoints": 84,
-    "validEndpoints": 84,
+    "totalFiles": 13,
+    "validFiles": 13,
+    "totalEndpoints": 104,
+    "validEndpoints": 104,
     "errors": 0,
-    "warnings": 9
+    "warnings": 8
   },
   "endpoints": [
     {
@@ -65,9 +65,69 @@
     },
     {
       "method": "GET",
+      "path": "/stories",
+      "file": "admin/index.js",
+      "fullPath": "/api/admin/stories"
+    },
+    {
+      "method": "POST",
+      "path": "/stories/:id/approve",
+      "file": "admin/index.js",
+      "fullPath": "/api/admin/stories/:id/approve"
+    },
+    {
+      "method": "POST",
+      "path": "/stories/:id/reject",
+      "file": "admin/index.js",
+      "fullPath": "/api/admin/stories/:id/reject"
+    },
+    {
+      "method": "DELETE",
+      "path": "/stories/:id",
+      "file": "admin/index.js",
+      "fullPath": "/api/admin/stories/:id"
+    },
+    {
+      "method": "GET",
       "path": "/metrics",
       "file": "admin/index.js",
       "fullPath": "/api/admin/metrics"
+    },
+    {
+      "method": "GET",
+      "path": "/",
+      "file": "announcements.js",
+      "fullPath": "/api/"
+    },
+    {
+      "method": "GET",
+      "path": "/stats",
+      "file": "announcements.js",
+      "fullPath": "/api/stats"
+    },
+    {
+      "method": "GET",
+      "path": "/:id",
+      "file": "announcements.js",
+      "fullPath": "/api/:id"
+    },
+    {
+      "method": "POST",
+      "path": "/",
+      "file": "announcements.js",
+      "fullPath": "/api/"
+    },
+    {
+      "method": "PUT",
+      "path": "/:id",
+      "file": "announcements.js",
+      "fullPath": "/api/:id"
+    },
+    {
+      "method": "DELETE",
+      "path": "/:id",
+      "file": "announcements.js",
+      "fullPath": "/api/:id"
     },
     {
       "method": "POST",
@@ -214,6 +274,48 @@
       "fullPath": "/api/comments/:commentId/report"
     },
     {
+      "method": "GET",
+      "path": "/users",
+      "file": "community.js",
+      "fullPath": "/api/users"
+    },
+    {
+      "method": "GET",
+      "path": "/stats",
+      "file": "community.js",
+      "fullPath": "/api/stats"
+    },
+    {
+      "method": "GET",
+      "path": "/users/:nickname",
+      "file": "community.js",
+      "fullPath": "/api/users/:nickname"
+    },
+    {
+      "method": "POST",
+      "path": "/users/:userId/follow",
+      "file": "community.js",
+      "fullPath": "/api/users/:userId/follow"
+    },
+    {
+      "method": "DELETE",
+      "path": "/users/:userId/follow",
+      "file": "community.js",
+      "fullPath": "/api/users/:userId/follow"
+    },
+    {
+      "method": "GET",
+      "path": "/users/:userId/followers",
+      "file": "community.js",
+      "fullPath": "/api/users/:userId/followers"
+    },
+    {
+      "method": "GET",
+      "path": "/users/:userId/following",
+      "file": "community.js",
+      "fullPath": "/api/users/:userId/following"
+    },
+    {
       "method": "POST",
       "path": "/",
       "file": "messages.js",
@@ -280,28 +382,46 @@
       "fullPath": "/api/organizations/"
     },
     {
-      "method": "POST",
-      "path": "/:slug/follow",
+      "method": "GET",
+      "path": "/stats",
       "file": "organizations.js",
-      "fullPath": "/api/organizations/:slug/follow"
-    },
-    {
-      "method": "DELETE",
-      "path": "/:slug/follow",
-      "file": "organizations.js",
-      "fullPath": "/api/organizations/:slug/follow"
+      "fullPath": "/api/organizations/stats"
     },
     {
       "method": "GET",
-      "path": "/followed",
+      "path": "/:slug",
       "file": "organizations.js",
-      "fullPath": "/api/organizations/followed"
+      "fullPath": "/api/organizations/:slug"
+    },
+    {
+      "method": "POST",
+      "path": "/",
+      "file": "organizations.js",
+      "fullPath": "/api/organizations/"
+    },
+    {
+      "method": "PUT",
+      "path": "/:id",
+      "file": "organizations.js",
+      "fullPath": "/api/organizations/:id"
+    },
+    {
+      "method": "DELETE",
+      "path": "/:id",
+      "file": "organizations.js",
+      "fullPath": "/api/organizations/:id"
     },
     {
       "method": "GET",
       "path": "/",
       "file": "stories.js",
       "fullPath": "/api/stories/"
+    },
+    {
+      "method": "GET",
+      "path": "/tag-suggestions",
+      "file": "stories.js",
+      "fullPath": "/api/stories/tag-suggestions"
     },
     {
       "method": "GET",
@@ -521,8 +641,7 @@
     "comments.js: Direct 500 error responses (consider error middleware) (5 occurrences)",
     "messages.js: Direct 500 error responses (consider error middleware) (8 occurrences)",
     "notifications.js: Direct 500 error responses (consider error middleware) (2 occurrences)",
-    "organizations.js: Direct 500 error responses (consider error middleware) (4 occurrences)",
-    "stories.js: Direct 500 error responses (consider error middleware) (16 occurrences)",
+    "stories.js: Direct 500 error responses (consider error middleware) (17 occurrences)",
     "upload.js: Direct 500 error responses (consider error middleware) (3 occurrences)",
     "users.js: Direct 500 error responses (consider error middleware) (5 occurrences)"
   ]
