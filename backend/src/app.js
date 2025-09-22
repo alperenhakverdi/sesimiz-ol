@@ -31,6 +31,7 @@ import bookmarkRoutes from './routes/bookmarks.js';
 import organizationRoutes from './routes/organizations.js';
 import announcementRoutes from './routes/announcements.js';
 import communityRoutes from './routes/community.js';
+import statsRoutes from './routes/stats.js';
 import { recordSecurityMetric } from './services/metrics.js';
 import { refreshFeatureFlags } from './services/featureFlags.js';
 
@@ -441,6 +442,7 @@ const mountApiRoutes = (router) => {
   router.use('/organizations', organizationRoutes);
   router.use('/announcements', announcementRoutes);
   router.use('/community', communityRoutes);
+  router.use('/stats', statsRoutes);
   return router;
 };
 

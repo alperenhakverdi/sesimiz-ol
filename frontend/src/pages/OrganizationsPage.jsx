@@ -47,7 +47,7 @@ const OrganizationsPage = () => {
               type: typeFilter
             }
           }),
-          api.get('/organizations/stats')
+          api.get('/api/stats/organizations')
         ])
 
         setOrganizations(orgsResponse.data.data.organizations)
