@@ -37,7 +37,6 @@ const OrganizationDetailPage = lazy(() => import('./pages/OrganizationDetailPage
 const AnnouncementsPage = lazy(() => import('./pages/AnnouncementsPage'))
 const AnnouncementDetailPage = lazy(() => import('./pages/AnnouncementDetailPage'))
 const CommunityPage = lazy(() => import('./pages/CommunityPage'))
-const SupportPage = lazy(() => import('./pages/SupportPage'))
 
 // Loading component
 const PageLoader = () => (
