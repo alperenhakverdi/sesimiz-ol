@@ -219,4 +219,5 @@ export const commentAPI = {
   }
 };
 
+export { api };
 export default api;

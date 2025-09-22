@@ -5,20 +5,23 @@ import logSecurityEvent from './securityLogger.js';
 // Initialize Firebase Admin if not already initialized (only in production)
 if (!getApps().length && process.env.NODE_ENV === 'production') {
   try {
-    const firebaseConfig = {
-      projectId: process.env.FIREBASE_PROJECT_ID,
-    };
-
     // Only initialize with credentials if they exist
     if (process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_CLIENT_EMAIL && process.env.FIREBASE_PRIVATE_KEY) {
-      firebaseConfig.credential = {
-        projectId: process.env.FIREBASE_PROJECT_ID,
-        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-        privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n')
-      };
-    }
+      const { cert } = await import('firebase-admin/app');
 
-    initializeApp(firebaseConfig);
+      const firebaseConfig = {
+        credential: cert({
+          projectId: process.env.FIREBASE_PROJECT_ID,
+          clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+          privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n')
+        }),
+        projectId: process.env.FIREBASE_PROJECT_ID,
+      };
+
+      initializeApp(firebaseConfig);
+    } else {
+      console.log('🔥 Firebase Admin: Skipping initialization - missing credentials in development');
+    }
   } catch (error) {
     console.error('Firebase Admin initialization error:', error);
   }
