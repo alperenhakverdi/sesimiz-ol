@@ -1,5 +1,5 @@
 import { Server } from 'socket.io';
-import { verifyToken } from './auth.js';
+import { verifyAccessToken } from '../services/authTokens.js';
 import logSecurityEvent from './securityLogger.js';
 
 let io = null;
@@ -25,7 +25,7 @@ export const initializeSocket = (server) => {
         throw new Error('No authentication token provided');
       }
 
-      const decoded = verifyToken(token);
+      const decoded = verifyAccessToken(token);
       socket.userId = decoded.userId;
       socket.userRole = decoded.role;
 

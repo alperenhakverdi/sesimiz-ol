@@ -2,17 +2,23 @@ import { getApps, initializeApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import logSecurityEvent from './securityLogger.js';
 
-// Initialize Firebase Admin if not already initialized
-if (!getApps().length) {
+// Initialize Firebase Admin if not already initialized (only in production)
+if (!getApps().length && process.env.NODE_ENV === 'production') {
   try {
-    initializeApp({
+    const firebaseConfig = {
       projectId: process.env.FIREBASE_PROJECT_ID,
-      credential: {
+    };
+
+    // Only initialize with credentials if they exist
+    if (process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_CLIENT_EMAIL && process.env.FIREBASE_PRIVATE_KEY) {
+      firebaseConfig.credential = {
         projectId: process.env.FIREBASE_PROJECT_ID,
         clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-        privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n')
-      }
-    });
+        privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n')
+      };
+    }
+
+    initializeApp(firebaseConfig);
   } catch (error) {
     console.error('Firebase Admin initialization error:', error);
   }

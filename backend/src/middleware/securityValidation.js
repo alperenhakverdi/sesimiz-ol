@@ -271,6 +271,12 @@ export function securityValidationMiddleware(req, res, next) {
     throw error;
   }
 
+  // In development, show warnings but continue
+  if (!validation.valid && process.env.NODE_ENV === 'development') {
+    log(`\n${colors.yellow}⚠️  Development mode: Security validation failed but continuing...${colors.reset}`);
+    log(`${colors.yellow}   Configure proper secrets for production!${colors.reset}`);
+  }
+
   next();
 }
 
