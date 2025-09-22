@@ -49,7 +49,7 @@ const categories = [
 
 async function seedCategories() {
   try {
-    console.log('🌱 Kategori verilerini ekliyor...');
+
 
     for (const category of categories) {
       const existingCategory = await prisma.category.findUnique({
@@ -60,7 +60,7 @@ async function seedCategories() {
         await prisma.category.create({
           data: category
         });
-        console.log(`✅ Kategori eklendi: ${category.name}`);
+
       } else {
         await prisma.category.update({
           where: { id: existingCategory.id },
@@ -72,7 +72,7 @@ async function seedCategories() {
             isActive: true
           }
         });
-        console.log(`♻️ Kategori güncellendi: ${category.name}`);
+
       }
     }
 
@@ -90,10 +90,10 @@ async function seedCategories() {
     });
 
     if (deactivated.count > 0) {
-      console.log(`🔕 ${deactivated.count} kategori pasif hale getirildi.`);
+
     }
 
-    console.log('🎉 Kategoriler başarıyla eklendi!');
+
   } catch (error) {
     console.error('❌ Kategori ekleme hatası:', error);
   } finally {

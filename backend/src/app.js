@@ -6,6 +6,10 @@ import { fileURLToPath } from 'url';
 import { readFileSync } from 'fs';
 import cookieParser from 'cookie-parser';
 import swaggerUi from 'swagger-ui-express';
+import { createServer } from 'http';
+import { initializeSocket } from './services/socketService.js';
+import { generalLimiter } from './middleware/rateLimiting.js';
+import { validateSecurityConfig } from './middleware/securityValidation.js';
 
 // Firebase kullanıyoruz artık
 
@@ -297,6 +301,11 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
+// Apply general rate limiting to all routes
+if (process.env.RATE_LIMIT_ENABLED !== 'false') {
+  app.use(generalLimiter);
+}
+
 // Serve Swagger UI
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
@@ -343,7 +352,7 @@ app.get('/health', (req, res) => {
 // Seed database endpoint for free tier deployment
 app.get('/seed-database', async (req, res) => {
   try {
-    console.log('🌱 Seed database başlatıldı...');
+
     
     // Import and run seed function
     const { execSync } = await import('child_process');
@@ -496,18 +505,32 @@ app.use('*', (req, res) => {
 
 // Graceful shutdown
 process.on('SIGINT', async () => {
-  console.log('Shutting down gracefully...');
+
   process.exit(0);
 });
+
+// Validate security configuration on startup
+const securityValidation = validateSecurityConfig();
+if (!securityValidation.valid && process.env.NODE_ENV === 'production') {
+  console.error('❌ Security validation failed in production. Exiting.');
+  console.error('Errors:', securityValidation.errors);
+  process.exit(1);
+}
 
 refreshFeatureFlags({ force: true }).catch((error) => {
   console.error('Failed to load feature flags', error);
 });
 
-app.listen(PORT, () => {
+// Create HTTP server and initialize Socket.io
+const server = createServer(app);
+const io = initializeSocket(server);
+
+server.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
   console.log(`📊 Health check: http://localhost:${PORT}/health`);
   console.log(`📚 API docs: http://localhost:${PORT}/api-docs`);
+  console.log(`🔌 WebSocket server ready for real-time notifications`);
 });
 
 export default app;
+export { io };

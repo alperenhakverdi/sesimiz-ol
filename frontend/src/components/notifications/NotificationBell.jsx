@@ -9,23 +9,47 @@ import {
   HStack,
   Text,
   Button,
-  Divider
+  Divider,
+  VStack,
+  Alert,
+  AlertIcon
 } from '@chakra-ui/react'
 import { Link as RouterLink } from 'react-router-dom'
-import { FiBell } from 'react-icons/fi'
+import { FiBell, FiWifi, FiWifiOff } from 'react-icons/fi'
+import { useSocket } from '../../contexts/SocketContext'
 import useNotifications from '../../hooks/useNotifications'
 import NotificationList from './NotificationList'
 
 const NotificationBell = () => {
   const {
-    notifications,
-    unreadCount,
+    notifications: realtimeNotifications,
+    unreadCount: realtimeUnreadCount,
+    isConnected,
+    markNotificationAsRead,
+    clearNotifications
+  } = useSocket()
+
+  const {
+    notifications: dbNotifications,
+    unreadCount: dbUnreadCount,
     isLoading,
     markRead,
     markAllRead
   } = useNotifications({ limit: 5 })
 
-  const displayCount = unreadCount > 9 ? '9+' : unreadCount
+  // Merge real-time notifications with database notifications
+  const allNotifications = [
+    ...realtimeNotifications.slice(0, 3), // Show latest 3 real-time notifications
+    ...dbNotifications.slice(0, 5 - Math.min(3, realtimeNotifications.length))
+  ]
+
+  const totalUnreadCount = realtimeUnreadCount + dbUnreadCount
+  const displayCount = totalUnreadCount > 9 ? '9+' : totalUnreadCount
+
+  const handleMarkAllRead = () => {
+    markAllRead()
+    clearNotifications()
+  }
 
   return (
     <Menu placement="bottom-end" closeOnSelect={false}>
@@ -43,7 +67,7 @@ const NotificationBell = () => {
           aria-label="Bildirimler"
           color="gray.600"
         />
-        {unreadCount > 0 && (
+        {totalUnreadCount > 0 && (
           <Badge
             colorScheme="red"
             borderRadius="full"
@@ -57,28 +81,56 @@ const NotificationBell = () => {
             {displayCount}
           </Badge>
         )}
+        {/* Connection indicator */}
+        <Box
+          position="absolute"
+          bottom="-2px"
+          right="-2px"
+          w="8px"
+          h="8px"
+          borderRadius="full"
+          bg={isConnected ? 'green.400' : 'red.400'}
+          border="1px solid"
+          borderColor="white"
+        />
       </MenuButton>
       <MenuList minW="320px" p={0} shadow="lg">
         <Box px={4} py={3} borderBottomWidth="1px">
           <HStack justify="space-between">
             <Box>
-              <Text fontWeight="bold" fontSize="sm" color="gray.800">
-                Bildirimler
-              </Text>
+              <HStack spacing={2}>
+                <Text fontWeight="bold" fontSize="sm" color="gray.800">
+                  Bildirimler
+                </Text>
+                {isConnected ? (
+                  <FiWifi size="12" color="green" />
+                ) : (
+                  <FiWifiOff size="12" color="red" />
+                )}
+              </HStack>
               <Text fontSize="xs" color="gray.500">
-                Son 5 bildirim, {unreadCount} okunmamış
+                Son 5 bildirim, {totalUnreadCount} okunmamış
               </Text>
             </Box>
-            <Button size="xs" variant="ghost" onClick={markAllRead} isDisabled={unreadCount === 0}>
+            <Button size="xs" variant="ghost" onClick={handleMarkAllRead} isDisabled={totalUnreadCount === 0}>
               Tümünü oku
             </Button>
           </HStack>
         </Box>
         <Box px={3} py={3} maxH="360px" overflowY="auto">
+          {!isConnected && (
+            <Alert status="warning" size="sm" mb={2}>
+              <AlertIcon />
+              <Text fontSize="xs">Bağlantı sorunu var, gerçek zamanlı bildirimler alınamıyor</Text>
+            </Alert>
+          )}
           <NotificationList
-            notifications={notifications}
+            notifications={allNotifications}
             isLoading={isLoading}
-            onMarkRead={markRead}
+            onMarkRead={(id) => {
+              markRead(id)
+              markNotificationAsRead(id)
+            }}
             variant="compact"
             emptyMessage="Henüz bildiriminiz yok."
           />

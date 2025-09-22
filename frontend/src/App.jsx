@@ -2,6 +2,7 @@ import { Suspense, lazy } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import { Box, Spinner, Center } from '@chakra-ui/react'
 import { AuthProvider } from './contexts/AuthContext'
+import { SocketProvider } from './contexts/SocketContext'
 import Header from './components/layout/Header'
 import Footer from './components/layout/Footer'
 import ErrorBoundary from './components/common/ErrorBoundary'
@@ -49,7 +50,8 @@ function App() {
   return (
     <ErrorBoundary>
       <AuthProvider>
-        <SkipToMain />
+        <SocketProvider>
+          <SkipToMain />
         <Suspense fallback={<PageLoader />}>
           <Routes>
             {/* Admin Routes - No main header */}
@@ -140,6 +142,7 @@ function App() {
             } />
           </Routes>
         </Suspense>
+        </SocketProvider>
       </AuthProvider>
     </ErrorBoundary>
   )

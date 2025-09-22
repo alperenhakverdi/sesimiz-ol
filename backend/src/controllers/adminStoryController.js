@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { body, validationResult } from 'express-validator';
+import { NotificationHelpers } from '../services/notificationService.js';
 
 const prisma = new PrismaClient();
 
@@ -133,6 +134,14 @@ export const approveStory = async (req, res) => {
       }
     });
 
+    // Send notification to story author
+    try {
+      await NotificationHelpers.storyApproved(story.author.id, story.title);
+    } catch (notificationError) {
+      console.error('Failed to send story approval notification:', notificationError);
+      // Don't fail the main operation if notification fails
+    }
+
     res.json({
       success: true,
       data: { story: updatedStory },
@@ -195,6 +204,14 @@ export const rejectStory = async (req, res) => {
         }
       }
     });
+
+    // Send notification to story author
+    try {
+      await NotificationHelpers.storyRejected(story.author.id, story.title, reason);
+    } catch (notificationError) {
+      console.error('Failed to send story rejection notification:', notificationError);
+      // Don't fail the main operation if notification fails
+    }
 
     res.json({
       success: true,

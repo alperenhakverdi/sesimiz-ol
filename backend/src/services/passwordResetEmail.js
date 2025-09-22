@@ -59,8 +59,8 @@ export const sendPasswordResetEmail = async ({ email, nickname, otp, token, expi
   await sendEmail({
     to: email,
     subject: buildSubject(),
-    html: buildHtmlBody({ nickname, otp, token, expiresAt }),
-    text: buildTextBody({ nickname, otp, token, expiresAt })
+    type: 'password_reset',
+    data: { nickname, otp, token, expiresAt }
   });
 };
 

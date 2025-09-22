@@ -15,7 +15,7 @@ const avatarDir = path.join(uploadDir, 'avatars');
 try {
   await fs.mkdir(uploadDir, { recursive: true });
   await fs.mkdir(avatarDir, { recursive: true });
-  console.log('Upload directories created successfully');
+
 } catch (error) {
   console.error('Failed to create upload directories:', error);
 }
@@ -99,7 +99,7 @@ export const cleanupOldAvatar = async (oldAvatarPath) => {
     try {
       await fs.access(fullPath);
       await fs.unlink(fullPath);
-      console.log(`Cleaned up old avatar: ${filename}`);
+
     } catch (error) {
       // File doesn't exist, ignore error
     }

@@ -27,7 +27,7 @@ import {
   processAvatar,
   handleUploadError,
 } from '../middleware/upload.js';
-import { authRateLimiter, generalRateLimiter } from '../config/rateLimit.js';
+import { authLimiter, passwordResetLimiter } from '../middleware/rateLimiting.js';
 import { csrfMiddleware } from '../utils/csrf.js';
 import {
   forgotPassword,
@@ -40,13 +40,10 @@ import {
 
 const router = express.Router();
 
-// Apply general rate limiting to all routes
-router.use(generalRateLimiter);
-
 // POST /api/auth/register - Register new user
 router.post(
   '/register',
-  authRateLimiter,
+  authLimiter,
   avatarUpload.single('avatar'),
   processAvatar,
   registerValidation,
@@ -55,13 +52,13 @@ router.post(
 );
 
 // POST /api/auth/login - Login user
-router.post('/login', authRateLimiter, loginValidation, login);
+router.post('/login', authLimiter, loginValidation, login);
 
 // POST /api/auth/forgot-password - Initiate password reset flow
 router.post(
   '/forgot-password',
   requireFeature('passwordResetV2'),
-  authRateLimiter,
+  passwordResetLimiter,
   forgotPasswordValidation,
   forgotPassword
 );
@@ -70,7 +67,7 @@ router.post(
 router.post(
   '/verify-otp',
   requireFeature('passwordResetV2'),
-  authRateLimiter,
+  passwordResetLimiter,
   verifyOtpValidation,
   verifyOtp
 );
@@ -79,7 +76,7 @@ router.post(
 router.post(
   '/reset-password',
   requireFeature('passwordResetV2'),
-  authRateLimiter,
+  passwordResetLimiter,
   resetPasswordValidation,
   resetPassword
 );

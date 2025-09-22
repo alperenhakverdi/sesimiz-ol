@@ -257,10 +257,10 @@ async function main() {
   await prisma.story.deleteMany({})
   await prisma.user.deleteMany({})
   
-  console.log('🗑️  Eski veriler temizlendi')
+
   
   // Kullanıcıları oluştur (şifreler hash'lenerek)
-  console.log('🔒 Şifreler hashleniyor...')
+
   const createdUsers = []
   for (let i = 0; i < usersData.length; i++) {
     const userData = usersData[i]
@@ -275,7 +275,7 @@ async function main() {
     createdUsers.push(user)
   }
   
-  console.log('👥 10 kullanıcı oluşturuldu (güvenli şifrelerle)')
+
   
   // Hikayeleri oluştur
   const createdStories = []
@@ -305,10 +305,10 @@ async function main() {
     })
   }
   
-  console.log('💬 ' + comments.length + ' yorum oluşturuldu')
+
   
   // Create organizations
-  console.log('🏢 Organizasyonlar oluşturuluyor...')
+
   const organizationsData = [
     {
       name: 'Kadın Dayanışma Vakfı',
@@ -369,7 +369,7 @@ async function main() {
   }
 
   // Create announcements
-  console.log('📢 Duyurular oluşturuluyor...')
+
   const announcementsData = [
     {
       title: 'Platformumuza Yeni Özellikler Eklendi!',
@@ -402,13 +402,13 @@ async function main() {
     announcements.push(ann)
   }
   
-  console.log('✅ Veritabanı başarıyla dolduruldu!')
+
   console.log('📊 Özet:')
-  console.log(`   - ${createdUsers.length} kullanıcı (güvenli şifrelerle)`)
-  console.log(`   - ${createdStories.length} hikaye`)
-  console.log(`   - ${comments.length} yorum`)
-  console.log(`   - ${organizations.length} organizasyon`)
-  console.log(`   - ${announcements.length} duyuru`)
+
+
+
+
+
 }
 
 main()

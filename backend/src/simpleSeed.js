@@ -4,7 +4,7 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('🌱 Starting simple database seeding...');
+
 
   // Create test user (simple password for testing)
   const hashedPassword = 'test-password-hash';
@@ -21,7 +21,7 @@ async function main() {
     },
   });
 
-  console.log('✅ Test user created:', testUser.nickname);
+
 
   // Create test organization
   const testOrg = await prisma.organization.upsert({
@@ -35,7 +35,7 @@ async function main() {
     },
   });
 
-  console.log('✅ Test organization created:', testOrg.name);
+
 
   // Create test story
   const testStory = await prisma.story.upsert({
@@ -49,9 +49,9 @@ async function main() {
     },
   });
 
-  console.log('✅ Test story created:', testStory.title);
 
-  console.log('🎉 Simple seeding completed successfully!');
+
+
 }
 
 main()
