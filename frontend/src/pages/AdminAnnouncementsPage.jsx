@@ -38,8 +38,8 @@ import {
   FormLabel
 } from '@chakra-ui/react';
 import { FiSearch, FiPlus, FiEye, FiEdit, FiTrash2, FiSend } from 'react-icons/fi';
-import AdminLayout from '../../components/admin/AdminLayout';
-import api from '../../services/api';
+import AdminLayout from '../components/admin/AdminLayout';
+import { api } from '../services/api';
 
 const TypeBadge = ({ type }) => {
   const typeConfig = {

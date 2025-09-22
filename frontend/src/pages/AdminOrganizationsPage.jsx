@@ -41,8 +41,8 @@ import {
   StatArrow
 } from '@chakra-ui/react';
 import { FiSearch, FiFilter, FiMoreVertical, FiEye, FiEdit, FiTrash2, FiCheck, FiX } from 'react-icons/fi';
-import AdminLayout from '../../components/admin/AdminLayout';
-import api from '../../services/api';
+import AdminLayout from '../components/admin/AdminLayout';
+import { api } from '../services/api';
 
 const StatusBadge = ({ status }) => {
   const statusConfig = {

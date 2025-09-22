@@ -25,7 +25,7 @@ import {
   Input,
   Textarea
 } from '@chakra-ui/react';
-import api from '../services/api';
+import { api } from '../services/api';
 import { FiPlus, FiEdit } from 'react-icons/fi';
 import AdminLayout from '../components/admin/AdminLayout';
 import FeatureFlagEditModal from '../components/admin/modals/FeatureFlagEditModal';
