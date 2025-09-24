@@ -41,7 +41,7 @@ const AnnouncementsPage = () => {
           }
         })
         
-        setAnnouncements(response.data.data.announcements)
+        setAnnouncements(response.data?.data?.announcements || [])
       } catch (err) {
         console.error('Announcements fetch error:', err)
         setError('Duyurular yüklenirken bir hata oluştu.')

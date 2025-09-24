@@ -1,8 +1,15 @@
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+console.log('Loading .env from:', path.join(__dirname, '../.env'));
+dotenv.config({ path: path.join(__dirname, '../.env') });
+
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import path from 'path';
-import { fileURLToPath } from 'url';
 import { readFileSync } from 'fs';
 import cookieParser from 'cookie-parser';
 import swaggerUi from 'swagger-ui-express';
@@ -13,8 +20,6 @@ import { validateSecurityConfig } from './middleware/securityValidation.js';
 
 // Firebase kullanıyoruz artık
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 // Load custom swagger spec from JSON file
 const swaggerSpec = JSON.parse(readFileSync(path.join(__dirname, '../swagger-docs.json'), 'utf-8'));
 

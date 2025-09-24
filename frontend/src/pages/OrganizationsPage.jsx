@@ -47,11 +47,11 @@ const OrganizationsPage = () => {
               type: typeFilter
             }
           }),
-          api.get('/api/stats/organizations')
+          api.get('/organizations/stats')
         ])
 
-        setOrganizations(orgsResponse.data.data.organizations)
-        setStats(statsResponse.data.data)
+        setOrganizations(orgsResponse.data?.data?.organizations || [])
+        setStats(statsResponse.data?.data || {})
       } catch (err) {
         console.error('Organizations fetch error:', err)
         setError('STK listesi yüklenirken bir hata oluştu.')

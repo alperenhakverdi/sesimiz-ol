@@ -53,8 +53,8 @@ const CommunityPage = () => {
           api.get('/community/stats')
         ])
 
-        setUsers(usersResponse.data.data.users)
-        setStats(statsResponse.data.data)
+        setUsers(usersResponse.data?.data?.users || [])
+        setStats(statsResponse.data?.data || {})
       } catch (err) {
         console.error('Community data fetch error:', err)
         setError('Topluluk verileri yüklenirken bir hata oluştu.')

@@ -56,6 +56,20 @@ npm install
 npm run dev
 ```
 
+## 🚀 Tek Komutla Başlatma (Önerilen)
+
+Root dizinden hem backend hem frontend'i aynı anda başlatın:
+
+```bash
+# Root dizinden
+npm install  # İlk kurulumda
+npm run dev  # Backend + Frontend beraber başlatır
+```
+
+Bu komut concurrently kullanarak:
+- Backend'i port 3002'de
+- Frontend'i port 5175'te başlatır
+
 ## 📊 Demo Veriler
 
 Development seed script ile otomatik olarak oluşturulan veriler:

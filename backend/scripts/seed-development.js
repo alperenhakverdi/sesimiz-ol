@@ -7,7 +7,7 @@ async function seedDevelopment() {
 
   try {
     // Create sample users (password: "demo123")
-    const hashedPassword = '$2b$10$K8gF9wUjR4.kF8qH3l.xH.8YBNa8.Ep4gGX5nO6vOiLgQrM7DjXby'; // demo123
+    const hashedPassword = '$2b$10$MS5P.XbUD5CQsg1WboHetOGrgc.6.3DXh9PagnDEFsWAH9hlIqWli'; // demo123
 
     const sampleUsers = await prisma.user.createMany({
       data: [

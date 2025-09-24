@@ -116,18 +116,18 @@ const HomePage = () => {
           const [orgsResponse, usersResponse, orgStatsResponse, communityStatsResponse] = await Promise.all([
             api.get('/organizations', { params: { limit: 3 } }),
             api.get('/community/users', { params: { limit: 3 } }),
-            api.get('/api/stats/organizations'),
-            api.get('/api/stats/community')
+            api.get('/organizations/stats'),
+            api.get('/community/stats')
           ])
           
-          setOrganizations(orgsResponse.data.data.organizations)
-          setActiveUsers(usersResponse.data.data.users || [])
-          
+          setOrganizations(orgsResponse.data?.data?.organizations || [])
+          setActiveUsers(usersResponse.data?.data?.users || [])
+
           // Update stats for display
           setStats({
-            totalStories: communityStatsResponse.data.data.totalStories,
-            totalUsers: communityStatsResponse.data.data.totalUsers,
-            totalOrganizations: orgStatsResponse.data.data.totalOrganizations,
+            totalStories: communityStatsResponse.data?.data?.totalStories || 0,
+            totalUsers: communityStatsResponse.data?.data?.totalUsers || 0,
+            totalOrganizations: orgStatsResponse.data?.data?.totalOrganizations || 0,
             satisfaction: 95 // Mock satisfaction rate
           })
         } catch (err) {
