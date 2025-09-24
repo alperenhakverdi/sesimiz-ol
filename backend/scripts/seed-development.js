@@ -47,38 +47,58 @@ async function seedDevelopment() {
       skipDuplicates: true
     });
 
-    // Create sample stories
-    const user1 = await prisma.user.findFirst({ where: { email: 'user1@example.com' } });
-    const user2 = await prisma.user.findFirst({ where: { email: 'user2@example.com' } });
+    // Create meaningful stories with real women's experiences
+    const allUsers = await prisma.user.findMany();
 
-    if (user1 && user2) {
-      await prisma.story.createMany({
-        data: [
-          {
-            title: 'İlk Hikayem',
-            content: 'Bu benim ilk hikayem. Çok heyecanlıyım.',
-            authorId: user1.id,
-            status: 'APPROVED',
-            viewCount: 15
-          },
-          {
-            title: 'Güçlü Kadın Olmak',
-            content: 'Hayatta karşılaştığım zorluklarla nasıl başa çıktığımı anlatıyorum.',
-            authorId: user2.id,
-            status: 'APPROVED',
-            viewCount: 32
-          },
-          {
-            title: 'Umut ve Gelecek',
-            content: 'Geleceğe dair umutlarımı paylaşıyorum.',
-            authorId: user1.id,
-            status: 'APPROVED',
-            viewCount: 8
-          }
-        ],
-        skipDuplicates: true
-      });
-    }
+    const meaningfulStories = [
+      {
+        title: "İş Yerinde Yaşadığım Mobbing",
+        content: "3 yıldır çalıştığım şirkette erkek meslektaşlarım sürekli fikirlerimi görmezden geliyor. Toplantılarda konuştuğumda 'kızlar işinden anlamaz' gibi yorumlar yapıyorlar. Patronum da erkek olduğu için onların tarafını tutuyor. Özgüvenim çok sarsıldı ama bırakmamaya kararlıyım. Bu durumu nasıl aşabilirim bilmiyorum.",
+        authorId: allUsers[0]?.id,
+        status: 'APPROVED',
+        viewCount: 45
+      },
+      {
+        title: "Annemle Aramızdaki Sorunlar",
+        content: "Annem sürekli evlenme konusunda baskı yapıyor. 'Yaşın geçiyor, kimse seni almaz' diyor. 30 yaşındayım ve kariyerime odaklanmak istiyorum ama ailem bunu anlayamıyor. Her aile toplantısı büyük bir işkenceye dönüşüyor. Kendi kararlarımı veremiyorum gibi hissediyorum.",
+        authorId: allUsers[1]?.id,
+        status: 'APPROVED',
+        viewCount: 67
+      },
+      {
+        title: "Tek Başıma Anne Olmak",
+        content: "Bebeğimin babası hamilelik öğrenince ortadan kayboldu. Şimdi 2 yaşındaki oğlumla tek başımayım. Mali durumum zor, ailem destek olmuyor 'neden evlenmedin önce' diyorlar. Çok yoruldum ama oğlum için güçlü olmaya çalışıyorum. Bazen ne kadar dayanabilirim bilmiyorum.",
+        authorId: allUsers[0]?.id,
+        status: 'APPROVED',
+        viewCount: 89
+      },
+      {
+        title: "Üniversitede Taciz Yaşadım",
+        content: "Hocam sürekli kişisel sorular soruyor, derse kalmam için bahaneler üreterek yanımda durmaya çalışıyor. Şikayet etmek istiyorum ama kanıtım yok. Ailem 'sen yanlış anlamışsındır' diyor. Okulu bırakmayı düşünüyorum ama hayallerimi de bırakmak istemiyorum.",
+        authorId: allUsers[1]?.id,
+        status: 'APPROVED',
+        viewCount: 123
+      },
+      {
+        title: "Doğum Sonrası Depresyonum",
+        content: "Bebeğimi doğurduktan sonra çok mutlu olacağımı düşünüyordum ama sürekli ağlama krizleri geçiriyorum. Bebeğime bakamayacağımı düşünüyorum. Çevremdekiler 'bu doğal' diyor ama ben normal hissetmiyorum. Yardım istiyorum ama kimse ciddiye almıyor.",
+        authorId: allUsers[2]?.id,
+        status: 'APPROVED',
+        viewCount: 78
+      },
+      {
+        title: "İş Bulamıyorum Çünkü Kadınım",
+        content: "Mühendislik mezunuyum ama 6 aydır işsizim. Mülakatların çoğunda 'evlenince çalışmaya devam eder misin' sorusu geliyor. Biri açıkça 'erkek mühendis tercih ediyoruz' dedi. Ailem 'zor alan seçtin' diyor. Hayallerimi gerçekleştirmek bu kadar zor olacağını bilmiyordum.",
+        authorId: allUsers[3]?.id,
+        status: 'APPROVED',
+        viewCount: 156
+      }
+    ];
+
+    await prisma.story.createMany({
+      data: meaningfulStories,
+      skipDuplicates: true
+    });
 
     // Create sample organizations
     await prisma.organization.createMany({
