@@ -9,43 +9,53 @@ async function seedDevelopment() {
     // Create sample users (password: "demo123")
     const hashedPassword = '$2b$10$MS5P.XbUD5CQsg1WboHetOGrgc.6.3DXh9PagnDEFsWAH9hlIqWli'; // demo123
 
-    const sampleUsers = await prisma.user.createMany({
-      data: [
-        {
-          email: 'user1@example.com',
-          nickname: 'Ayşe',
-          password: hashedPassword,
-          role: 'USER',
-          isActive: true,
-          emailVerified: true,
-        },
-        {
-          email: 'user2@example.com',
-          nickname: 'Fatma',
-          password: hashedPassword,
-          role: 'USER',
-          isActive: true,
-          emailVerified: true,
-        },
-        {
-          email: 'org1@example.com',
-          nickname: 'STK Temsilcisi',
-          password: hashedPassword,
-          role: 'MODERATOR',
-          isActive: true,
-          emailVerified: true,
-        },
-        {
-          email: 'admin@example.com',
-          nickname: 'Admin',
-          password: hashedPassword,
-          role: 'ADMIN',
-          isActive: true,
-          emailVerified: true,
+    // Create users individually to handle duplicates
+    const users = [
+      {
+        email: 'user1@example.com',
+        nickname: 'Ayşe',
+        password: hashedPassword,
+        role: 'USER',
+        isActive: true,
+        emailVerified: true,
+      },
+      {
+        email: 'user2@example.com',
+        nickname: 'Fatma',
+        password: hashedPassword,
+        role: 'USER',
+        isActive: true,
+        emailVerified: true,
+      },
+      {
+        email: 'org1@example.com',
+        nickname: 'STK Temsilcisi',
+        password: hashedPassword,
+        role: 'MODERATOR',
+        isActive: true,
+        emailVerified: true,
+      },
+      {
+        email: 'admin@example.com',
+        nickname: 'Admin',
+        password: hashedPassword,
+        role: 'ADMIN',
+        isActive: true,
+        emailVerified: true,
+      }
+    ];
+
+    for (const userData of users) {
+      try {
+        await prisma.user.create({ data: userData });
+      } catch (error) {
+        if (error.code === 'P2002') {
+          console.log(`User ${userData.nickname} already exists, skipping...`);
+        } else {
+          throw error;
         }
-      ],
-      skipDuplicates: true
-    });
+      }
+    }
 
     // Create meaningful stories with real women's experiences
     const allUsers = await prisma.user.findMany();
@@ -95,60 +105,86 @@ async function seedDevelopment() {
       }
     ];
 
-    await prisma.story.createMany({
-      data: meaningfulStories,
-      skipDuplicates: true
-    });
+    // Create stories individually
+    for (const storyData of meaningfulStories) {
+      try {
+        await prisma.story.create({ data: storyData });
+      } catch (error) {
+        if (error.code === 'P2002') {
+          console.log(`Story "${storyData.title}" already exists, skipping...`);
+        } else {
+          throw error;
+        }
+      }
+    }
 
     // Create sample organizations
-    await prisma.organization.createMany({
-      data: [
-        {
-          name: 'Kadın Dayanışma Vakfı',
-          slug: 'kadin-dayanisma-vakfi',
-          description: 'Kadınların güçlenmesi için çalışan vakıf',
-          type: 'FOUNDATION',
-          status: 'ACTIVE',
-          location: 'İstanbul',
-          website: 'https://example.com',
-          email: 'info@kdv.org.tr',
-          memberCount: 150,
-          foundedYear: 2010
-        },
-        {
-          name: 'Toplumsal Cinsiyet Eşitliği Derneği',
-          slug: 'toplumsal-cinsiyet-esitligi-dernegi',
-          description: 'Cinsiyet eşitliği için mücadele eden dernek',
-          type: 'ASSOCIATION',
-          status: 'ACTIVE',
-          location: 'Ankara',
-          website: 'https://example2.com',
-          email: 'info@tced.org.tr',
-          memberCount: 89,
-          foundedYear: 2015
+    const organizations = [
+      {
+        name: 'Kadın Dayanışma Vakfı',
+        slug: 'kadin-dayanisma-vakfi',
+        description: 'Kadınların güçlenmesi için çalışan vakıf',
+        type: 'FOUNDATION',
+        status: 'ACTIVE',
+        location: 'İstanbul',
+        website: 'https://example.com',
+        email: 'info@kdv.org.tr',
+        memberCount: 150,
+        foundedYear: 2010
+      },
+      {
+        name: 'Toplumsal Cinsiyet Eşitliği Derneği',
+        slug: 'toplumsal-cinsiyet-esitligi-dernegi',
+        description: 'Cinsiyet eşitliği için mücadele eden dernek',
+        type: 'ASSOCIATION',
+        status: 'ACTIVE',
+        location: 'Ankara',
+        website: 'https://example2.com',
+        email: 'info@tced.org.tr',
+        memberCount: 89,
+        foundedYear: 2015
+      }
+    ];
+
+    for (const orgData of organizations) {
+      try {
+        await prisma.organization.create({ data: orgData });
+      } catch (error) {
+        if (error.code === 'P2002') {
+          console.log(`Organization "${orgData.name}" already exists, skipping...`);
+        } else {
+          throw error;
         }
-      ],
-      skipDuplicates: true
-    });
+      }
+    }
 
     // Create sample announcements
-    await prisma.announcement.createMany({
-      data: [
-        {
-          title: 'Platform Güncelleme',
-          body: 'Platformumuzda yeni özellikler eklendi. Artık daha güvenli bir şekilde hikayelerinizi paylaşabilirsiniz.',
-          type: 'GENERAL',
-          visibility: 'PUBLIC'
-        },
-        {
-          title: 'Hoş Geldiniz!',
-          body: 'Sesimiz Ol platformuna hoş geldiniz. Burada güvenle hikayelerinizi paylaşabilirsiniz.',
-          type: 'USER',
-          visibility: 'PUBLIC'
+    const announcements = [
+      {
+        title: 'Platform Güncelleme',
+        body: 'Platformumuzda yeni özellikler eklendi. Artık daha güvenli bir şekilde hikayelerinizi paylaşabilirsiniz.',
+        type: 'GENERAL',
+        visibility: 'PUBLIC'
+      },
+      {
+        title: 'Hoş Geldiniz!',
+        body: 'Sesimiz Ol platformuna hoş geldiniz. Burada güvenle hikayelerinizi paylaşabilirsiniz.',
+        type: 'USER',
+        visibility: 'PUBLIC'
+      }
+    ];
+
+    for (const announcementData of announcements) {
+      try {
+        await prisma.announcement.create({ data: announcementData });
+      } catch (error) {
+        if (error.code === 'P2002') {
+          console.log(`Announcement "${announcementData.title}" already exists, skipping...`);
+        } else {
+          throw error;
         }
-      ],
-      skipDuplicates: true
-    });
+      }
+    }
 
     console.log('✅ Development data seeding completed!');
     console.log('📊 Created:');
