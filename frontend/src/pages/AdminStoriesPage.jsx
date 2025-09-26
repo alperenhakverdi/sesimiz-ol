@@ -32,6 +32,7 @@ import { FiMoreVertical, FiEye, FiCheck, FiX, FiCheckSquare } from 'react-icons/
 import AdminLayout from '../components/admin/AdminLayout';
 import StoryReviewModal from '../components/admin/modals/StoryReviewModal';
 import BulkStoryActionsModal from '../components/admin/modals/BulkStoryActionsModal';
+import { api } from '../services/api';
 
 const StoryStatusBadge = ({ status }) => {
   const statusConfig = {
@@ -92,7 +93,7 @@ const AdminStoriesPage = () => {
       setLoading(true);
       setError(null);
 
-      const response = await api.get('/stories', {
+      const response = await api.get('/admin/stories', {
         params: {
           page,
           limit: 20,
@@ -100,7 +101,7 @@ const AdminStoriesPage = () => {
         }
       });
 
-      if (response.data.success) {
+      if (response.success) {
         setStories(response.data.stories);
         setPagination({
           page: response.data.pagination.page,
@@ -109,7 +110,7 @@ const AdminStoriesPage = () => {
           totalPages: response.data.pagination.totalPages
         });
       } else {
-        throw new Error(response.data.error?.message || 'Hikayeler yüklenemedi');
+        throw new Error(response.error?.message || 'Hikayeler yüklenemedi');
       }
     } catch (error) {
       console.error('Fetch stories error:', error);

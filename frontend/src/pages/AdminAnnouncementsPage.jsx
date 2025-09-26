@@ -168,7 +168,7 @@ const CreateAnnouncementModal = ({ isOpen, onClose, onSuccess }) => {
       
       const response = await api.post('/announcements', formData);
       
-      if (response.data.success) {
+      if (response.success) {
         toast({
           title: 'Başarılı',
           description: 'Duyuru başarıyla oluşturuldu',
@@ -188,7 +188,7 @@ const CreateAnnouncementModal = ({ isOpen, onClose, onSuccess }) => {
           endsAt: ''
         });
       } else {
-        throw new Error(response.data.error?.message || 'Duyuru oluşturulamadı');
+        throw new Error(response.error?.message || 'Duyuru oluşturulamadı');
       }
     } catch (error) {
       toast({
@@ -324,16 +324,16 @@ const AdminAnnouncementsPage = () => {
         }
       });
 
-      if (response.data.success) {
-        setAnnouncements(response.data.data.announcements);
+      if (response.success) {
+        setAnnouncements(response.data.announcements);
         setPagination({
-          page: response.data.data.pagination.page,
-          limit: response.data.data.pagination.limit,
-          total: response.data.data.pagination.total,
-          totalPages: response.data.data.pagination.totalPages
+          page: response.data.pagination.currentPage,
+          limit: response.data.pagination.totalCount / response.data.pagination.totalPages,
+          total: response.data.pagination.totalCount,
+          totalPages: response.data.pagination.totalPages
         });
       } else {
-        throw new Error(response.data.error?.message || 'Duyurular yüklenemedi');
+        throw new Error(response.error?.message || 'Duyurular yüklenemedi');
       }
     } catch (error) {
       console.error('Fetch announcements error:', error);

@@ -196,16 +196,16 @@ const AdminOrganizationsPage = () => {
         }
       });
 
-      if (response.data.success) {
-        setOrganizations(response.data.data.organizations);
+      if (response.success) {
+        setOrganizations(response.data.organizations);
         setPagination({
-          page: response.data.data.pagination.page,
-          limit: response.data.data.pagination.limit,
-          total: response.data.data.pagination.total,
-          totalPages: response.data.data.pagination.totalPages
+          page: response.data.pagination.currentPage,
+          limit: response.data.pagination.totalCount / response.data.pagination.totalPages,
+          total: response.data.pagination.totalCount,
+          totalPages: response.data.pagination.totalPages
         });
       } else {
-        throw new Error(response.data.error?.message || 'Organizasyonlar yüklenemedi');
+        throw new Error(response.error?.message || 'Organizasyonlar yüklenemedi');
       }
     } catch (error) {
       console.error('Fetch organizations error:', error);
