@@ -4,22 +4,72 @@ import { PrismaClient } from '@prisma/client';
 const router = express.Router();
 const prisma = new PrismaClient();
 
+// GET /api/stats - Get general platform statistics
+router.get('/', async (req, res) => {
+  try {
+    const [
+      totalUsers,
+      totalStories,
+      totalOrganizations,
+      totalComments,
+      activeUsers,
+      recentStories
+    ] = await Promise.all([
+      prisma.user.count(),
+      prisma.story.count(),
+      prisma.organization.count(),
+      prisma.comment.count(),
+      prisma.user.count({ where: { isActive: true } }),
+      prisma.story.count({
+        where: {
+          createdAt: {
+            gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) // Last 7 days
+          }
+        }
+      })
+    ]);
+
+    res.json({
+      success: true,
+      data: {
+        platform: {
+          totalUsers,
+          totalStories,
+          totalOrganizations,
+          totalComments,
+          activeUsers,
+          recentStories
+        },
+        growth: {
+          weeklyStories: recentStories,
+          userActivation: Math.round((activeUsers / totalUsers) * 100)
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Get platform stats error:', error);
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Platform istatistikleri getirilemedi'
+      }
+    });
+  }
+});
+
 // GET /api/stats/organizations - Get organization statistics
 router.get('/organizations', async (req, res) => {
   try {
     const [
       totalOrganizations,
       activeOrganizations,
-      verifiedOrganizations,
       totalMembers,
-      totalFollowers,
       recentOrganizations
     ] = await Promise.all([
       prisma.organization.count(),
-      prisma.organization.count({ where: { isActive: true } }),
-      prisma.organization.count({ where: { isVerified: true } }),
+      prisma.organization.count({ where: { status: 'ACTIVE' } }),
       prisma.organizationMember.count(),
-      prisma.stkFollow.count(),
       prisma.organization.count({
         where: {
           createdAt: {
@@ -31,12 +81,10 @@ router.get('/organizations', async (req, res) => {
 
     res.json({
       success: true,
-      stats: {
+      data: {
         total: totalOrganizations,
         active: activeOrganizations,
-        verified: verifiedOrganizations,
         members: totalMembers,
-        followers: totalFollowers,
         recentlyCreated: recentOrganizations
       }
     });

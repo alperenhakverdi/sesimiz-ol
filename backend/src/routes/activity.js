@@ -5,6 +5,76 @@ import { authenticateToken } from '../middleware/auth.js';
 const router = express.Router();
 const prisma = new PrismaClient();
 
+// GET /api/activity - Get public activity feed
+router.get('/', async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = Math.min(parseInt(req.query.limit) || 10, 20);
+    const skip = (page - 1) * limit;
+
+    // Get recent public activities
+    const [recentStories, recentUsers] = await Promise.all([
+      prisma.story.findMany({
+        take: limit,
+        skip,
+        orderBy: { createdAt: 'desc' },
+        where: { status: 'APPROVED' },
+        select: {
+          id: true,
+          title: true,
+          viewCount: true,
+          createdAt: true,
+          author: {
+            select: {
+              id: true,
+              nickname: true,
+              avatar: true
+            }
+          }
+        }
+      }),
+      prisma.user.findMany({
+        take: 5,
+        orderBy: { createdAt: 'desc' },
+        where: { isActive: true },
+        select: {
+          id: true,
+          nickname: true,
+          avatar: true,
+          createdAt: true
+        }
+      })
+    ]);
+
+    const totalActivities = await prisma.story.count({
+      where: { status: 'APPROVED' }
+    });
+
+    res.json({
+      success: true,
+      data: {
+        recentStories,
+        recentUsers,
+        pagination: {
+          page,
+          limit,
+          total: totalActivities,
+          totalPages: Math.ceil(totalActivities / limit)
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Get public activity error:', error);
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Aktiviteler getirilemedi'
+      }
+    });
+  }
+});
+
 // Get activity feed for authenticated user
 router.get('/feed', authenticateToken, async (req, res) => {
   try {
