@@ -30,7 +30,7 @@ router.post('/:storyId', async (req, res) => {
     }
 
     // Check if already bookmarked
-    const existingBookmark = await prisma.userBookmark.findUnique({
+    const existingBookmark = await prisma.bookmark.findUnique({
       where: {
         userId_storyId: {
           userId,
@@ -50,7 +50,7 @@ router.post('/:storyId', async (req, res) => {
     }
 
     // Create bookmark
-    await prisma.userBookmark.create({
+    await prisma.bookmark.create({
       data: {
         userId,
         storyId
@@ -81,7 +81,7 @@ router.delete('/:storyId', async (req, res) => {
     const userId = req.user.id;
 
     // Check if bookmark exists
-    const existingBookmark = await prisma.userBookmark.findUnique({
+    const existingBookmark = await prisma.bookmark.findUnique({
       where: {
         userId_storyId: {
           userId,
@@ -101,7 +101,7 @@ router.delete('/:storyId', async (req, res) => {
     }
 
     // Remove bookmark
-    await prisma.userBookmark.delete({
+    await prisma.bookmark.delete({
       where: {
         userId_storyId: {
           userId,
@@ -131,12 +131,24 @@ router.delete('/:storyId', async (req, res) => {
 router.get('/', async (req, res) => {
   try {
     const userId = req.user.id;
+
+    // Simple test response first
+    return res.json({
+      success: true,
+      bookmarks: [],
+      pagination: {
+        page: 1,
+        limit: 10,
+        total: 0,
+        totalPages: 0
+      }
+    });
     const page = parseInt(req.query.page) || 1;
     const limit = Math.min(parseInt(req.query.limit) || 10, 50);
     const skip = (page - 1) * limit;
 
     const [bookmarks, total] = await Promise.all([
-      prisma.userBookmark.findMany({
+      prisma.bookmark.findMany({
         where: { userId },
         include: {
           story: {
@@ -177,7 +189,7 @@ router.get('/', async (req, res) => {
         skip,
         take: limit
       }),
-      prisma.userBookmark.count({
+      prisma.bookmark.count({
         where: { userId }
       })
     ]);
@@ -226,7 +238,7 @@ router.get('/check/:storyId', async (req, res) => {
     const storyId = parseInt(req.params.storyId);
     const userId = req.user.id;
 
-    const bookmark = await prisma.userBookmark.findUnique({
+    const bookmark = await prisma.bookmark.findUnique({
       where: {
         userId_storyId: {
           userId,
