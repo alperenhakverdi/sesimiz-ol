@@ -120,14 +120,14 @@ const HomePage = () => {
             api.get('/community/stats')
           ])
           
-          setOrganizations(orgsResponse.data?.data?.organizations || [])
-          setActiveUsers(usersResponse.data?.data?.users || [])
+          setOrganizations(orgsResponse.data?.organizations || [])
+          setActiveUsers(usersResponse.data?.users || [])
 
           // Update stats for display
           setStats({
-            totalStories: communityStatsResponse.data?.data?.totalStories || 0,
-            totalUsers: communityStatsResponse.data?.data?.totalUsers || 0,
-            totalOrganizations: orgStatsResponse.data?.data?.totalOrganizations || 0,
+            totalStories: communityStatsResponse.data?.totalStories || 0,
+            totalUsers: communityStatsResponse.data?.totalUsers || 0,
+            totalOrganizations: orgStatsResponse.data?.totalOrganizations || 0,
             satisfaction: 95 // Mock satisfaction rate
           })
         } catch (err) {
