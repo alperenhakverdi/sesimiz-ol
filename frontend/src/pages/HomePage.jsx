@@ -111,23 +111,39 @@ const HomePage = () => {
         console.log('📚 Stories data:', response.stories)
         setStories(response.stories)
         
-        // Fetch organizations, users and stats from API
+        // Fetch organizations, users and stats from API with individual error handling
         try {
-          const [orgsResponse, usersResponse, orgStatsResponse, communityStatsResponse] = await Promise.all([
+          const [orgsResult, usersResult, orgStatsResult, communityStatsResult] = await Promise.allSettled([
             api.get('/organizations', { params: { limit: 3 } }),
             api.get('/community/users', { params: { limit: 3 } }),
             api.get('/organizations/stats'),
             api.get('/community/stats')
           ])
-          
-          setOrganizations(orgsResponse.data?.organizations || [])
-          setActiveUsers(usersResponse.data?.users || [])
 
-          // Update stats for display
+          // Handle organizations response
+          if (orgsResult.status === 'fulfilled' && orgsResult.value?.data?.organizations) {
+            setOrganizations(orgsResult.value.data.organizations)
+          } else {
+            console.warn('Organizations endpoint failed, using mock data')
+            setOrganizations(mockOrganizations)
+          }
+
+          // Handle users response
+          if (usersResult.status === 'fulfilled' && usersResult.value?.data?.users) {
+            setActiveUsers(usersResult.value.data.users)
+          } else {
+            console.warn('Community users endpoint failed, using mock data')
+            setActiveUsers(mockActiveUsers)
+          }
+
+          // Handle stats responses
+          const communityStats = communityStatsResult.status === 'fulfilled' ? communityStatsResult.value?.data : null
+          const orgStats = orgStatsResult.status === 'fulfilled' ? orgStatsResult.value?.data : null
+
           setStats({
-            totalStories: communityStatsResponse.data?.totalStories || 0,
-            totalUsers: communityStatsResponse.data?.totalUsers || 0,
-            totalOrganizations: orgStatsResponse.data?.totalOrganizations || 0,
+            totalStories: communityStats?.totalStories || 0,
+            totalUsers: communityStats?.totalUsers || 0,
+            totalOrganizations: orgStats?.totalOrganizations || 0,
             satisfaction: 95 // Mock satisfaction rate
           })
         } catch (err) {
