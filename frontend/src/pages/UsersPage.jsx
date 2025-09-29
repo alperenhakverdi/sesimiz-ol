@@ -19,6 +19,7 @@ import {
 } from '@chakra-ui/react'
 import { FiSearch, FiUsers } from 'react-icons/fi'
 import FollowButton from '../components/user/FollowButton'
+import { useColorModeValue } from '@chakra-ui/react'
 
 const UsersPage = () => {
   const toast = useToast()
@@ -128,13 +129,13 @@ const UsersPage = () => {
         <Box>
           <InputGroup size="lg">
             <InputLeftElement pointerEvents="none">
-              <FiSearch color="gray.400" />
+              <FiSearch color={useColorModeValue('neutral.600','neutral.400')} />
             </InputLeftElement>
             <Input
               placeholder="Kullanıcı adı veya biyografi ara..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              bg="white"
+              bg={useColorModeValue('white','neutral.800')}
               borderColor="neutral.300"
               _focus={{
                 borderColor: "brand.500",
@@ -161,11 +162,11 @@ const UsersPage = () => {
 
           {!searchPerformed && !loading && (
             <Box textAlign="center" py={12}>
-              <FiSearch size={48} color="var(--chakra-colors-gray-400)" />
-              <Text mt={4} color="gray.500" fontSize="lg">
+              <FiSearch size={48} color={useColorModeValue('#718096','#A0AEC0')} />
+              <Text mt={4} color={useColorModeValue('neutral.600','neutral.400')} fontSize="lg">
                 Kullanıcı aramak için yukarıdaki arama kutusunu kullanın
               </Text>
-              <Text color="gray.400" fontSize="sm" mt={2}>
+              <Text color={useColorModeValue('neutral.600','neutral.400')} fontSize="sm" mt={2}>
                 En az 2 karakter girmeniz gerekiyor
               </Text>
             </Box>
@@ -177,7 +178,7 @@ const UsersPage = () => {
                 <Box key={user.id}>
                   <Box
                     p={4}
-                    bg="white"
+                    bg={useColorModeValue('white','neutral.800')}
                     borderRadius="lg"
                     borderWidth="1px"
                     borderColor="neutral.200"

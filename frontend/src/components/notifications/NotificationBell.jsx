@@ -12,7 +12,8 @@ import {
   Divider,
   VStack,
   Alert,
-  AlertIcon
+  AlertIcon,
+  useColorModeValue
 } from '@chakra-ui/react'
 import { Link as RouterLink } from 'react-router-dom'
 import { FiBell, FiWifi, FiWifiOff } from 'react-icons/fi'
@@ -65,7 +66,7 @@ const NotificationBell = () => {
           variant="ghost"
           size="sm"
           aria-label="Bildirimler"
-          color="gray.600"
+          color={useColorModeValue('neutral.700','neutral.300')}
         />
         {totalUnreadCount > 0 && (
           <Badge
@@ -99,7 +100,7 @@ const NotificationBell = () => {
           <HStack justify="space-between">
             <Box>
               <HStack spacing={2}>
-                <Text fontWeight="bold" fontSize="sm" color="gray.800">
+                <Text fontWeight="bold" fontSize="sm" color={useColorModeValue('primary.800','neutral.100')}>
                   Bildirimler
                 </Text>
                 {isConnected ? (
@@ -108,7 +109,7 @@ const NotificationBell = () => {
                   <FiWifiOff size="12" color="red" />
                 )}
               </HStack>
-              <Text fontSize="xs" color="gray.500">
+              <Text fontSize="xs" color={useColorModeValue('neutral.600','neutral.400')}>
                 Son 5 bildirim, {totalUnreadCount} okunmamış
               </Text>
             </Box>

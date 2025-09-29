@@ -147,11 +147,14 @@ const buildCspDirectives = () => {
   ];
 
   if (currentEnvironment !== 'production') {
+    const devPort = String(PORT || 3001);
     connectSrc.push(
-      'http://localhost:3001',
-      'http://127.0.0.1:3001',
+      `http://localhost:${devPort}`,
+      `http://127.0.0.1:${devPort}`,
       'http://localhost:5173',
       'http://127.0.0.1:5173',
+      `ws://localhost:${devPort}`,
+      `ws://127.0.0.1:${devPort}`,
       'ws://localhost:5173',
       'ws://127.0.0.1:5173'
     );

@@ -5,6 +5,12 @@ const prisma = new PrismaClient()
 
 const usersData = [
   { 
+    nickname: "Fatma", 
+    email: "fatma@example.com",
+    password: "demo123",
+    avatar: "https://i.pravatar.cc/150?u=fatma" 
+  },
+  { 
     nickname: "AyşeninSesi", 
     email: "ayse@example.com",
     password: "12345678",

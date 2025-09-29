@@ -26,7 +26,8 @@ import {
   Flex,
   useToast,
   useDisclosure,
-  Checkbox
+  Checkbox,
+  useColorModeValue
 } from '@chakra-ui/react';
 import { FiMoreVertical, FiEye, FiCheck, FiX, FiCheckSquare } from 'react-icons/fi';
 import AdminLayout from '../components/admin/AdminLayout';
@@ -315,7 +316,7 @@ const AdminStoriesPage = () => {
                         <Text fontWeight="medium" noOfLines={1}>
                           {story.title}
                         </Text>
-                        <Text fontSize="sm" color="gray.600" noOfLines={2}>
+                        <Text fontSize="sm" color={useColorModeValue('neutral.600','neutral.300')} noOfLines={2}>
                           {story.content}
                         </Text>
                       </VStack>
@@ -356,7 +357,7 @@ const AdminStoriesPage = () => {
             >
               Önceki
             </Button>
-            <Text fontSize="sm">
+            <Text fontSize="sm" color={useColorModeValue('neutral.600','neutral.400')}>
               Sayfa {pagination.page} / {pagination.totalPages}
             </Text>
             <Button

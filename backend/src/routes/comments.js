@@ -130,6 +130,13 @@ router.get('/story/:storyId', optionalAuth, async (req, res) => {
 // Create new comment
 router.post('/', authenticateToken, commentRateLimit, async (req, res) => {
   try {
+    // Policy: ADMIN accounts should not create comments
+    if (req.user.role === 'ADMIN') {
+      return res.status(403).json({
+        success: false,
+        error: { message: 'Yönetici hesapları yorum yapamaz.' }
+      });
+    }
     const { content, storyId, parentId } = req.body;
     const authorId = req.user.id;
 
@@ -223,6 +230,13 @@ router.post('/', authenticateToken, commentRateLimit, async (req, res) => {
 // React to comment
 router.post('/:commentId/react', authenticateToken, async (req, res) => {
   try {
+    // Policy: ADMIN accounts should not react to comments
+    if (req.user.role === 'ADMIN') {
+      return res.status(403).json({
+        success: false,
+        error: { message: 'Yönetici hesapları yorumlara tepki veremez.' }
+      });
+    }
     const { commentId } = req.params;
     const userId = req.user.id;
     const reactionType = 'heart'; // Simple heart reaction only

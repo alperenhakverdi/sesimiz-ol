@@ -17,7 +17,8 @@ import {
   Tabs,
   TabList,
   TabPanel,
-  TabPanels
+  TabPanels,
+  useColorModeValue
 } from '@chakra-ui/react'
 import { FiActivity, FiUsers, FiMessageCircle, FiFileText, FiHeart } from 'react-icons/fi'
 import { formatDistanceToNow } from 'date-fns'
@@ -231,7 +232,7 @@ const ActivityFeedPage = () => {
   const ActivityCard = ({ activity }) => (
     <Box
       p={4}
-      bg="white"
+      bg={useColorModeValue('white','neutral.800')}
       borderRadius="lg"
       borderWidth="1px"
       borderColor="neutral.200"
@@ -255,10 +256,10 @@ const ActivityFeedPage = () => {
           {(activity.data.story?.excerpt || activity.data.comment?.content) && (
             <Box
               p={3}
-              bg="gray.50"
+              bg={useColorModeValue('neutral.100','neutral.800')}
               borderRadius="md"
               borderLeft="3px solid"
-              borderLeftColor="brand.200"
+              borderLeftColor="neutral.300"
               w="full"
             >
               <Text fontSize="sm" color="neutral.600" fontStyle="italic">
@@ -333,11 +334,11 @@ const ActivityFeedPage = () => {
 
               {!loading && feedActivities.length === 0 && (
                 <Box textAlign="center" py={12}>
-                  <FiUsers size={48} color="var(--chakra-colors-gray-400)" />
-                  <Text mt={4} color="gray.500" fontSize="lg">
+                  <FiUsers size={48} color={useColorModeValue('#718096','#A0AEC0')} />
+                  <Text mt={4} color={useColorModeValue('neutral.600','neutral.400')} fontSize="lg">
                     Henüz takip ettiğiniz kullanıcılardan aktivite yok
                   </Text>
-                  <Text color="gray.400" fontSize="sm" mt={2}>
+                  <Text color={useColorModeValue('neutral.600','neutral.400')} fontSize="sm" mt={2}>
                     Diğer kullanıcıları takip ederek aktivitelerini burada görebilirsiniz
                   </Text>
                   <Button
@@ -385,11 +386,11 @@ const ActivityFeedPage = () => {
 
               {!loading && myActivities.length === 0 && (
                 <Box textAlign="center" py={12}>
-                  <FiActivity size={48} color="var(--chakra-colors-gray-400)" />
-                  <Text mt={4} color="gray.500" fontSize="lg">
+                  <FiActivity size={48} color={useColorModeValue('#718096','#A0AEC0')} />
+                  <Text mt={4} color={useColorModeValue('neutral.600','neutral.400')} fontSize="lg">
                     Henüz hiç aktiviteniz yok
                   </Text>
-                  <Text color="gray.400" fontSize="sm" mt={2}>
+                  <Text color={useColorModeValue('neutral.600','neutral.400')} fontSize="sm" mt={2}>
                     Hikaye paylaşın veya yorum yapın
                   </Text>
                   <Button

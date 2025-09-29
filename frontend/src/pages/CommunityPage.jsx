@@ -33,7 +33,13 @@ const CommunityPage = () => {
   const [filterRole, setFilterRole] = useState('')
   const [stats, setStats] = useState({})
 
-  const bgColor = useColorModeValue('gray.50', 'gray.900')
+  const bgColor = useColorModeValue('neutral.50', 'neutral.900')
+  const headingColor = useColorModeValue('primary.800', 'neutral.100')
+  const supportingTextColor = useColorModeValue('neutral.600', 'neutral.300')
+  const statBg = useColorModeValue('white', 'neutral.800')
+  const statLabelColor = useColorModeValue('neutral.600', 'neutral.300')
+  const searchIconColor = useColorModeValue('neutral.500', 'neutral.400')
+  const resultsTextColor = useColorModeValue('neutral.600', 'neutral.400')
 
   useEffect(() => {
     const fetchData = async () => {
@@ -52,9 +58,16 @@ const CommunityPage = () => {
           }),
           api.get('/community/stats')
         ])
-
-        setUsers(usersResponse.data?.data?.users || [])
-        setStats(statsResponse.data?.data || {})
+        if (usersResponse?.success) {
+          setUsers(usersResponse.data?.users || [])
+        } else {
+          setUsers([])
+        }
+        if (statsResponse?.success) {
+          setStats(statsResponse.data || {})
+        } else {
+          setStats({})
+        }
       } catch (err) {
         console.error('Community data fetch error:', err)
         setError('Topluluk verileri yüklenirken bir hata oluştu.')
@@ -91,18 +104,18 @@ const CommunityPage = () => {
         <VStack spacing={8} align="stretch">
           {/* Header */}
           <VStack spacing={4} textAlign="center">
-            <Heading as="h1" size="xl" color="neutral.800">
+            <Heading as="h1" size="xl" color={headingColor}>
               Topluluk Üyeleri
             </Heading>
-            <Text fontSize="lg" color="neutral.600" maxW="2xl">
+            <Text fontSize="lg" color={supportingTextColor} maxW="2xl">
               Platformumuzdaki aktif kullanıcıları ve STK temsilcilerini keşfedin.
             </Text>
           </VStack>
 
           {/* Stats */}
           <SimpleGrid columns={{ base: 1, md: 3 }} spacing={6} py={4}>
-            <Stat bg="white" p={4} borderRadius="lg" shadow="sm" textAlign="center">
-              <StatLabel fontSize="sm" color="neutral.600">Toplam Üye</StatLabel>
+            <Stat bg={statBg} p={4} borderRadius="lg" shadow="sm" textAlign="center">
+              <StatLabel fontSize="sm" color={statLabelColor}>Toplam Üye</StatLabel>
               <StatNumber fontSize="2xl" fontWeight="bold" color="accent.500">
                 {stats.totalUsers || 0}
               </StatNumber>
@@ -111,8 +124,8 @@ const CommunityPage = () => {
                 Son 30 gün: {stats.recentUsers || 0}
               </StatHelpText>
             </Stat>
-            <Stat bg="white" p={4} borderRadius="lg" shadow="sm" textAlign="center">
-              <StatLabel fontSize="sm" color="neutral.600">Aktif Hikaye</StatLabel>
+            <Stat bg={statBg} p={4} borderRadius="lg" shadow="sm" textAlign="center">
+              <StatLabel fontSize="sm" color={statLabelColor}>Aktif Hikaye</StatLabel>
               <StatNumber fontSize="2xl" fontWeight="bold" color="accent.500">
                 {stats.totalStories || 0}
               </StatNumber>
@@ -121,8 +134,8 @@ const CommunityPage = () => {
                 Tüm zamanlar
               </StatHelpText>
             </Stat>
-            <Stat bg="white" p={4} borderRadius="lg" shadow="sm" textAlign="center">
-              <StatLabel fontSize="sm" color="neutral.600">STK Temsilcisi</StatLabel>
+            <Stat bg={statBg} p={4} borderRadius="lg" shadow="sm" textAlign="center">
+              <StatLabel fontSize="sm" color={statLabelColor}>STK Temsilcisi</StatLabel>
               <StatNumber fontSize="2xl" fontWeight="bold" color="accent.500">
                 {stats.roleBreakdown?.ORGANIZATION || 0}
               </StatNumber>
@@ -138,7 +151,7 @@ const CommunityPage = () => {
             <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
               <InputGroup>
                 <InputLeftElement pointerEvents="none">
-                  <SearchIcon color="gray.300" />
+                  <SearchIcon color={searchIconColor} />
                 </InputLeftElement>
                 <Input
                   placeholder="Kullanıcı ara..."
@@ -163,7 +176,7 @@ const CommunityPage = () => {
           </Box>
 
           {/* Results Count */}
-          <Text textAlign="center" color="gray.600">
+          <Text textAlign="center" color={resultsTextColor}>
             {users.length} kullanıcı listeleniyor
           </Text>
 

@@ -18,7 +18,8 @@ import {
   Textarea,
   Alert,
   AlertIcon,
-  useToast
+  useToast,
+  useColorModeValue
 } from '@chakra-ui/react';
 
 const StoryReviewModal = ({ isOpen, onClose, story, onUpdate }) => {
@@ -133,14 +134,14 @@ const StoryReviewModal = ({ isOpen, onClose, story, onUpdate }) => {
                 <Avatar size="sm" name={story?.authorNickname} src={story?.authorAvatar} />
                 <VStack align="start" spacing={0}>
                   <Text fontWeight="medium">{story?.authorNickname}</Text>
-                  <Text fontSize="sm" color="gray.600">
+                  <Text fontSize="sm" color={useColorModeValue('neutral.600', 'neutral.300')}>
                     {formatDate(story?.createdAt)}
                   </Text>
                 </VStack>
               </HStack>
 
               <HStack spacing={4}>
-                <Text fontSize="sm" color="gray.600">
+                <Text fontSize="sm" color={useColorModeValue('neutral.600', 'neutral.300')}>
                   Görüntüleme: {story?.viewCount}
                 </Text>
               </HStack>
@@ -155,10 +156,10 @@ const StoryReviewModal = ({ isOpen, onClose, story, onUpdate }) => {
               </Text>
               <Box
                 p={4}
-                bg="gray.50"
+                bg={useColorModeValue('neutral.100', 'neutral.800')}
                 borderRadius="md"
                 border="1px"
-                borderColor="gray.200"
+                borderColor={useColorModeValue('neutral.200', 'neutral.700')}
                 maxH="300px"
                 overflowY="auto"
               >

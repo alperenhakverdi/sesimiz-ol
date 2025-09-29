@@ -17,7 +17,8 @@ import {
   AlertIcon,
   Box,
   Badge,
-  useToast
+  useToast,
+  useColorModeValue
 } from '@chakra-ui/react';
 
 const BulkStoryActionsModal = ({ isOpen, onClose, selectedStoryIds, stories, onUpdate }) => {
@@ -119,7 +120,7 @@ const BulkStoryActionsModal = ({ isOpen, onClose, selectedStoryIds, stories, onU
                         <Text fontWeight="medium" color="green.600">
                           Toplu Onayla
                         </Text>
-                        <Text fontSize="sm" color="gray.600">
+                        <Text fontSize="sm" color={useColorModeValue('neutral.600','neutral.300')}>
                           Seçilen bekleyen hikayeleri onayla
                         </Text>
                       </VStack>
@@ -129,7 +130,7 @@ const BulkStoryActionsModal = ({ isOpen, onClose, selectedStoryIds, stories, onU
                         <Text fontWeight="medium" color="red.600">
                           Toplu Reddet
                         </Text>
-                        <Text fontSize="sm" color="gray.600">
+                        <Text fontSize="sm" color={useColorModeValue('neutral.600','neutral.300')}>
                           Seçilen bekleyen hikayeleri reddet
                         </Text>
                       </VStack>

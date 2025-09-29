@@ -20,20 +20,26 @@ export const getCommunityUsers = async (req, res) => {
     // Build where clause
     const where = {
       isActive: true,
-      isBanned: false
+      isBanned: false,
+      role: { not: 'ADMIN' }
     }
 
     // Add search filter
     if (search) {
       where.OR = [
-        { nickname: { contains: search, mode: 'insensitive' } },
-        { bio: { contains: search, mode: 'insensitive' } }
+        { nickname: { contains: search } },
+        { bio: { contains: search } }
       ]
     }
 
     // Add role filter
     if (role) {
-      where.role = role
+      if (role === 'ORGANIZATION') {
+        // Users who are members of any organization
+        where.organizations = { some: {} }
+      } else {
+        where.role = role
+      }
     }
 
     // Build orderBy clause
@@ -57,7 +63,8 @@ export const getCommunityUsers = async (req, res) => {
           _count: {
             select: {
               stories: true,
-              comments: true
+              comments: true,
+              organizations: true
             }
           }
         }
@@ -75,7 +82,8 @@ export const getCommunityUsers = async (req, res) => {
       createdAt: user.createdAt,
       lastLoginAt: user.lastLoginAt,
       storyCount: user._count.stories,
-      commentCount: user._count.comments
+      commentCount: user._count.comments,
+      isOrganizationRep: (user._count.organizations || 0) > 0
     }))
 
     const totalPages = Math.ceil(totalCount / take)
@@ -103,7 +111,7 @@ export const getCommunityUsers = async (req, res) => {
       }
     })
   } finally {
-    await prisma.$disconnect()
+    // Keep Prisma client connected for the app lifecycle
   }
 }
 
@@ -194,7 +202,7 @@ export const getUserProfile = async (req, res) => {
       }
     })
   } finally {
-    await prisma.$disconnect()
+    // Keep Prisma client connected for the app lifecycle
   }
 }
 
@@ -221,7 +229,8 @@ export const getCommunityStats = async (req, res) => {
         },
         where: {
           isActive: true,
-          isBanned: false
+          isBanned: false,
+          role: { not: 'ADMIN' }
         }
       })
 
@@ -232,14 +241,22 @@ export const getCommunityStats = async (req, res) => {
         },
         where: {
           isActive: true,
-          isBanned: false
+          isBanned: false,
+          role: { not: 'ADMIN' }
         }
       })
+
+      // Count distinct users who are members of any organization (as STK temsilcisi)
+      const orgMemberUsers = await prisma.organizationMember.groupBy({
+        by: ['userId']
+      })
+      const organizationRepresentatives = orgMemberUsers.length
 
       const recentUsers = await prisma.user.count({
         where: {
           isActive: true,
           isBanned: false,
+          role: { not: 'ADMIN' },
           createdAt: {
             gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) // Last 30 days
           }
@@ -259,9 +276,9 @@ export const getCommunityStats = async (req, res) => {
           roleBreakdown: roleStats.reduce((acc, item) => {
             acc[item.role] = item._count.id
             return acc
-          }, {})
-        }
-      })
+          }, { ORGANIZATION: organizationRepresentatives })
+      }
+    })
     } catch (dbError) {
       console.warn('Database temporarily unavailable, using fallback data:', dbError.message)
       res.status(200).json({
@@ -279,7 +296,7 @@ export const getCommunityStats = async (req, res) => {
       }
     })
   } finally {
-    await prisma.$disconnect()
+    // Keep Prisma client connected for the app lifecycle
   }
 }
 
@@ -341,7 +358,7 @@ export const followUser = async (req, res) => {
       }
     })
   } finally {
-    await prisma.$disconnect()
+    // Keep Prisma client connected for the app lifecycle
   }
 }
 
@@ -393,7 +410,7 @@ export const unfollowUser = async (req, res) => {
       }
     })
   } finally {
-    await prisma.$disconnect()
+    // Keep Prisma client connected for the app lifecycle
   }
 }
 
@@ -464,7 +481,7 @@ export const getUserFollowers = async (req, res) => {
       }
     })
   } finally {
-    await prisma.$disconnect()
+    // Keep Prisma client connected for the app lifecycle
   }
 }
 

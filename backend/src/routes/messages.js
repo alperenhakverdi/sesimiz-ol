@@ -458,8 +458,7 @@ router.get('/search', async (req, res) => {
           },
           {
             content: {
-              contains: q.trim(),
-              mode: 'insensitive'
+              contains: q.trim()
             }
           }
         ]
@@ -496,8 +495,7 @@ router.get('/search', async (req, res) => {
           },
           {
             content: {
-              contains: q.trim(),
-              mode: 'insensitive'
+              contains: q.trim()
             }
           }
         ]

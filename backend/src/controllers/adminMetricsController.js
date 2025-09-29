@@ -123,6 +123,6 @@ export const getMetrics = async (req, res) => {
       }
     });
   } finally {
-    await prisma.$disconnect();
+    // Keep Prisma client connected for the app lifecycle
   }
 };

@@ -22,6 +22,7 @@ import {
 } from '@chakra-ui/react'
 import { FiFlag, FiMoreVertical } from 'react-icons/fi'
 import { useAuth } from '../../contexts/AuthContext'
+import { useColorModeValue } from '@chakra-ui/react'
 
 const ReportStoryButton = ({ storyId, storyTitle, size = "sm", variant = "ghost" }) => {
   const { user, token } = useAuth()
@@ -125,7 +126,7 @@ const ReportStoryButton = ({ storyId, storyTitle, size = "sm", variant = "ghost"
           <ModalCloseButton />
           <ModalBody>
             <VStack spacing={4} align="stretch">
-              <Text fontSize="sm" color="gray.600">
+              <Text fontSize="sm" color={useColorModeValue('neutral.600','neutral.300')}>
                 <Text as="span" fontWeight="medium">"{storyTitle}"</Text>
                 {' '}başlıklı hikayeyi neden şikayet ediyorsunuz?
               </Text>
@@ -148,7 +149,7 @@ const ReportStoryButton = ({ storyId, storyTitle, size = "sm", variant = "ghost"
               </Select>
 
               <VStack align="start" spacing={2}>
-                <Text fontSize="sm" color="gray.600">
+                <Text fontSize="sm" color={useColorModeValue('neutral.600','neutral.300')}>
                   Açıklama (isteğe bağlı):
                 </Text>
                 <Textarea
@@ -158,12 +159,12 @@ const ReportStoryButton = ({ storyId, storyTitle, size = "sm", variant = "ghost"
                   maxLength={1000}
                   rows={5}
                 />
-                <Text fontSize="xs" color="gray.400">
+                <Text fontSize="xs" color={useColorModeValue('neutral.600','neutral.400')}>
                   {description.length}/1000
                 </Text>
               </VStack>
 
-              <Text fontSize="xs" color="gray.500" bg="gray.50" p={3} borderRadius="md">
+              <Text fontSize="xs" color={useColorModeValue('neutral.600','neutral.400')} bg={useColorModeValue('neutral.100','neutral.800')} p={3} borderRadius="md">
                 <Text as="span" fontWeight="medium">Not:</Text>
                 {' '}Tüm şikayetler gizli olarak incelenir. Şikayet eden kişinin kimliği gizli tutulur.
                 Yanlış şikayetler hesap askıya alınmasına neden olabilir.

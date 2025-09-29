@@ -15,6 +15,8 @@ import { tr } from 'date-fns/locale'
 import { ViewIcon } from '@chakra-ui/icons'
 import { storyAPI } from '../../services/api'
 import LazyImage from './LazyImage'
+import StoryLikeButton from '../story/StoryLikeButton'
+import { ensureAvatar } from '../../utils/avatar'
 
 // Keyframes for animations
 const shimmer = keyframes`
@@ -77,6 +79,7 @@ const EnhancedStoryCard = ({ story }) => {
   const textColor = useColorModeValue('neutral.600', 'neutral.300')
   const authorColor = useColorModeValue('neutral.700', 'neutral.200')
   const timeColor = useColorModeValue('neutral.500', 'neutral.400')
+  const authorProfileUrl = story.author?.id ? `/profil/${story.author.id}` : null
 
   return (
     <Box
@@ -169,10 +172,16 @@ const EnhancedStoryCard = ({ story }) => {
         <VStack spacing={4}>
           {/* Author Info */}
           <HStack justify="space-between" w="full" align="center">
-            <HStack spacing={3}>
+            <HStack
+              spacing={3}
+              as={authorProfileUrl ? RouterLink : 'div'}
+              to={authorProfileUrl || undefined}
+              onClick={authorProfileUrl ? (event) => event.stopPropagation() : undefined}
+              _hover={authorProfileUrl ? { textDecoration: 'none' } : undefined}
+            >
               {story.authorAvatar || story.author?.avatar ? (
                 <LazyImage
-                  src={story.authorAvatar || story.author?.avatar}
+                  src={ensureAvatar(story.authorAvatar || story.author?.avatar, story.authorNickname || story.author?.nickname)}
                   alt={`${story.authorNickname || story.author?.nickname} profil fotoğrafı`}
                   boxSize="32px"
                   borderRadius="full"
@@ -187,6 +196,7 @@ const EnhancedStoryCard = ({ story }) => {
                 <Avatar
                   size="sm"
                   name={story.authorNickname || story.author?.nickname}
+                  src={ensureAvatar(null, story.authorNickname || story.author?.nickname)}
                   bg="brand.100"
                   color="brand.500"
                   transition="transform 0.2s ease"
@@ -196,7 +206,7 @@ const EnhancedStoryCard = ({ story }) => {
                 />
               )}
               <VStack align="start" spacing={0}>
-                <Text fontSize="sm" fontWeight="medium" color={authorColor}>
+                <Text fontSize="sm" fontWeight="medium" color={authorColor} _hover={authorProfileUrl ? { color: 'accent.500' } : undefined}>
                   @{story.authorNickname || story.author?.nickname}
                 </Text>
                 <Text fontSize="xs" color={timeColor}>
@@ -205,19 +215,26 @@ const EnhancedStoryCard = ({ story }) => {
               </VStack>
             </HStack>
             
-            <HStack 
-              spacing={2} 
-              cursor="pointer" 
-              onClick={handleViewIncrement}
-              _hover={{ transform: 'scale(1.05)' }}
-              transition="transform 0.2s"
-              p={1}
-              borderRadius="md"
-            >
-              <ViewIcon boxSize={3} color={timeColor} />
-              <Text fontSize="xs" color={timeColor}>
-                {localViewCount}
-              </Text>
+            <HStack spacing={4} align="center">
+              <StoryLikeButton
+                storyId={story.id}
+                initialLiked={Boolean(story.userHasLiked)}
+                initialCount={story.likesCount ?? 0}
+              />
+              <HStack 
+                spacing={2} 
+                cursor="pointer" 
+                onClick={handleViewIncrement}
+                _hover={{ transform: 'scale(1.05)' }}
+                transition="transform 0.2s"
+                p={1}
+                borderRadius="md"
+              >
+                <ViewIcon boxSize={3} color={timeColor} />
+                <Text fontSize="xs" color={timeColor}>
+                  {localViewCount}
+                </Text>
+              </HStack>
             </HStack>
           </HStack>
 

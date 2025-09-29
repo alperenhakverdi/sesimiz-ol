@@ -18,7 +18,9 @@ import {
   StatLabel,
   StatNumber,
   SimpleGrid,
-  Progress
+  Progress,
+  useToast,
+  useColorModeValue
 } from '@chakra-ui/react';
 
 const AnnouncementDetailModal = ({ isOpen, onClose, announcement }) => {
@@ -114,7 +116,7 @@ const AnnouncementDetailModal = ({ isOpen, onClose, announcement }) => {
                 <Badge variant="outline">
                   {getTypeText(announcement?.type)}
                 </Badge>
-                <Text fontSize="sm" color="gray.600">
+                <Text fontSize="sm" color={useColorModeValue('neutral.600','neutral.300')}>
                   Hedef: {getAudienceText(announcement?.targetAudience)}
                 </Text>
               </HStack>
@@ -132,7 +134,7 @@ const AnnouncementDetailModal = ({ isOpen, onClose, announcement }) => {
                 bg="gray.50"
                 borderRadius="md"
                 border="1px"
-                borderColor="gray.200"
+                borderColor={useColorModeValue('neutral.200','neutral.700')}
               >
                 <Text whiteSpace="pre-wrap" lineHeight="tall">
                   {announcement?.content}
@@ -176,7 +178,7 @@ const AnnouncementDetailModal = ({ isOpen, onClose, announcement }) => {
                       size="lg"
                       borderRadius="md"
                     />
-                    <Text fontSize="xs" color="gray.600" mt={1}>
+                    <Text fontSize="xs" color={useColorModeValue('neutral.600','neutral.400')} mt={1}>
                       {announcement.readCount} / {announcement.recipientCount} kişi okudu
                     </Text>
                   </Box>
@@ -192,20 +194,20 @@ const AnnouncementDetailModal = ({ isOpen, onClose, announcement }) => {
               </Text>
               <VStack align="start" spacing={2}>
                 <HStack justify="space-between" w="full">
-                  <Text color="gray.600">Oluşturulma:</Text>
+                  <Text color={useColorModeValue('neutral.600','neutral.300')}>Oluşturulma:</Text>
                   <Text>{formatDate(announcement?.createdAt)}</Text>
                 </HStack>
 
                 {announcement?.status === 'SCHEDULED' && announcement?.scheduledAt && (
                   <HStack justify="space-between" w="full">
-                    <Text color="gray.600">Zamanlanma:</Text>
+                    <Text color={useColorModeValue('neutral.600','neutral.300')}>Zamanlanma:</Text>
                     <Text>{formatDate(announcement.scheduledAt)}</Text>
                   </HStack>
                 )}
 
                 {announcement?.status === 'SENT' && announcement?.sentAt && (
                   <HStack justify="space-between" w="full">
-                    <Text color="gray.600">Gönderilme:</Text>
+                    <Text color={useColorModeValue('neutral.600','neutral.300')}>Gönderilme:</Text>
                     <Text>{formatDate(announcement.sentAt)}</Text>
                   </HStack>
                 )}

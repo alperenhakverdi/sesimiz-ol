@@ -41,8 +41,8 @@ export const listAdminUsers = async (req, res) => {
     ...(search
       ? {
           OR: [
-            { nickname: { contains: search, mode: 'insensitive' } },
-            { email: { contains: search, mode: 'insensitive' } }
+            { nickname: { contains: search } },
+            { email: { contains: search } }
           ]
         }
       : {})

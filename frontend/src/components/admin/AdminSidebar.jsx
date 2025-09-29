@@ -36,8 +36,8 @@ const AdminSidebar = ({ onClose, ...rest }) => {
   const { user } = useAuth()
   const location = useLocation()
 
-  const sidebarBg = useColorModeValue('white', 'gray.900')
-  const sidebarBorderColor = useColorModeValue('gray.200', 'gray.700')
+  const sidebarBg = useColorModeValue('white', 'neutral.900')
+  const sidebarBorderColor = useColorModeValue('neutral.200', 'neutral.700')
 
   return (
     <Box
@@ -62,7 +62,7 @@ const AdminSidebar = ({ onClose, ...rest }) => {
       </Flex>
 
       {/* Admin User Info */}
-      <Box mx="6" mb="6" p="4" bg={useColorModeValue('gray.50', 'gray.800')} borderRadius="lg">
+      <Box mx="6" mb="6" p="4" bg={useColorModeValue('neutral.100', 'neutral.800')} borderRadius="lg">
         <HStack spacing={3}>
           <Avatar size="sm" name={user?.nickname} src={user?.avatar} bg="brand.500" />
           <VStack align="start" spacing={0}>
@@ -94,7 +94,7 @@ const AdminSidebar = ({ onClose, ...rest }) => {
 }
 
 const NavItem = ({ icon, children, href, isActive, onClick, ...rest }) => {
-  const inactiveColor = useColorModeValue('gray.600', 'gray.300')
+  const inactiveColor = useColorModeValue('neutral.700', 'neutral.300')
 
   return (
     <Box
@@ -116,7 +116,7 @@ const NavItem = ({ icon, children, href, isActive, onClick, ...rest }) => {
         borderLeft={isActive ? '3px solid' : '3px solid transparent'}
         borderLeftColor={isActive ? 'brand.500' : 'transparent'}
         _hover={{
-          bg: 'brand.50',
+          bg: useColorModeValue('brand.50','neutral.800'),
           color: 'brand.600'
         }}
         transition="all 0.2s"

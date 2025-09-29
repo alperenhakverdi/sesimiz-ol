@@ -20,7 +20,8 @@ import {
   AlertDescription,
   useToast,
   Divider,
-  Link as ChakraLink
+  Link as ChakraLink,
+  useColorModeValue
 } from '@chakra-ui/react'
 import { LockIcon, CheckCircleIcon, ViewIcon, ViewOffIcon, WarningIcon } from '@chakra-ui/icons'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
@@ -126,8 +127,8 @@ const ResetPasswordPage = () => {
     <Alert status="warning" borderRadius="lg">
       <AlertIcon as={WarningIcon} />
       <AlertDescription display="flex" flexDirection="column" alignItems="flex-start">
-        <Text>Geçerli bir sıfırlama bağlantısı bulunamadı.</Text>
-        <ChakraLink as={Link} to="/sifremi-unuttum" color="accent.500" mt={2}>
+        Gerekli token bulunamadı. Lütfen e-posta bağlantısını doğru kullanın veya şifre sıfırlama talebi oluşturun.
+        <ChakraLink as={Link} to="/sifremi-unuttum" color="accent.600" mt={2}>
           Şifre sıfırlama talebi oluştur
         </ChakraLink>
       </AlertDescription>
@@ -135,60 +136,41 @@ const ResetPasswordPage = () => {
   )
 
   const renderOtpStep = () => (
-    <Box as="form" onSubmit={handleOtpSubmit} noValidate>
-      <VStack spacing={6} align="stretch">
-        <Text color="neutral.600">
-          E-postana gelen 6 haneli doğrulama kodunu gir. Kodun süresi kısa, bu yüzden hızlıca tamamlamanı öneririz.
-        </Text>
-
-        <FormControl isInvalid={!!otpError}>
-          <FormLabel color="neutral.700">Doğrulama Kodu</FormLabel>
-          <HStack justify="center">
-            <PinInput value={otp} onChange={(value) => setOtp(value)} onComplete={(value) => setOtp(value)} otp type="number">
-              <PinInputField size="lg" borderColor="neutral.300" _focus={{ borderColor: 'accent.500', boxShadow: '0 0 0 1px var(--chakra-colors-accent-500)' }} />
-              <PinInputField size="lg" borderColor="neutral.300" _focus={{ borderColor: 'accent.500', boxShadow: '0 0 0 1px var(--chakra-colors-accent-500)' }} />
-              <PinInputField size="lg" borderColor="neutral.300" _focus={{ borderColor: 'accent.500', boxShadow: '0 0 0 1px var(--chakra-colors-accent-500)' }} />
-              <PinInputField size="lg" borderColor="neutral.300" _focus={{ borderColor: 'accent.500', boxShadow: '0 0 0 1px var(--chakra-colors-accent-500)' }} />
-              <PinInputField size="lg" borderColor="neutral.300" _focus={{ borderColor: 'accent.500', boxShadow: '0 0 0 1px var(--chakra-colors-accent-500)' }} />
-              <PinInputField size="lg" borderColor="neutral.300" _focus={{ borderColor: 'accent.500', boxShadow: '0 0 0 1px var(--chakra-colors-accent-500)' }} />
-            </PinInput>
-          </HStack>
-          {otpError && (
-            <Alert status="error" mt={4} borderRadius="md">
-              <AlertIcon />
-              <AlertDescription>{otpError}</AlertDescription>
-            </Alert>
-          )}
-        </FormControl>
-
-        <Button
-          type="submit"
-          colorScheme="accent"
-          size="lg"
-          isLoading={isVerifying}
-          loadingText="Doğrulanıyor"
-        >
-          Kodu Doğrula
-        </Button>
-      </VStack>
-    </Box>
+    <VStack as="form" onSubmit={handleOtpSubmit} spacing={6}>
+      <FormControl>
+        <FormLabel>Doğrulama Kodu</FormLabel>
+        <HStack>
+          <PinInput value={otp} onChange={setOtp} size="lg" otp mask="●">
+            <PinInputField />
+            <PinInputField />
+            <PinInputField />
+            <PinInputField />
+            <PinInputField />
+            <PinInputField />
+          </PinInput>
+        </HStack>
+      </FormControl>
+      {otpError && (
+        <Alert status="error" borderRadius="md">
+          <AlertIcon />
+          <AlertDescription>{otpError}</AlertDescription>
+        </Alert>
+      )}
+      <Button type="submit" colorScheme="accent" size="lg" isLoading={isVerifying} loadingText="Doğrulanıyor">
+        Devam Et
+      </Button>
+    </VStack>
   )
 
   const renderPasswordStep = () => (
-    <Box as="form" onSubmit={handlePasswordSubmit} noValidate>
-      <VStack spacing={6} align="stretch">
-        <Text color="neutral.600">
-          Güvenlik için güçlü bir şifre seç. Şifren en az 8 karakter olmalı, büyük/küçük harf, rakam ve özel karakter içermeli.
-        </Text>
-
-        {resetSessionTtl && (
-          <Alert status="info" borderRadius="lg">
-            <AlertIcon />
-            <AlertDescription>
-              Bu adımı tamamlamak için yaklaşık {resetSessionTtl} dakika süren var.
-            </AlertDescription>
-          </Alert>
-        )}
+    <Box as="form" onSubmit={handlePasswordSubmit}>
+      <VStack spacing={6}>
+        <Alert status="info" borderRadius="md">
+          <AlertIcon />
+          <Text>
+            Güçlü bir şifre en az 8 karakter uzunluğunda olmalı ve harf, rakam ve sembol içermelidir.
+          </Text>
+        </Alert>
 
         <FormControl isRequired>
           <FormLabel color="neutral.700">Yeni Şifre</FormLabel>
@@ -276,7 +258,7 @@ const ResetPasswordPage = () => {
       <Container maxW="lg" py={{ base: 12, md: 16 }}>
         <FadeIn>
           <Box
-            bg="white"
+            bg={useColorModeValue('white','neutral.800')}
             borderRadius="xl"
             boxShadow="lg"
             px={{ base: 6, md: 10 }}

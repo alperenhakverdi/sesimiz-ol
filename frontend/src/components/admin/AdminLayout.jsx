@@ -21,7 +21,7 @@ import AdminMobileNav from './AdminMobileNav'
 
 const AdminLayout = ({ children }) => {
   const { isOpen, onOpen, onClose } = useDisclosure()
-  const bgColor = useColorModeValue('gray.50', 'gray.900')
+  const bgColor = useColorModeValue('neutral.50', 'neutral.900')
   const { user, isLoading, isAuthenticated, isAdmin } = useAuth()
 
   // Show loading spinner while checking authentication

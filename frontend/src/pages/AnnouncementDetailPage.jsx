@@ -38,7 +38,12 @@ const AnnouncementDetailPage = () => {
         setLoading(true)
         
         const response = await api.get(`/announcements/${id}`)
-        setAnnouncement(response.data.data)
+        if (response?.success) {
+          setAnnouncement(response.data)
+        } else {
+          setAnnouncement(null)
+          setError('Duyuru bilgileri yüklenemedi.')
+        }
       } catch (err) {
         console.error('Announcement fetch error:', err)
         if (err.response?.status === 404) {

@@ -19,8 +19,8 @@ import api from '../../../services/api';
 
 const FeatureFlagItem = ({ flag, onToggle }) => {
   const [isUpdating, setIsUpdating] = useState(false);
-  const bgColor = useColorModeValue('white', 'gray.800');
-  const borderColor = useColorModeValue('gray.200', 'gray.700');
+  const bgColor = useColorModeValue('white', 'neutral.800');
+  const borderColor = useColorModeValue('neutral.200', 'neutral.700');
 
   const handleToggle = async () => {
     setIsUpdating(true);
@@ -53,7 +53,7 @@ const FeatureFlagItem = ({ flag, onToggle }) => {
             </Badge>
           </HStack>
           {flag.description && (
-            <Text fontSize="xs" color="gray.600" noOfLines={2}>
+            <Text fontSize="xs" color={useColorModeValue('neutral.600','neutral.300')} noOfLines={2}>
               {flag.description}
             </Text>
           )}
@@ -76,8 +76,8 @@ const FeatureFlagWidget = () => {
   const [error, setError] = useState(null);
   const toast = useToast();
 
-  const bgColor = useColorModeValue('white', 'gray.800');
-  const borderColor = useColorModeValue('gray.200', 'gray.700');
+  const bgColor = useColorModeValue('white', 'neutral.800');
+  const borderColor = useColorModeValue('neutral.200', 'neutral.700');
 
   const fetchFeatureFlags = async () => {
     try {
@@ -132,7 +132,7 @@ const FeatureFlagWidget = () => {
           isClosable: true,
         });
       } else {
-        throw new Error(data.error?.message || 'Güncelleme başarısız');
+        throw new Error(response.error?.message || 'Güncelleme başarısız');
       }
     } catch (error) {
       console.error('Toggle feature flag error:', error);
@@ -221,7 +221,7 @@ const FeatureFlagWidget = () => {
       </VStack>
 
       {flags.length === 0 && (
-        <Text color="gray.500" textAlign="center" py={4}>
+        <Text color={useColorModeValue('neutral.600','neutral.400')} textAlign="center" py={4}>
           Henüz feature flag tanımlanmamış
         </Text>
       )}

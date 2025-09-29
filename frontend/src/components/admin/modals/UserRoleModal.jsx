@@ -16,7 +16,8 @@ import {
   RadioGroup,
   Alert,
   AlertIcon,
-  useToast
+  useToast,
+  useColorModeValue
 } from '@chakra-ui/react';
 
 const UserRoleModal = ({ isOpen, onClose, user, onUpdate }) => {
@@ -92,7 +93,7 @@ const UserRoleModal = ({ isOpen, onClose, user, onUpdate }) => {
               <Avatar size="md" name={user?.nickname} />
               <VStack align="start" spacing={0}>
                 <Text fontWeight="bold">{user?.nickname}</Text>
-                <Text fontSize="sm" color="gray.600">{user?.email}</Text>
+                <Text fontSize="sm" color={useColorModeValue('neutral.600', 'neutral.300')}>{user?.email}</Text>
               </VStack>
             </HStack>
 
@@ -103,7 +104,7 @@ const UserRoleModal = ({ isOpen, onClose, user, onUpdate }) => {
                   <Radio value="USER">
                     <VStack align="start" spacing={1}>
                       <Text fontWeight="medium">Kullanıcı</Text>
-                      <Text fontSize="sm" color="gray.600">
+                      <Text fontSize="sm" color={useColorModeValue('neutral.600', 'neutral.300')}>
                         Standart kullanıcı hakları (hikaye yazma, yorum yapma)
                       </Text>
                     </VStack>
@@ -111,7 +112,7 @@ const UserRoleModal = ({ isOpen, onClose, user, onUpdate }) => {
                   <Radio value="ADMIN">
                     <VStack align="start" spacing={1}>
                       <Text fontWeight="medium">Admin</Text>
-                      <Text fontSize="sm" color="gray.600">
+                      <Text fontSize="sm" color={useColorModeValue('neutral.600', 'neutral.300')}>
                         Yönetici hakları (kullanıcı/içerik yönetimi, sistem ayarları)
                       </Text>
                     </VStack>

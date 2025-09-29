@@ -213,7 +213,7 @@ export const AccessibleModal = ({
       {...props}
     >
       <Box
-        bg="white"
+        bg={useColorModeValue('white','neutral.800')}
         borderRadius="lg"
         p={6}
         maxW="90vw"

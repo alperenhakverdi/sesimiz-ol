@@ -43,6 +43,7 @@ import {
   SliderFilledTrack,
   SliderThumb,
   Textarea,
+  useColorModeValue
 } from '@chakra-ui/react'
 import { Link as RouterLink, useNavigate } from 'react-router-dom'
 import { ArrowBackIcon, ViewIcon, ViewOffIcon, AddIcon, CloseIcon } from '@chakra-ui/icons'
@@ -182,6 +183,14 @@ const SettingsPage = () => {
   const [showPasswords, setShowPasswords] = useState(false)
   const [passwordError, setPasswordError] = useState('')
   const [isPasswordLoading, setIsPasswordLoading] = useState(false)
+
+  const surfaceBg = useColorModeValue('white', 'neutral.800')
+  const subtleSurfaceBg = useColorModeValue('neutral.50', 'neutral.700')
+  const mutedText = useColorModeValue('neutral.600', 'neutral.300')
+  const surfaceBorderColor = useColorModeValue('neutral.200', 'neutral.600')
+  const dashedBorderColor = useColorModeValue('neutral.300', 'neutral.500')
+  const dropzoneBg = useColorModeValue('neutral.50', 'neutral.700')
+  const dropzoneActiveBg = useColorModeValue('accent.50', 'accent.900')
 
   useEffect(() => {
     setProfileForm(initialProfileValues)
@@ -628,7 +637,7 @@ const SettingsPage = () => {
               </Box>
             ) : (
               <Box py={10} textAlign="center">
-                <Text fontSize="sm" color="neutral.600">Görüntü yükleniyor...</Text>
+                <Text fontSize="sm" color={mutedText}>Görüntü yükleniyor...</Text>
               </Box>
             )}
 
@@ -678,7 +687,7 @@ const SettingsPage = () => {
               <Heading as="h1" size="xl" color="accent.500">
                 Hesap Ayarları
               </Heading>
-              <Text color="neutral.600" maxW="lg">
+              <Text color={mutedText} maxW="lg">
                 Profil bilgilerini düzenle ve hesap güvenliğini yönet
               </Text>
             </VStack>
@@ -686,7 +695,7 @@ const SettingsPage = () => {
 
           {/* Settings Tabs */}
           <ProgressiveLoader delay={600}>
-            <Box bg="white" borderRadius="lg" shadow="sm">
+            <Box bg={surfaceBg} borderRadius="lg" shadow="sm" borderWidth="1px" borderColor={surfaceBorderColor}>
               <Tabs variant="enclosed" colorScheme="accent">
                 <ProgressiveLoader delay={800}>
                   <TabList>
@@ -714,10 +723,10 @@ const SettingsPage = () => {
                             <VStack
                               spacing={4}
                               flex="0 0 240px"
-                              bg="neutral.50"
+                              bg={subtleSurfaceBg}
                               borderRadius="lg"
                               border="1px"
-                              borderColor="neutral.200"
+                              borderColor={surfaceBorderColor}
                               p={6}
                               align="center"
                             >
@@ -744,13 +753,13 @@ const SettingsPage = () => {
                               flex="1"
                               border="2px"
                               borderStyle="dashed"
-                              borderColor={dragActive ? 'accent.500' : 'neutral.300'}
+                              borderColor={dragActive ? 'accent.500' : dashedBorderColor}
                               borderRadius="xl"
                               p={6}
-                              bg={dragActive ? 'accent.50' : 'neutral.25'}
+                              bg={dragActive ? dropzoneActiveBg : dropzoneBg}
                               cursor="pointer"
                               transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
-                              _hover={{ borderColor: 'accent.400', bg: 'accent.50', transform: 'translateY(-2px)', shadow: 'lg' }}
+                              _hover={{ borderColor: 'accent.400', bg: dropzoneActiveBg, transform: 'translateY(-2px)', shadow: 'lg' }}
                               position="relative"
                               onDragEnter={handleDrag}
                               onDragLeave={handleDrag}
@@ -867,14 +876,14 @@ const SettingsPage = () => {
                             </Button>
                           </HStack>
 
-                          <Divider borderColor="neutral.200" />
+                          <Divider borderColor={surfaceBorderColor} />
 
                           <Box
-                            bg="neutral.50"
+                            bg={subtleSurfaceBg}
                             p={6}
                             borderRadius="xl"
                             border="1px"
-                            borderColor="neutral.200"
+                            borderColor={surfaceBorderColor}
                             shadow="sm"
                           >
                             <Text
@@ -888,7 +897,7 @@ const SettingsPage = () => {
 
                             <VStack align="start" spacing={4}>
                               <Box>
-                                <Text fontSize="sm" fontWeight="medium" color="neutral.600" mb={1}>
+                                <Text fontSize="sm" fontWeight="medium" color={mutedText} mb={1}>
                                   Kullanıcı Adı
                                 </Text>
                                 <Text fontSize="md" color="primary.800">
@@ -897,7 +906,7 @@ const SettingsPage = () => {
                               </Box>
 
                               <Box>
-                                <Text fontSize="sm" fontWeight="medium" color="neutral.600" mb={1}>
+                                <Text fontSize="sm" fontWeight="medium" color={mutedText} mb={1}>
                                   E-posta Adresi
                                 </Text>
                                 <Text fontSize="md" color="primary.700">
@@ -906,7 +915,7 @@ const SettingsPage = () => {
                               </Box>
 
                               <Box>
-                                <Text fontSize="sm" fontWeight="medium" color="neutral.600" mb={1}>
+                                <Text fontSize="sm" fontWeight="medium" color={mutedText} mb={1}>
                                   Üyelik Tarihi
                                 </Text>
                                 <Text fontSize="md" color="primary.700">
@@ -929,11 +938,11 @@ const SettingsPage = () => {
                     <ProgressiveLoader delay={1000}>
                       <VStack spacing={8} align="stretch">
                         <Box
-                          bg="neutral.50"
+                          bg={subtleSurfaceBg}
                           p={6}
                           borderRadius="xl"
                           border="1px"
-                          borderColor="neutral.200"
+                          borderColor={surfaceBorderColor}
                           shadow="sm"
                         >
                           <Stack spacing={6}>
@@ -949,26 +958,26 @@ const SettingsPage = () => {
                                   <Radio value="PUBLIC">
                                     <Stack spacing={0} align="flex-start">
                                       <Text fontWeight="medium">Herkese açık</Text>
-                                      <Text fontSize="sm" color="neutral.600">Profilin tüm ziyaretçilere görünür.</Text>
+                                      <Text fontSize="sm" color={mutedText}>Profilin tüm ziyaretçilere görünür.</Text>
                                     </Stack>
                                   </Radio>
                                   <Radio value="COMMUNITY">
                                     <Stack spacing={0} align="flex-start">
                                       <Text fontWeight="medium">Sadece topluluğa açık</Text>
-                                      <Text fontSize="sm" color="neutral.600">Sadece giriş yapan kullanıcılar profilini görebilir.</Text>
+                                      <Text fontSize="sm" color={mutedText}>Sadece giriş yapan kullanıcılar profilini görebilir.</Text>
                                     </Stack>
                                   </Radio>
                                   <Radio value="PRIVATE">
                                     <Stack spacing={0} align="flex-start">
                                       <Text fontWeight="medium">Gizli</Text>
-                                      <Text fontSize="sm" color="neutral.600">Profilin sadece senin tarafından görüntülenir.</Text>
+                                      <Text fontSize="sm" color={mutedText}>Profilin sadece senin tarafından görüntülenir.</Text>
                                     </Stack>
                                   </Radio>
                                 </VStack>
                               </RadioGroup>
                             </FormControl>
 
-                            <Divider borderColor="neutral.200" />
+                            <Divider borderColor={surfaceBorderColor} />
 
                             <FormControl>
                               <FormLabel fontWeight="semibold" color="primary.800">
@@ -982,33 +991,33 @@ const SettingsPage = () => {
                                   <Radio value="EVERYONE">
                                     <Stack spacing={0} align="flex-start">
                                       <Text fontWeight="medium">Herkes yorum yapabilir</Text>
-                                      <Text fontSize="sm" color="neutral.600">Topluluk üyeleri hikayelerine yorum bırakabilir.</Text>
+                                      <Text fontSize="sm" color={mutedText}>Topluluk üyeleri hikayelerine yorum bırakabilir.</Text>
                                     </Stack>
                                   </Radio>
                                   <Radio value="FOLLOWERS">
                                     <Stack spacing={0} align="flex-start">
                                       <Text fontWeight="medium">Sadece takip ettiklerim</Text>
-                                      <Text fontSize="sm" color="neutral.600">Güvendiğin kişilerin yorum yapmasına izin ver.</Text>
+                                      <Text fontSize="sm" color={mutedText}>Güvendiğin kişilerin yorum yapmasına izin ver.</Text>
                                     </Stack>
                                   </Radio>
                                   <Radio value="NONE">
                                     <Stack spacing={0} align="flex-start">
                                       <Text fontWeight="medium">Yorumlara kapalı</Text>
-                                      <Text fontSize="sm" color="neutral.600">Hikayelerin yorumlara kapatılır.</Text>
+                                      <Text fontSize="sm" color={mutedText}>Hikayelerin yorumlara kapatılır.</Text>
                                     </Stack>
                                   </Radio>
                                 </VStack>
                               </RadioGroup>
                             </FormControl>
 
-                            <Divider borderColor="neutral.200" />
+                            <Divider borderColor={surfaceBorderColor} />
 
                             <FormControl display="flex" alignItems="center" justifyContent="space-between">
                               <Box>
                                 <FormLabel mb={1} fontWeight="semibold" color="primary.800">
                                   Arama görünürlüğü
                                 </FormLabel>
-                                <Text fontSize="sm" color="neutral.600">
+                                <Text fontSize="sm" color={mutedText}>
                                   Profilinin dahili aramalarda görünmesini yönet.
                                 </Text>
                               </Box>
@@ -1170,7 +1179,7 @@ const SettingsPage = () => {
                           </VStack>
                         </form>
 
-                        <Divider borderColor="neutral.200" />
+                        <Divider borderColor={surfaceBorderColor} />
 
                         <Box>
                           <Text
@@ -1214,11 +1223,11 @@ const SettingsPage = () => {
                     <ProgressiveLoader delay={1000}>
                       <VStack spacing={8} align="stretch">
                         <Box
-                          bg="neutral.50"
+                          bg={subtleSurfaceBg}
                           p={6}
                           borderRadius="xl"
                           border="1px"
-                          borderColor="neutral.200"
+                          borderColor={surfaceBorderColor}
                           shadow="sm"
                         >
                           <Stack spacing={6}>
@@ -1238,7 +1247,7 @@ const SettingsPage = () => {
                               </RadioGroup>
                             </FormControl>
 
-                            <Divider borderColor="neutral.200" />
+                            <Divider borderColor={surfaceBorderColor} />
 
                             <FormControl>
                               <FormLabel fontWeight="semibold" color="primary.800">
@@ -1256,14 +1265,14 @@ const SettingsPage = () => {
                               </RadioGroup>
                             </FormControl>
 
-                            <Divider borderColor="neutral.200" />
+                            <Divider borderColor={surfaceBorderColor} />
 
                             <FormControl display="flex" alignItems="center" justifyContent="space-between">
                               <Box>
                                 <FormLabel mb={1} fontWeight="semibold" color="primary.800">
                                   Animasyonları azalt
                                 </FormLabel>
-                                <Text fontSize="sm" color="neutral.600">
+                                <Text fontSize="sm" color={mutedText}>
                                   Hareket hassasiyetin varsa animasyonları kıs.
                                 </Text>
                               </Box>

@@ -6,7 +6,9 @@ import {
   createStory,
   updateStory,
   deleteStory,
-  incrementViewCount
+  incrementViewCount,
+  likeStory,
+  unlikeStory
 } from '../controllers/storyController.js';
 import { authenticateToken, optionalAuth } from '../middleware/auth.js';
 import { csrfMiddleware } from '../utils/csrf.js';
@@ -63,7 +65,7 @@ const ensureUniqueSlug = async (baseSlug, storyId = null) => {
 };
 
 // GET /api/stories - List all stories (public)
-router.get('/', getAllStories);
+router.get('/', optionalAuth, getAllStories);
 
 // GET /api/stories/tag-suggestions - Get predefined tag suggestions (must be before /:id route)
 router.get('/tag-suggestions', async (req, res) => {
@@ -92,6 +94,12 @@ router.get('/tag-suggestions', async (req, res) => {
     });
   }
 });
+
+// POST /api/stories/:id/like - Like a story
+router.post('/:id/like', authenticateToken, csrfMiddleware, likeStory);
+
+// DELETE /api/stories/:id/like - Remove like from a story
+router.delete('/:id/like', authenticateToken, csrfMiddleware, unlikeStory);
 
 // GET /api/stories/:id - Get story details
 router.get('/:id', optionalAuth, getStoryById);
@@ -371,7 +379,7 @@ router.get('/by-category/:categorySlug', async (req, res) => {
     // Get stories for this category
     const [stories, total] = await Promise.all([
       prisma.story.findMany({
-        where: { categoryId: category.id },
+        where: { categoryId: category.id, author: { role: { not: 'ADMIN' } } },
         include: {
           author: {
             select: {
@@ -397,7 +405,7 @@ router.get('/by-category/:categorySlug', async (req, res) => {
         take: limit
       }),
       prisma.story.count({
-        where: { categoryId: category.id }
+        where: { categoryId: category.id, author: { role: { not: 'ADMIN' } } }
       })
     ]);
 
@@ -539,8 +547,7 @@ router.get('/tags', async (req, res) => {
     const where = {};
     if (search) {
       where.name = {
-        contains: search,
-        mode: 'insensitive'
+        contains: search
       };
     }
 
@@ -1003,8 +1010,8 @@ router.get('/search', async (req, res) => {
     if (q.trim()) {
       where.AND.push({
         OR: [
-          { title: { contains: q.trim(), mode: 'insensitive' } },
-          { content: { contains: q.trim(), mode: 'insensitive' } }
+          { title: { contains: q.trim() } },
+          { content: { contains: q.trim() } }
         ]
       });
     }

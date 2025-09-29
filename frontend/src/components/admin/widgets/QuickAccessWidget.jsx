@@ -17,9 +17,9 @@ import { FiUsers, FiFileText, FiFlag, FiHeart, FiArrowRight } from 'react-icons/
 import { Link as RouterLink } from 'react-router-dom';
 
 const QuickAccessCard = ({ title, description, icon, href, stats, color = 'brand.500' }) => {
-  const bgColor = useColorModeValue('white', 'gray.800');
-  const borderColor = useColorModeValue('gray.200', 'gray.700');
-  const hoverBg = useColorModeValue('gray.50', 'gray.700');
+  const bgColor = useColorModeValue('white', 'neutral.800');
+  const borderColor = useColorModeValue('neutral.200', 'neutral.700');
+  const hoverBg = useColorModeValue('neutral.100', 'neutral.700');
 
   return (
     <Box
@@ -51,14 +51,14 @@ const QuickAccessCard = ({ title, description, icon, href, stats, color = 'brand
             p={2}
             borderRadius="md"
           />
-          <Icon as={FiArrowRight} w={4} h={4} color="gray.400" />
+          <Icon as={FiArrowRight} w={4} h={4} color={useColorModeValue('neutral.500', 'neutral.400')} />
         </HStack>
 
         <VStack align="start" spacing={2} flex="1">
-          <Text fontWeight="bold" fontSize="lg" color={color}>
+          <Text fontWeight="bold" fontSize="lg" color={useColorModeValue(color, 'accent.300')}>
             {title}
           </Text>
-          <Text fontSize="sm" color="gray.600" lineHeight="short">
+          <Text fontSize="sm" color={useColorModeValue('neutral.600', 'neutral.300')} lineHeight="short">
             {description}
           </Text>
         </VStack>
@@ -66,7 +66,7 @@ const QuickAccessCard = ({ title, description, icon, href, stats, color = 'brand
         {stats && (
           <Box w="full">
             <Stat>
-              <StatLabel fontSize="xs" color="gray.500">
+              <StatLabel fontSize="xs" color={useColorModeValue('neutral.600', 'neutral.400')}>
                 {stats.label}
               </StatLabel>
               <StatNumber fontSize="xl" color={color}>
@@ -81,8 +81,8 @@ const QuickAccessCard = ({ title, description, icon, href, stats, color = 'brand
 };
 
 const QuickAccessWidget = () => {
-  const bgColor = useColorModeValue('white', 'gray.800');
-  const borderColor = useColorModeValue('gray.200', 'gray.700');
+  const bgColor = useColorModeValue('white', 'neutral.800');
+  const borderColor = useColorModeValue('neutral.200', 'neutral.700');
 
   const quickAccessItems = [
     {

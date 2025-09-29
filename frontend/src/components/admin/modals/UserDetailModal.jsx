@@ -23,6 +23,7 @@ import {
   Alert,
   AlertIcon
 } from '@chakra-ui/react';
+import { useColorModeValue } from '@chakra-ui/react';
 
 const UserDetailModal = ({ isOpen, onClose, user }) => {
   const [userStats, setUserStats] = useState(null);
@@ -56,7 +57,6 @@ const UserDetailModal = ({ isOpen, onClose, user }) => {
       fetchUserStats();
     }
   }, [isOpen, user, fetchUserStats]);
-
   const getStatusColor = (user) => {
     if (user.isBanned) return 'red';
     if (!user.isActive) return 'gray';
@@ -91,7 +91,7 @@ const UserDetailModal = ({ isOpen, onClose, user }) => {
                 <Text fontSize="xl" fontWeight="bold">
                   {user.nickname}
                 </Text>
-                <Text color="gray.600">{user.email}</Text>
+                <Text color={useColorModeValue('neutral.600','neutral.300')}>{user.email}</Text>
                 <HStack>
                   <Badge colorScheme={user.role === 'ADMIN' ? 'purple' : 'blue'}>
                     {user.role === 'ADMIN' ? 'Admin' : 'Kullanıcı'}
@@ -112,22 +112,22 @@ const UserDetailModal = ({ isOpen, onClose, user }) => {
               </Text>
               <VStack align="start" spacing={2}>
                 <HStack justify="space-between" w="full">
-                  <Text color="gray.600">Kayıt Tarihi:</Text>
+                  <Text color={useColorModeValue('neutral.600','neutral.300')}>Kayıt Tarihi:</Text>
                   <Text>{formatDate(user.createdAt)}</Text>
                 </HStack>
                 <HStack justify="space-between" w="full">
-                  <Text color="gray.600">Son Giriş:</Text>
+                  <Text color={useColorModeValue('neutral.600','neutral.300')}>Son Giriş:</Text>
                   <Text>{formatDate(user.lastLoginAt)}</Text>
                 </HStack>
                 <HStack justify="space-between" w="full">
-                  <Text color="gray.600">Email Doğrulama:</Text>
+                  <Text color={useColorModeValue('neutral.600','neutral.300')}>Email Doğrulama:</Text>
                   <Badge colorScheme={user.emailVerified ? 'green' : 'red'}>
                     {user.emailVerified ? 'Doğrulanmış' : 'Doğrulanmamış'}
                   </Badge>
                 </HStack>
                 {user.lockedUntil && (
                   <HStack justify="space-between" w="full">
-                    <Text color="gray.600">Kilit Bitiş:</Text>
+                    <Text color={useColorModeValue('neutral.600','neutral.300')}>Kilit Bitiş:</Text>
                     <Text color="red.500">{formatDate(user.lockedUntil)}</Text>
                   </HStack>
                 )}

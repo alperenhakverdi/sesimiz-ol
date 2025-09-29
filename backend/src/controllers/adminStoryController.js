@@ -33,9 +33,9 @@ export const listAdminStories = async (req, res) => {
       ...(search
         ? {
             OR: [
-              { title: { contains: search, mode: 'insensitive' } },
-              { content: { contains: search, mode: 'insensitive' } },
-              { author: { nickname: { contains: search, mode: 'insensitive' } } }
+              { title: { contains: search } },
+              { content: { contains: search } },
+              { author: { nickname: { contains: search } } }
             ]
           }
         : {})

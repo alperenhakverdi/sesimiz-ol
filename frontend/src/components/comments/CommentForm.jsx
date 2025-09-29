@@ -8,7 +8,8 @@ import {
   Avatar,
   useToast,
   FormControl,
-  FormErrorMessage
+  FormErrorMessage,
+  useColorModeValue
 } from '@chakra-ui/react'
 import { ChatIcon } from '@chakra-ui/icons'
 import { useState } from 'react'
@@ -80,7 +81,7 @@ const CommentForm = ({
 
   return (
     <Box
-      bg="white"
+      bg={useColorModeValue('white','neutral.800')}
       p={6}
       borderRadius="lg"
       borderWidth="1px"

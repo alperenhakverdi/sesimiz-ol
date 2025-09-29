@@ -11,13 +11,16 @@ import {
   Menu,
   MenuButton,
   MenuList,
-  MenuItem
+  MenuItem,
+  Textarea,
+  useColorModeValue
 } from '@chakra-ui/react'
 import { DeleteIcon } from '@chakra-ui/icons'
 import { FiMessageCircle, FiHeart, FiMoreVertical, FiFlag } from 'react-icons/fi'
 import { formatDistanceToNow } from 'date-fns'
 import { tr } from 'date-fns/locale'
 import { useState } from 'react'
+import { ensureAvatar } from '../../utils/avatar'
 
 const CommentCard = ({
   comment,
@@ -119,20 +122,30 @@ const CommentCard = ({
 
 
 
+  const replyBorderColor = useColorModeValue('neutral.200', 'neutral.700')
+  const cardBg = useColorModeValue('white', 'neutral.800')
+  const cardBorder = useColorModeValue('neutral.200', 'neutral.600')
+  const cardHoverBorder = useColorModeValue('neutral.300', 'neutral.500')
+  const authorColor = useColorModeValue('neutral.800', 'neutral.100')
+  const metaColor = useColorModeValue('neutral.500', 'neutral.400')
+  const contentColor = useColorModeValue('neutral.700', 'neutral.200')
+  const reactionColor = useColorModeValue('neutral.600', 'neutral.400')
+  const replyActionColor = useColorModeValue('neutral.700', 'neutral.300')
+
   return (
     <Box
       ml={isReply ? 8 : 0}
       borderLeft={isReply ? '2px solid' : 'none'}
-      borderColor={isReply ? 'gray.200' : 'transparent'}
+      borderColor={isReply ? replyBorderColor : 'transparent'}
       pl={isReply ? 4 : 0}
     >
       <Box
-        bg="white"
+        bg={cardBg}
         p={4}
         borderRadius="md"
         borderWidth="1px"
-        borderColor="neutral.200"
-        _hover={{ borderColor: "neutral.300" }}
+        borderColor={cardBorder}
+        _hover={{ borderColor: cardHoverBorder }}
         transition="all 0.2s ease-in-out"
       >
         <VStack align="start" spacing={3}>
@@ -142,15 +155,15 @@ const CommentCard = ({
               <Avatar
                 size="sm"
                 name={comment.authorNickname}
-                src={comment.authorAvatar}
+                src={ensureAvatar(comment.authorAvatar, comment.authorNickname)}
                 bg="brand.100"
                 color="brand.500"
               />
               <VStack align="start" spacing={0}>
-                <Text fontSize="sm" fontWeight="medium" color="neutral.800">
+                <Text fontSize="sm" fontWeight="medium" color={authorColor}>
                   @{comment.authorNickname}
                 </Text>
-                <Text fontSize="xs" color="neutral.500">
+                <Text fontSize="xs" color={metaColor}>
                   {timeAgo}
                 </Text>
               </VStack>
@@ -195,7 +208,7 @@ const CommentCard = ({
 
           {/* Comment content */}
           <Text
-            color="neutral.700"
+            color={contentColor}
             fontSize="sm"
             lineHeight="tall"
             whiteSpace="pre-wrap"
@@ -215,12 +228,12 @@ const CommentCard = ({
                   icon={<FiHeart />}
                   onClick={handleReact}
                   isLoading={isReacting}
-                  color={comment.userReacted ? 'red.500' : 'gray.500'}
+                  color={comment.userReacted ? 'red.500' : reactionColor}
                   _hover={{ color: 'red.500' }}
                   aria-label="Beğen"
                 />
                 {comment.reactionCount > 0 && (
-                  <Text fontSize="xs" color="gray.500">
+                  <Text fontSize="xs" color={reactionColor}>
                     {comment.reactionCount}
                   </Text>
                 )}
@@ -234,7 +247,7 @@ const CommentCard = ({
                 variant="ghost"
                 leftIcon={<FiMessageCircle />}
                 onClick={() => setShowReplyForm(!showReplyForm)}
-                color="gray.600"
+                color={replyActionColor}
                 _hover={{ color: 'brand.500' }}
               >
                 Yanıtla
@@ -245,26 +258,21 @@ const CommentCard = ({
           {/* Reply form */}
           <Collapse in={showReplyForm} animateOpacity>
             <VStack spacing={3} align="stretch" w="full">
-              <Text fontSize="sm" color="gray.600">
+              <Text fontSize="sm" color={replyActionColor}>
                 @{comment.authorNickname} kullanıcısına yanıt:
               </Text>
-              <textarea
+              <Textarea
                 value={replyContent}
                 onChange={(e) => setReplyContent(e.target.value)}
                 placeholder="Yanıtınızı yazın..."
-                style={{
-                  width: '100%',
-                  minHeight: '80px',
-                  padding: '8px',
-                  border: '1px solid #e2e8f0',
-                  borderRadius: '4px',
-                  fontSize: '14px',
-                  resize: 'vertical'
-                }}
+                rows={5}
+                resize="vertical"
                 maxLength={500}
+                focusBorderColor="accent.500"
+                borderColor={replyBorderColor}
               />
               <HStack justify="space-between">
-                <Text fontSize="xs" color="gray.400">
+                <Text fontSize="xs" color={reactionColor}>
                   {replyContent.length}/500
                 </Text>
                 <HStack spacing={2}>

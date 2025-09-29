@@ -38,8 +38,12 @@ const SupportPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const toast = useToast()
 
-  const bgColor = useColorModeValue('gray.50', 'gray.900')
-  const cardBgColor = useColorModeValue('white', 'gray.800')
+  const bgColor = useColorModeValue('neutral.50', 'neutral.900')
+  const cardBgColor = useColorModeValue('white', 'neutral.800')
+  const headingColor = useColorModeValue('primary.800', 'neutral.100')
+  const descColor = useColorModeValue('neutral.600', 'neutral.300')
+  const mutedColor = useColorModeValue('neutral.600', 'neutral.400')
+  const hoverBg = useColorModeValue('neutral.100', 'neutral.700')
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
@@ -120,11 +124,11 @@ const SupportPage = () => {
           <VStack spacing={4} align="center" textAlign="center">
             <HStack spacing={3}>
               <Icon as={FiHelpCircle} boxSize={8} color="accent.500" />
-              <Heading size="xl" color="accent.600">
+              <Heading size="xl" color={headingColor}>
                 Destek Merkezi
               </Heading>
             </HStack>
-            <Text fontSize="lg" color="gray.600" maxW="2xl">
+            <Text fontSize="lg" color={descColor} maxW="2xl">
               Size nasıl yardımcı olabiliriz? Sık sorulan soruları inceleyin veya bizimle iletişime geçin.
             </Text>
           </VStack>
@@ -144,8 +148,8 @@ const SupportPage = () => {
               >
                 <VStack spacing={3}>
                   <Icon as={category.icon} boxSize={8} color="accent.500" />
-                  <Heading size="sm">{category.title}</Heading>
-                  <Text fontSize="sm" color="gray.600">
+                  <Heading size="sm" color={headingColor}>{category.title}</Heading>
+                  <Text fontSize="sm" color={descColor}>
                     {category.description}
                   </Text>
                 </VStack>
@@ -156,7 +160,7 @@ const SupportPage = () => {
           {/* FAQ Section */}
           <Box bg={cardBgColor} borderRadius="lg" p={8} shadow="sm">
             <VStack spacing={6} align="stretch">
-              <Heading size="lg" textAlign="center" color="accent.600">
+              <Heading size="lg" textAlign="center" color={headingColor}>
                 Sık Sorulan Sorular
               </Heading>
               
@@ -166,18 +170,18 @@ const SupportPage = () => {
                     <AccordionButton
                       py={4}
                       px={0}
-                      _hover={{ bg: 'gray.50' }}
+                      _hover={{ bg: hoverBg }}
                       borderRadius="md"
                     >
                       <Box flex="1" textAlign="left">
-                        <Text fontWeight="semibold" color="gray.800">
+                        <Text fontWeight="semibold" color={headingColor}>
                           {faq.question}
                         </Text>
                       </Box>
                       <AccordionIcon color="accent.500" />
                     </AccordionButton>
                     <AccordionPanel pb={4} px={0}>
-                      <Text color="gray.600" lineHeight="tall">
+                      <Text color={descColor} lineHeight="tall">
                         {faq.answer}
                       </Text>
                     </AccordionPanel>
@@ -191,10 +195,10 @@ const SupportPage = () => {
           <Box bg={cardBgColor} borderRadius="lg" p={8} shadow="sm">
             <VStack spacing={6} align="stretch">
               <VStack spacing={2} textAlign="center">
-                <Heading size="lg" color="accent.600">
+                <Heading size="lg" color={headingColor}>
                   Bizimle İletişime Geçin
                 </Heading>
-                <Text color="gray.600">
+                <Text color={descColor}>
                   Sorunuz FAQ'lerde yoksa, aşağıdaki formu doldurarak bize ulaşabilirsiniz
                 </Text>
               </VStack>
@@ -282,7 +286,7 @@ const SupportPage = () => {
           {/* Quick Links */}
           <Box textAlign="center">
             <VStack spacing={4}>
-              <Text color="gray.600">
+              <Text color={mutedColor}>
                 Daha fazla bilgi için diğer sayfalarımızı ziyaret edebilirsiniz
               </Text>
               <HStack spacing={4} flexWrap="wrap" justify="center">

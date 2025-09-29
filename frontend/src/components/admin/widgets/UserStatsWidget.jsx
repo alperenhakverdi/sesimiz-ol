@@ -17,8 +17,8 @@ import { FiUsers, FiUserPlus, FiUserCheck } from 'react-icons/fi';
 import api from '../../../services/api';
 
 const StatCard = ({ title, value, change, changeType, icon, color }) => {
-  const bgColor = useColorModeValue('white', 'gray.800');
-  const borderColor = useColorModeValue('gray.200', 'gray.700');
+  const bgColor = useColorModeValue('white', 'neutral.800');
+  const borderColor = useColorModeValue('neutral.200', 'neutral.700');
 
   return (
     <Box
@@ -32,7 +32,7 @@ const StatCard = ({ title, value, change, changeType, icon, color }) => {
       <Stat>
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <Box>
-            <StatLabel fontSize="sm" fontWeight="medium" color="gray.600">
+            <StatLabel fontSize="sm" fontWeight="medium" color={useColorModeValue('neutral.600', 'neutral.300')}>
               {title}
             </StatLabel>
             <StatNumber fontSize="2xl" fontWeight="bold" color={color}>

@@ -19,7 +19,8 @@ import {
   Input,
   Textarea,
   Select,
-  useToast
+  useToast,
+  useColorModeValue
 } from '@chakra-ui/react'
 import { useState } from 'react'
 import { 
@@ -174,7 +175,7 @@ const ContactPage = () => {
 
         {/* Contact Form */}
         <ProgressiveLoader delay={500} type="fade">
-          <Box bg="white" p={8} borderRadius="lg" borderWidth="1px" borderColor="neutral.200" shadow="sm">
+          <Box bg={useColorModeValue('white','neutral.800')} p={8} borderRadius="lg" borderWidth="1px" borderColor="neutral.200" shadow="sm">
             <VStack spacing={6} align="stretch">
               <VStack spacing={2} textAlign="center">
                 <Heading size="lg" color="accent.600">

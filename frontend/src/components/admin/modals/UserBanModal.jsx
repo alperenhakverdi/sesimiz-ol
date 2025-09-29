@@ -14,7 +14,8 @@ import {
   Avatar,
   Alert,
   AlertIcon,
-  useToast
+  useToast,
+  useColorModeValue
 } from '@chakra-ui/react';
 
 const UserBanModal = ({ isOpen, onClose, user, onUpdate }) => {
@@ -88,7 +89,7 @@ const UserBanModal = ({ isOpen, onClose, user, onUpdate }) => {
               <Avatar size="md" name={user?.nickname} />
               <VStack align="start" spacing={0}>
                 <Text fontWeight="bold">{user?.nickname}</Text>
-                <Text fontSize="sm" color="gray.600">{user?.email}</Text>
+                <Text fontSize="sm" color={useColorModeValue('neutral.600', 'neutral.300')}>{user?.email}</Text>
               </VStack>
             </HStack>
 
@@ -103,13 +104,13 @@ const UserBanModal = ({ isOpen, onClose, user, onUpdate }) => {
                   Yasaklandığında:
                 </Text>
                 <VStack align="start" spacing={1} pl={4}>
-                  <Text fontSize="sm" color="gray.600">
+                  <Text fontSize="sm" color={useColorModeValue('neutral.600', 'neutral.300')}>
                     • Platformda oturum açamayacak
                   </Text>
-                  <Text fontSize="sm" color="gray.600">
+                  <Text fontSize="sm" color={useColorModeValue('neutral.600', 'neutral.300')}>
                     • Yeni hikaye paylaşamayacak
                   </Text>
-                  <Text fontSize="sm" color="gray.600">
+                  <Text fontSize="sm" color={useColorModeValue('neutral.600', 'neutral.300')}>
                     • Yorum yapamayacak
                   </Text>
                 </VStack>

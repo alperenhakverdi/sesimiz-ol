@@ -38,7 +38,8 @@ import {
   StatLabel,
   StatNumber,
   StatHelpText,
-  StatArrow
+  StatArrow,
+  useColorModeValue
 } from '@chakra-ui/react';
 import { FiSearch, FiFilter, FiMoreVertical, FiEye, FiEdit, FiTrash2, FiCheck, FiX } from 'react-icons/fi';
 import AdminLayout from '../components/admin/AdminLayout';
@@ -101,28 +102,28 @@ const OrganizationDetailModal = ({ isOpen, onClose, organization }) => {
             
             <Box>
               <Text fontWeight="semibold" mb={2}>Açıklama</Text>
-              <Text color="gray.600">{organization.description}</Text>
+              <Text color={useColorModeValue('neutral.600','neutral.300')}>{organization.description}</Text>
             </Box>
 
             {organization.longDescription && (
               <Box>
                 <Text fontWeight="semibold" mb={2}>Detaylı Açıklama</Text>
-                <Text color="gray.600">{organization.longDescription}</Text>
+                <Text color={useColorModeValue('neutral.600','neutral.300')}>{organization.longDescription}</Text>
               </Box>
             )}
 
             <SimpleGrid columns={2} spacing={4} w="full">
               <Box>
                 <Text fontWeight="semibold" mb={1}>Konum</Text>
-                <Text color="gray.600">{organization.location || 'Belirtilmemiş'}</Text>
+                <Text color={useColorModeValue('neutral.600','neutral.300')}>{organization.location || 'Belirtilmemiş'}</Text>
               </Box>
               <Box>
                 <Text fontWeight="semibold" mb={1}>Üye Sayısı</Text>
-                <Text color="gray.600">{organization.memberCount || 0}</Text>
+                <Text color={useColorModeValue('neutral.600','neutral.300')}>{organization.memberCount || 0}</Text>
               </Box>
               <Box>
                 <Text fontWeight="semibold" mb={1}>Kuruluş Yılı</Text>
-                <Text color="gray.600">{organization.foundedYear || 'Belirtilmemiş'}</Text>
+                <Text color={useColorModeValue('neutral.600','neutral.300')}>{organization.foundedYear || 'Belirtilmemiş'}</Text>
               </Box>
               <Box>
                 <Text fontWeight="semibold" mb={1}>Website</Text>
@@ -145,7 +146,7 @@ const OrganizationDetailModal = ({ isOpen, onClose, organization }) => {
 
             <Box w="full">
               <Text fontWeight="semibold" mb={2}>Oluşturulma Tarihi</Text>
-              <Text color="gray.600">
+              <Text color={useColorModeValue('neutral.600','neutral.400')}>
                 {new Date(organization.createdAt).toLocaleDateString('tr-TR', {
                   year: 'numeric',
                   month: 'long',
@@ -295,24 +296,24 @@ const AdminOrganizationsPage = () => {
 
         {/* Stats Cards */}
         <SimpleGrid columns={{ base: 1, md: 4 }} spacing={4} w="full">
-          <Stat bg="white" p={4} borderRadius="lg" shadow="sm">
-            <StatLabel fontSize="sm" color="gray.600">Toplam Organizasyon</StatLabel>
+          <Stat bg={useColorModeValue('white','neutral.800')} p={4} borderRadius="lg" shadow="sm">
+            <StatLabel fontSize="sm" color={useColorModeValue('neutral.600','neutral.300')}>Toplam Organizasyon</StatLabel>
             <StatNumber color="brand.500">{pagination.total}</StatNumber>
           </Stat>
-          <Stat bg="white" p={4} borderRadius="lg" shadow="sm">
-            <StatLabel fontSize="sm" color="gray.600">Aktif</StatLabel>
+          <Stat bg={useColorModeValue('white','neutral.800')} p={4} borderRadius="lg" shadow="sm">
+            <StatLabel fontSize="sm" color={useColorModeValue('neutral.600','neutral.300')}>Aktif</StatLabel>
             <StatNumber color="green.500">
               {organizations.filter(org => org.status === 'ACTIVE').length}
             </StatNumber>
           </Stat>
-          <Stat bg="white" p={4} borderRadius="lg" shadow="sm">
-            <StatLabel fontSize="sm" color="gray.600">Beklemede</StatLabel>
+          <Stat bg={useColorModeValue('white','neutral.800')} p={4} borderRadius="lg" shadow="sm">
+            <StatLabel fontSize="sm" color={useColorModeValue('neutral.600','neutral.300')}>Beklemede</StatLabel>
             <StatNumber color="yellow.500">
               {organizations.filter(org => org.status === 'PENDING').length}
             </StatNumber>
           </Stat>
-          <Stat bg="white" p={4} borderRadius="lg" shadow="sm">
-            <StatLabel fontSize="sm" color="gray.600">Reddedilen</StatLabel>
+          <Stat bg={useColorModeValue('white','neutral.800')} p={4} borderRadius="lg" shadow="sm">
+            <StatLabel fontSize="sm" color={useColorModeValue('neutral.600','neutral.300')}>Reddedilen</StatLabel>
             <StatNumber color="red.500">
               {organizations.filter(org => org.status === 'REJECTED').length}
             </StatNumber>
@@ -320,7 +321,7 @@ const AdminOrganizationsPage = () => {
         </SimpleGrid>
 
         {/* Filters */}
-        <Box bg="white" p={4} borderRadius="lg" shadow="sm" w="full">
+        <Box bg={useColorModeValue('white','neutral.800')} p={4} borderRadius="lg" shadow="sm" w="full">
           <HStack spacing={4} wrap="wrap">
             <Input
               placeholder="Organizasyon ara..."
@@ -362,7 +363,7 @@ const AdminOrganizationsPage = () => {
         </Box>
 
         {/* Organizations Table */}
-        <Box bg="white" borderRadius="lg" shadow="sm" w="full" overflow="hidden">
+        <Box bg={useColorModeValue('white','neutral.800')} borderRadius="lg" shadow="sm" w="full" overflow="hidden">
           {loading ? (
             <Flex justify="center" py={8}>
               <Spinner size="lg" color="brand.500" />
@@ -374,7 +375,7 @@ const AdminOrganizationsPage = () => {
             </Alert>
           ) : (
             <Table variant="simple">
-              <Thead bg="gray.50">
+              <Thead bg={useColorModeValue('neutral.100','neutral.800')}>
                 <Tr>
                   <Th>Organizasyon</Th>
                   <Th>Tür</Th>
@@ -390,7 +391,7 @@ const AdminOrganizationsPage = () => {
                     <Td>
                       <VStack align="start" spacing={1}>
                         <Text fontWeight="semibold">{organization.name}</Text>
-                        <Text fontSize="sm" color="gray.600" noOfLines={1}>
+                        <Text fontSize="sm" color={useColorModeValue('neutral.600','neutral.300')} noOfLines={1}>
                           {organization.description}
                         </Text>
                       </VStack>
@@ -450,7 +451,7 @@ const AdminOrganizationsPage = () => {
             >
               Önceki
             </Button>
-            <Text fontSize="sm" color="gray.600">
+            <Text fontSize="sm" color={useColorModeValue('neutral.600','neutral.400')}>
               Sayfa {pagination.page} / {pagination.totalPages}
             </Text>
             <Button

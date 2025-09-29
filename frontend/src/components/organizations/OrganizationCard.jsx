@@ -69,7 +69,7 @@ const OrganizationCard = ({ organization }) => {
           <HStack spacing={3}>
             <Avatar 
               name={organization.name} 
-              src={organization.logo}
+              src={organization.icon || organization.logo}
               size="md"
               bg="accent.500"
             />

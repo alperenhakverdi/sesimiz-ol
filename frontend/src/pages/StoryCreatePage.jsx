@@ -25,7 +25,7 @@ import {
   Spinner,
   useColorModeValue
 } from '@chakra-ui/react'
-import { Link as RouterLink, useNavigate } from 'react-router-dom'
+import { Link as RouterLink, useNavigate, useSearchParams } from 'react-router-dom'
 import { ArrowBackIcon } from '@chakra-ui/icons'
 import { storyAPI } from '../services/api'
 import ProtectedRoute from '../components/auth/ProtectedRoute'
@@ -34,6 +34,11 @@ import { MAX_TAGS_PER_STORY, normalizeTag, isDuplicateTag } from '../utils/tagUt
 
 const StoryCreatePage = () => {
   const { user } = useAuth()
+  const [searchParams] = useSearchParams()
+  const storyIdParam = searchParams.get('storyId')
+  const storyId = storyIdParam ? Number(storyIdParam) : null
+  const isEditing = Number.isInteger(storyId) && storyId > 0
+  const [isLoadingStory, setIsLoadingStory] = useState(false)
   const [formData, setFormData] = useState({
     title: '',
     content: ''
@@ -49,10 +54,11 @@ const StoryCreatePage = () => {
 
   // Color mode values for mobile forms UX
   const bg = useColorModeValue('white', 'neutral.800')
-  const formBg = useColorModeValue('gray.50', 'neutral.900')
   const borderColor = useColorModeValue('neutral.200', 'neutral.700')
   const labelColor = useColorModeValue('neutral.700', 'neutral.200')
   const textColor = useColorModeValue('neutral.800', 'neutral.100')
+  const tagHeadingColor = useColorModeValue('neutral.600', 'neutral.300')
+  const tagMutedColor = useColorModeValue('neutral.600', 'neutral.400')
   
   const toast = useToast()
   const navigate = useNavigate()
@@ -195,6 +201,75 @@ const StoryCreatePage = () => {
 
   const remainingTagSlots = MAX_TAGS_PER_STORY - selectedTags.length
 
+  const headingText = isEditing ? 'Hikâyeni Düzenle' : 'Hikâyeni Paylaş'
+  const subheadingText = isEditing
+    ? 'Hikâyeni güncelle ve toplulukla paylaşmaya devam et.'
+    : `Merhaba ${user?.nickname || 'misafir'}! Hikâyeni burada paylaşabilirsin.`
+  const submitButtonLabel = isEditing ? 'Hikâyeyi Güncelle' : 'Hikâyemi Paylaş'
+  const isBusy = isSubmitting || isLoadingStory
+  const cancelLink = isEditing && storyId ? `/hikayeler/${storyId}` : '/'
+  const infoMessage = isEditing
+    ? 'Değişikliklerini kaydettikten sonra hikâyen güncel haliyle yayınlanır.'
+    : 'Hikâyen paylaşıldıktan sonra ana sayfada görünecek ve diğer kullanıcılar okuyabilecek.'
+
+  useEffect(() => {
+    if (!isEditing || !storyId) return
+
+    let ignore = false
+    setIsLoadingStory(true)
+    setErrors({})
+
+    ;(async () => {
+      try {
+        const response = await storyAPI.getById(storyId)
+        if (ignore) return
+
+        if (!response?.success || !response?.story) {
+          throw new Error(response?.error?.message || 'Hikâye bilgileri yüklenemedi')
+        }
+
+        const existingStory = response.story
+
+        if (user && existingStory.author?.id && existingStory.author.id !== user.id) {
+          toast({
+            title: 'Yetkisiz erişim',
+            description: 'Bu hikâyeyi düzenleme yetkiniz bulunmuyor.',
+            status: 'error',
+            duration: 5000,
+            isClosable: true
+          })
+          navigate(`/hikayeler/${existingStory.id}`)
+          return
+        }
+
+        setFormData({
+          title: existingStory.title || '',
+          content: existingStory.content || ''
+        })
+      } catch (error) {
+        if (!ignore) {
+          const message = error?.message || 'Hikâye bilgileri yüklenirken bir hata oluştu'
+          toast({
+            title: 'Hata oluştu',
+            description: message,
+            status: 'error',
+            duration: 5000,
+            isClosable: true
+          })
+          navigate('/hikayeler')
+        }
+      } finally {
+        if (!ignore) {
+          setIsLoadingStory(false)
+        }
+      }
+    })()
+
+    return () => {
+      ignore = true
+    }
+  }, [isEditing, storyId, user, toast, navigate])
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     
@@ -205,6 +280,27 @@ const StoryCreatePage = () => {
     setIsSubmitting(true)
     
     try {
+      if (isEditing && storyId) {
+        const response = await storyAPI.update(storyId, {
+          title: formData.title.trim(),
+          content: formData.content.trim()
+        })
+
+        if (!response?.success || !response?.story) {
+          throw new Error(response?.error?.message || 'Hikâye güncellenemedi')
+        }
+
+        toast({
+          title: 'Hikâye güncellendi',
+          status: 'success',
+          duration: 5000,
+          isClosable: true
+        })
+
+        navigate(`/hikayeler/${storyId}`)
+        return
+      }
+
       const response = await storyAPI.create({
         title: formData.title.trim(),
         content: formData.content.trim(),
@@ -269,11 +365,16 @@ const StoryCreatePage = () => {
         {/* Page Header */}
         <VStack spacing={4} textAlign="center">
           <Heading as="h1" size={{ base: "lg", md: "xl" }} color="accent.500">
-            Hikâyeni Paylaş
+            {headingText}
           </Heading>
           <Text color={textColor} maxW="lg" fontSize={{ base: "sm", md: "md" }}>
-            Merhaba {user?.nickname}! Hikâyeni burada paylaşabilirsin.
+            {subheadingText}
           </Text>
+          {isLoadingStory && isEditing && (
+            <Text fontSize="sm" color={textColor}>
+              Hikâye içeriği yükleniyor...
+            </Text>
+          )}
         </VStack>
 
         {/* Privacy Notice */}
@@ -311,6 +412,7 @@ const StoryCreatePage = () => {
                   placeholder="Hikâyen için çekici bir başlık seç"
                   size={{ base: "md", md: "lg" }}
                   fontSize={{ base: "sm", md: "md" }}
+                  isDisabled={isBusy}
                   _focus={{ borderColor: "accent.500", boxShadow: "0 0 0 1px var(--chakra-colors-accent-500)" }}
                 />
                 {errors.title ? (
@@ -334,6 +436,7 @@ const StoryCreatePage = () => {
                   resize="vertical"
                   size={{ base: "md", md: "lg" }}
                   fontSize={{ base: "sm", md: "md" }}
+                  isDisabled={isBusy}
                   _focus={{ borderColor: "accent.500", boxShadow: "0 0 0 1px var(--chakra-colors-accent-500)" }}
                 />
                 {errors.content ? (
@@ -355,6 +458,7 @@ const StoryCreatePage = () => {
                   onChange={handleTagInputChange}
                   onKeyDown={handleTagInputKeyDown}
                   placeholder="Etiket ekle ve Enter'a bas"
+                  isDisabled={isBusy}
                 />
                 {tagError ? (
                   <FormErrorMessage>{tagError}</FormErrorMessage>
@@ -377,7 +481,7 @@ const StoryCreatePage = () => {
 
                 <Box mt={4}>
                   <HStack spacing={2} alignItems="center">
-                    <Text fontSize="sm" fontWeight="medium" color="gray.600">
+                    <Text fontSize="sm" fontWeight="medium" color={tagHeadingColor}>
                       Önerilen etiketler
                     </Text>
                     {suggestionItems.length > 0 && (
@@ -388,7 +492,7 @@ const StoryCreatePage = () => {
                   </HStack>
 
                   {isLoadingTags ? (
-                    <HStack spacing={2} mt={2} color="gray.500">
+                    <HStack spacing={2} mt={2} color={tagMutedColor}>
                       <Spinner size="sm" />
                       <Text fontSize="sm">Öneriler yükleniyor…</Text>
                     </HStack>
@@ -396,7 +500,7 @@ const StoryCreatePage = () => {
                     <Wrap mt={2} spacing={2}>
                       {suggestionItems.length === 0 ? (
                         <WrapItem>
-                          <Text fontSize="sm" color="gray.500">
+                          <Text fontSize="sm" color={tagMutedColor}>
                             Şu anda öneri bulunmuyor.
                           </Text>
                         </WrapItem>
@@ -427,7 +531,7 @@ const StoryCreatePage = () => {
                   {popularItems.length > 0 && (
                     <Box mt={3}>
                       <HStack spacing={2} alignItems="center">
-                        <Text fontSize="sm" fontWeight="medium" color="gray.600">
+                        <Text fontSize="sm" fontWeight="medium" color={tagHeadingColor}>
                           Sık kullanılanlar
                         </Text>
                         <Badge colorScheme="gray" fontSize="0.7rem">
@@ -477,10 +581,11 @@ const StoryCreatePage = () => {
                   variant="outline"
                   colorScheme="gray"
                   as={RouterLink}
-                  to="/"
+                  to={cancelLink}
                   size={{ base: "md", md: "lg" }}
                   w={{ base: "full", sm: "auto" }}
                   order={{ base: 2, sm: 1 }}
+                  isDisabled={isSubmitting}
                 >
                   İptal
                 </Button>
@@ -489,14 +594,15 @@ const StoryCreatePage = () => {
                   colorScheme="accent"
                   size={{ base: "md", md: "lg" }}
                   isLoading={isSubmitting}
-                  loadingText="Paylaşılıyor..."
+                  isDisabled={isBusy}
+                  loadingText={isEditing ? 'Güncelleniyor...' : 'Paylaşılıyor...'}
                   px={{ base: 6, md: 8 }}
                   w={{ base: "full", sm: "auto" }}
                   order={{ base: 1, sm: 2 }}
                   minH="48px"
                   fontSize={{ base: "sm", md: "md" }}
                 >
-                  Hikâyemi Paylaş
+                  {submitButtonLabel}
                 </Button>
               </HStack>
             </VStack>
@@ -504,10 +610,10 @@ const StoryCreatePage = () => {
         </Box>
 
         {/* Additional Info */}
-        <Alert status="success" borderRadius="md">
+        <Alert status={isEditing ? 'info' : 'success'} borderRadius="md">
           <AlertIcon />
           <Text fontSize="sm">
-            Hikâyen paylaşıldıktan sonra ana sayfada görünecek ve diğer kullanıcılar okuyabilecek.
+            {infoMessage}
           </Text>
         </Alert>
       </VStack>

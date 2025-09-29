@@ -28,7 +28,8 @@ import {
   Avatar,
   Text,
   Flex,
-  useDisclosure
+  useDisclosure,
+  useColorModeValue
 } from '@chakra-ui/react';
 import { FiMoreVertical, FiSearch, FiEye, FiEdit, FiUserX, FiUserCheck, FiShield } from 'react-icons/fi';
 import AdminLayout from '../components/admin/AdminLayout';
@@ -183,7 +184,7 @@ const AdminUsersPage = () => {
           <Box flex="1">
             <InputGroup>
               <InputLeftElement pointerEvents="none">
-                <FiSearch color="gray.300" />
+                <FiSearch color={useColorModeValue('neutral.500', 'neutral.400')} />
               </InputLeftElement>
               <Input
                 placeholder="Kullanıcı adı veya email ile ara..."

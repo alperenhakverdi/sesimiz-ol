@@ -28,10 +28,18 @@ import {
 
 const router = express.Router();
 
-// First authenticate the user, then check admin role
+// First authenticate the user
 router.use(authenticateToken);
-router.use(requireFeature('adminPanel'));
+// Require ADMIN for all admin endpoints
 router.use(requireRole('ADMIN'));
+
+// Allow feature flag management even if adminPanel is disabled
+// so admins can re-enable it if turned off.
+router.get('/feature-flags', listFeatureFlagsValidation, listFeatureFlagsController);
+router.patch('/feature-flags/:key', updateFeatureFlagValidation, updateFeatureFlagController);
+
+// For the rest of admin routes, also require that the adminPanel feature is enabled
+router.use(requireFeature('adminPanel'));
 
 // User management routes
 router.get('/users', listUsersValidation, listAdminUsers);
@@ -39,10 +47,6 @@ router.post('/users', createAdminUserValidation, createAdminUser);
 router.put('/users/:id', updateAdminUserValidation, updateAdminUser);
 router.post('/users/:id/ban', toggleUserBan);
 router.post('/users/:id/role', updateUserRoleValidation, updateUserRole);
-
-// Feature flags routes
-router.get('/feature-flags', listFeatureFlagsValidation, listFeatureFlagsController);
-router.patch('/feature-flags/:key', updateFeatureFlagValidation, updateFeatureFlagController);
 
 // Story moderation routes
 router.get('/stories', listAdminStories);

@@ -59,9 +59,9 @@ const AdminHeader = ({ onOpen, ...rest }) => {
       px={{ base: 4, lg: 6 }}
       height="20"
       alignItems="center"
-      bg={useColorModeValue('white', 'gray.900')}
+      bg={useColorModeValue('white', 'neutral.900')}
       borderBottomWidth="1px"
-      borderBottomColor={useColorModeValue('gray.200', 'gray.700')}
+      borderBottomColor={useColorModeValue('neutral.200', 'neutral.700')}
       justifyContent={{ base: 'space-between', lg: 'space-between' }}
       position="sticky"
       top={0}
@@ -84,7 +84,7 @@ const AdminHeader = ({ onOpen, ...rest }) => {
             <BreadcrumbLink as={RouterLink} to="/">
               <HStack spacing={2}>
                 <FiHome />
-                <Text>Ana Sayfa</Text>
+                <Text color={useColorModeValue('neutral.700','neutral.300')}>Ana Sayfa</Text>
               </HStack>
             </BreadcrumbLink>
           </BreadcrumbItem>
@@ -93,7 +93,7 @@ const AdminHeader = ({ onOpen, ...rest }) => {
               <BreadcrumbLink
                 as={RouterLink}
                 to={crumb.href}
-                color={index === breadcrumbs.length - 1 ? 'brand.600' : 'gray.600'}
+                color={index === breadcrumbs.length - 1 ? 'brand.600' : useColorModeValue('neutral.700','neutral.300')}
                 fontWeight={index === breadcrumbs.length - 1 ? 'semibold' : 'normal'}
               >
                 {crumb.label}
@@ -128,7 +128,7 @@ const AdminHeader = ({ onOpen, ...rest }) => {
                   <Text fontSize="sm" fontWeight="semibold">
                     {user?.nickname}
                   </Text>
-                  <Text fontSize="xs" color="gray.600">
+                  <Text fontSize="xs" color={useColorModeValue('neutral.700','neutral.300')}>
                     Admin
                   </Text>
                 </VStack>
@@ -138,8 +138,8 @@ const AdminHeader = ({ onOpen, ...rest }) => {
               </HStack>
             </MenuButton>
             <MenuList
-              bg={useColorModeValue('white', 'gray.900')}
-              borderColor={useColorModeValue('gray.200', 'gray.700')}
+              bg={useColorModeValue('white', 'neutral.900')}
+              borderColor={useColorModeValue('neutral.200', 'neutral.700')}
             >
               <MenuItem icon={<FiUser />} as={RouterLink} to="/ayarlar">
                 Profil Ayarları

@@ -22,9 +22,9 @@ const AdminMobileNav = ({ onOpen, ...rest }) => {
       px={{ base: 4, md: 4 }}
       height="20"
       alignItems="center"
-      bg={useColorModeValue('white', 'gray.900')}
+      bg={useColorModeValue('white', 'neutral.900')}
       borderBottomWidth="1px"
-      borderBottomColor={useColorModeValue('gray.200', 'gray.700')}
+      borderBottomColor={useColorModeValue('neutral.200', 'neutral.700')}
       justifyContent={{ base: 'space-between', md: 'flex-end' }}
       {...rest}
     >
@@ -67,7 +67,7 @@ const AdminMobileNav = ({ onOpen, ...rest }) => {
                   ml="2"
                 >
                   <Text fontSize="sm">Admin User</Text>
-                  <Text fontSize="xs" color="gray.600">
+                  <Text fontSize="xs" color={useColorModeValue('neutral.700','neutral.300')}>
                     Admin
                   </Text>
                 </VStack>
@@ -77,8 +77,8 @@ const AdminMobileNav = ({ onOpen, ...rest }) => {
               </HStack>
             </MenuButton>
             <MenuList
-              bg={useColorModeValue('white', 'gray.900')}
-              borderColor={useColorModeValue('gray.200', 'gray.700')}
+              bg={useColorModeValue('white', 'neutral.900')}
+              borderColor={useColorModeValue('neutral.200', 'neutral.700')}
             >
               <MenuItem>Profile</MenuItem>
               <MenuItem>Settings</MenuItem>

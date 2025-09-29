@@ -11,8 +11,8 @@ const UserCard = ({ user, showActions = true }) => {
 
   const userRoleColors = {
     ADMIN: 'red',
-    ORGANIZATION: 'purple',
     USER: 'blue',
+    ORG: 'purple',
   }
 
   return (
@@ -50,8 +50,8 @@ const UserCard = ({ user, showActions = true }) => {
             {user.bio}
           </Text>
         )}
-        <Badge colorScheme={userRoleColors[user.role] || 'gray'} variant="subtle" px={2} py={1} borderRadius="md">
-          {user.role === 'ADMIN' ? 'Yönetici' : user.role === 'ORGANIZATION' ? 'STK Temsilcisi' : 'Kullanıcı'}
+        <Badge colorScheme={user.isOrganizationRep ? userRoleColors.ORG : (userRoleColors[user.role] || 'gray')} variant="subtle" px={2} py={1} borderRadius="md">
+          {user.isOrganizationRep ? 'STK Temsilcisi' : (user.role === 'ADMIN' ? 'Yönetici' : 'Kullanıcı')}
         </Badge>
         <HStack spacing={4} mt={3}>
           <HStack>

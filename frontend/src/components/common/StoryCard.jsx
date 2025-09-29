@@ -15,6 +15,8 @@ import {
 import { Link as RouterLink } from 'react-router-dom'
 import { formatDistanceToNow } from 'date-fns'
 import { tr } from 'date-fns/locale'
+import StoryLikeButton from '../story/StoryLikeButton'
+import { ensureAvatar } from '../../utils/avatar'
 
 const StoryCard = ({ story }) => {
   // Color mode values
@@ -22,6 +24,7 @@ const StoryCard = ({ story }) => {
   const textColor = useColorModeValue('neutral.700', 'neutral.200')
   const authorColor = useColorModeValue('neutral.700', 'neutral.300')
   const timeColor = useColorModeValue('neutral.500', 'neutral.400')
+  const authorProfileUrl = story?.author?.id ? `/profil/${story.author.id}` : null
 
   // Format date to Turkish
   const timeAgo = formatDistanceToNow(new Date(story.createdAt), {
@@ -57,16 +60,22 @@ const StoryCard = ({ story }) => {
           </Heading>
           
           <HStack justify="space-between" w="full" align="center">
-            <HStack spacing={3}>
+            <HStack
+              spacing={3}
+              as={authorProfileUrl ? RouterLink : 'div'}
+              to={authorProfileUrl || undefined}
+              onClick={authorProfileUrl ? (event) => event.stopPropagation() : undefined}
+              _hover={authorProfileUrl ? { textDecoration: 'none' } : undefined}
+            >
               <Avatar 
                 size="sm" 
                 name={story.author.nickname}
-                src={story.author.avatar}
+                src={ensureAvatar(story.author.avatar, story.author.nickname)}
                 bg="brand.100"
                 color="brand.500"
               />
               <VStack align="start" spacing={0}>
-                <Text fontSize="sm" fontWeight="medium" color={authorColor}>
+                <Text fontSize="sm" fontWeight="medium" color={authorColor} _hover={authorProfileUrl ? { color: 'accent.500' } : undefined}>
                   @{story.author.nickname}
                 </Text>
                 <Text fontSize="xs" color={timeColor}>
@@ -90,17 +99,25 @@ const StoryCard = ({ story }) => {
             {truncatedContent}
           </Text>
           
-          <Button 
-            variant="link" 
-            colorScheme="accent" 
-            size="sm"
-            alignSelf="flex-start"
-            p={0}
-            h="auto"
-            fontWeight="medium"
-          >
-            Devamını Oku →
-          </Button>
+          <HStack justify="space-between" w="full">
+            <StoryLikeButton
+              storyId={story.id}
+              initialLiked={Boolean(story.userHasLiked)}
+              initialCount={story.likesCount ?? 0}
+              onChange={story.onLikeChange}
+            />
+            <Button 
+              variant="link" 
+              colorScheme="accent" 
+              size="sm"
+              alignSelf="flex-start"
+              p={0}
+              h="auto"
+              fontWeight="medium"
+            >
+              Devamını Oku →
+            </Button>
+          </HStack>
         </VStack>
       </CardBody>
     </Card>

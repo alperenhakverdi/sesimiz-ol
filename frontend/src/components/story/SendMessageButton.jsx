@@ -14,7 +14,8 @@ import {
   VStack,
   Text,
   HStack,
-  Avatar
+  Avatar,
+  useColorModeValue
 } from '@chakra-ui/react';
 import { FiMessageCircle } from 'react-icons/fi';
 import { useAuth } from '../../contexts/AuthContext';
@@ -127,7 +128,7 @@ const SendMessageButton = ({ storyAuthor, storyTitle }) => {
                   name={storyAuthor.nickname}
                   src={storyAuthor.avatar}
                 />
-                <Text fontSize="sm" color="gray.600">
+                <Text fontSize="sm" color={useColorModeValue('neutral.600','neutral.300')}>
                   {storyAuthor.nickname}'e mesaj
                 </Text>
               </HStack>
@@ -137,7 +138,7 @@ const SendMessageButton = ({ storyAuthor, storyTitle }) => {
 
           <ModalBody>
             <VStack spacing={4} align="stretch">
-              <Text fontSize="sm" color="gray.600">
+              <Text fontSize="sm" color={useColorModeValue('neutral.600','neutral.300')}>
                 "{storyTitle}" hikayesi hakkında:
               </Text>
 
@@ -150,7 +151,7 @@ const SendMessageButton = ({ storyAuthor, storyTitle }) => {
                 resize="vertical"
               />
 
-              <Text fontSize="xs" color="gray.400" textAlign="right">
+              <Text fontSize="xs" color={useColorModeValue('neutral.600','neutral.400')} textAlign="right">
                 {message.length}/1000
               </Text>
             </VStack>

@@ -82,6 +82,35 @@ const colors = {
   }
 }
 
+const semanticTokens = {
+  colors: {
+    'chakra-body-bg': { default: 'neutral.50', _dark: '#0F1116' },
+    'chakra-body-text': { default: 'primary.700', _dark: 'neutral.100' },
+    surface: { default: 'white', _dark: 'neutral.800' },
+    'surface-subtle': { default: 'neutral.50', _dark: 'neutral.700' },
+    'surface-muted': { default: 'neutral.100', _dark: 'neutral.600' },
+    'border-subtle': { default: 'neutral.200', _dark: 'neutral.600' },
+    'border-strong': { default: 'neutral.300', _dark: 'neutral.500' },
+    'text-muted': { default: 'neutral.600', _dark: 'neutral.300' },
+    'text-subtle': { default: 'neutral.500', _dark: 'neutral.400' },
+    'primary.500': { default: colors.primary[500], _dark: '#A0AEC0' },
+    'primary.600': { default: colors.primary[600], _dark: '#CBD5E0' },
+    'primary.700': { default: colors.primary[700], _dark: '#E2E8F0' },
+    'primary.800': { default: colors.primary[800], _dark: '#EDF2F7' },
+    'primary.900': { default: colors.primary[900], _dark: '#F7FAFC' },
+    'neutral.50': { default: colors.neutral[50], _dark: '#101218' },
+    'neutral.100': { default: colors.neutral[100], _dark: '#141923' },
+    'neutral.200': { default: colors.neutral[200], _dark: '#1C2230' },
+    'neutral.300': { default: colors.neutral[300], _dark: '#252C3C' },
+    'neutral.400': { default: colors.neutral[400], _dark: '#364155' },
+    'neutral.500': { default: colors.neutral[500], _dark: '#9AA6BD' },
+    'neutral.600': { default: colors.neutral[600], _dark: '#BFC8DA' },
+    'neutral.700': { default: colors.neutral[700], _dark: '#D5DCEE' },
+    'neutral.800': { default: colors.neutral[800], _dark: '#E6ECF8' },
+    'neutral.900': { default: colors.neutral[900], _dark: '#F7F9FC' }
+  }
+}
+
 // Typography
 const fonts = {
   heading: `-apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif`,
@@ -96,19 +125,19 @@ const components = {
       borderRadius: 'lg'
     },
     variants: {
-      solid: {
-        bg: 'accent.500',
+      solid: (props) => ({
+        bg: mode('accent.500', 'accent.400')(props),
         color: 'white',
         _hover: {
-          bg: 'accent.600',
+          bg: mode('accent.600', 'accent.300')(props),
           transform: 'translateY(-1px)',
           boxShadow: 'lg'
         },
         _active: {
-          bg: 'accent.700',
+          bg: mode('accent.700', 'accent.400')(props),
           transform: 'translateY(0)'
         }
-      },
+      }),
       outline: (props) => ({
         borderColor: 'accent.500',
         color: 'accent.500',
@@ -196,8 +225,8 @@ const components = {
 const styles = {
   global: (props) => ({
     body: {
-      bg: mode('neutral.50', 'neutral.900')(props),
-      color: mode('primary.700', 'neutral.100')(props),
+      bg: 'chakra-body-bg',
+      color: 'chakra-body-text',
       fontSize: 'md',
       lineHeight: 'base'
     },
@@ -243,6 +272,7 @@ const config = {
 const theme = extendTheme({
   config,
   colors,
+  semanticTokens,
   fonts,
   components,
   styles,

@@ -18,7 +18,8 @@ import {
   StatLabel,
   StatNumber,
   SimpleGrid,
-  Link
+  Link,
+  useColorModeValue
 } from '@chakra-ui/react';
 import { FiExternalLink, FiMail, FiPhone, FiMapPin } from 'react-icons/fi';
 
@@ -76,7 +77,7 @@ const OrganizationDetailModal = ({ isOpen, onClose, organization }) => {
                 </HStack>
               </HStack>
 
-              <Text color="gray.600" lineHeight="tall">
+              <Text color={useColorModeValue('neutral.600', 'neutral.300')} lineHeight="tall">
                 {organization?.description}
               </Text>
             </VStack>
@@ -95,20 +96,20 @@ const OrganizationDetailModal = ({ isOpen, onClose, organization }) => {
                 </HStack>
                 <HStack>
                   <FiMail />
-                  <Link href={`mailto:${organization?.email}`} color="blue.500">
+                  <Link href={`mailto:${organization?.email}`} color={useColorModeValue('blue.600', 'blue.300')}>
                     {organization?.email}
                   </Link>
                 </HStack>
                 <HStack>
                   <FiPhone />
-                  <Link href={`tel:${organization?.phone}`} color="blue.500">
+                  <Link href={`tel:${organization?.phone}`} color={useColorModeValue('blue.600', 'blue.300')}>
                     {organization?.phone}
                   </Link>
                 </HStack>
                 {organization?.website && (
                   <HStack>
                     <FiExternalLink />
-                    <Link href={organization.website} isExternal color="blue.500">
+                    <Link href={organization.website} isExternal color={useColorModeValue('blue.600', 'blue.300')}>
                       {organization.website}
                     </Link>
                   </HStack>
@@ -154,11 +155,11 @@ const OrganizationDetailModal = ({ isOpen, onClose, organization }) => {
               </Text>
               <VStack align="start" spacing={2}>
                 <HStack justify="space-between" w="full">
-                  <Text color="gray.600">Kayıt Tarihi:</Text>
+                  <Text color={useColorModeValue('neutral.600', 'neutral.300')}>Kayıt Tarihi:</Text>
                   <Text>{formatDate(organization?.createdAt)}</Text>
                 </HStack>
                 <HStack justify="space-between" w="full">
-                  <Text color="gray.600">Son Güncelleme:</Text>
+                  <Text color={useColorModeValue('neutral.600', 'neutral.300')}>Son Güncelleme:</Text>
                   <Text>{formatDate(organization?.updatedAt || organization?.createdAt)}</Text>
                 </HStack>
               </VStack>

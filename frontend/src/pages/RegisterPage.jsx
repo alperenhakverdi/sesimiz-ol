@@ -31,6 +31,7 @@ import { useAuth } from '../contexts/AuthContext'
 import PageTransition from '../components/animations/PageTransition'
 import AnimatedButton from '../components/animations/AnimatedButton'
 import FadeIn from '../components/animations/FadeIn'
+import { useColorModeValue } from '@chakra-ui/react'
 
 const RegisterPage = () => {
   const navigate = useNavigate()
@@ -289,7 +290,7 @@ const RegisterPage = () => {
               )}
 
               {/* Registration Form */}
-              <Box w="full" bg="white" p={{ base: 6, md: 8, lg: 10 }} borderRadius="xl" shadow="md" border="1px" borderColor="neutral.200">
+              <Box w="full" bg={useColorModeValue('white','neutral.800')} p={{ base: 6, md: 8, lg: 10 }} borderRadius="xl" shadow="md" border="1px" borderColor="neutral.200">
                 <form onSubmit={handleSubmit}>
                   <VStack spacing={8}>
                     {/* Two Column Layout for Desktop */}

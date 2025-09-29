@@ -23,7 +23,8 @@ import {
   FormControl,
   FormLabel,
   Input,
-  Textarea
+  Textarea,
+  useColorModeValue
 } from '@chakra-ui/react';
 import { api } from '../services/api';
 import { FiPlus, FiEdit } from 'react-icons/fi';
@@ -204,7 +205,7 @@ const FeatureFlagPage = () => {
                       </Badge>
                     </Td>
                     <Td>
-                      <Text fontSize="sm" color="gray.600">
+                      <Text fontSize="sm" color={useColorModeValue('neutral.600','neutral.300')}>
                         {flag.rolloutStatus || '-'}
                       </Text>
                     </Td>

@@ -14,7 +14,8 @@ export class NotificationService {
           type,
           title,
           message,
-          data: JSON.stringify(data),
+          // Store as JSON object; do not stringify
+          data,
           priority,
           read: false,
           createdAt: new Date()
@@ -85,7 +86,8 @@ export class NotificationService {
       return {
         notifications: notifications.map(n => ({
           ...n,
-          data: n.data ? JSON.parse(n.data) : {}
+          // Backward/forward compatible decode: accept JSON object or string
+          data: typeof n.data === 'string' ? (n.data ? JSON.parse(n.data) : {}) : (n.data || {})
         })),
         pagination: {
           page,

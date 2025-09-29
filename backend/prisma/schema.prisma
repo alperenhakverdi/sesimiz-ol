@@ -40,6 +40,7 @@ model User {
   approvedStories     Story[]              @relation("StoryApprovedBy")
   stories             Story[]
   storyReports        StoryReport[]        @relation("StoryReporter")
+  storyLikes          StoryLike[]
   followers           UserFollow[]         @relation("UserFollowing")
   following           UserFollow[]         @relation("UserFollower")
   userReports         UserReport[]         @relation("UserReporter")
@@ -86,10 +87,25 @@ model Story {
   approvedBy      User?         @relation("StoryApprovedBy", fields: [approvedById], references: [id])
   author          User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
   reports         StoryReport[]
+  likes           StoryLike[]
 
   @@index([authorId])
   @@index([status])
   @@map("stories")
+}
+
+model StoryLike {
+  id        Int      @id @default(autoincrement())
+  storyId   Int
+  userId    Int
+  createdAt DateTime @default(now())
+
+  story Story @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([storyId, userId])
+  @@index([userId])
+  @@map("story_likes")
 }
 
 model Comment {

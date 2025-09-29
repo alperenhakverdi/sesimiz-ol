@@ -13,6 +13,7 @@ import {
 } from '@chakra-ui/react'
 import ProgressiveLoader from '../components/animations/ProgressiveLoader'
 import { PhoneIcon, LockIcon } from '@chakra-ui/icons'
+import { useColorModeValue } from '@chakra-ui/react'
 
 const features = [
   {
@@ -91,7 +92,7 @@ const AboutPage = () => {
 
         <ProgressiveLoader delay={400} type="fade">
           <Box
-            bg="white"
+            bg={useColorModeValue('white','neutral.800')}
             p={{ base: 6, md: 10 }}
             borderRadius="2xl"
             shadow="xl"
@@ -120,7 +121,7 @@ const AboutPage = () => {
                   key={feature.title}
                   borderTop="4px solid"
                   borderColor="accent.500"
-                  bg="white"
+                  bg={useColorModeValue('white','neutral.800')}
                   shadow="md"
                 >
                   <CardBody textAlign="center">
@@ -170,7 +171,7 @@ const AboutPage = () => {
                 {supportContacts.map(contact => (
                   <Box
                     key={contact.name}
-                    bg="white"
+                    bg={useColorModeValue('white','neutral.800')}
                     p={6}
                     borderRadius="xl"
                     border="1px solid"
@@ -201,7 +202,7 @@ const AboutPage = () => {
 
         <ProgressiveLoader delay={1000} type="fade">
           <Box
-            bg="white"
+            bg={useColorModeValue('white','neutral.800')}
             p={{ base: 6, md: 8 }}
             borderRadius="2xl"
             border="1px solid"

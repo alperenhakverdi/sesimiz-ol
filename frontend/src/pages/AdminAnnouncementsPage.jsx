@@ -35,7 +35,8 @@ import {
   StatNumber,
   Textarea,
   FormControl,
-  FormLabel
+  FormLabel,
+  useColorModeValue
 } from '@chakra-ui/react';
 import { FiSearch, FiPlus, FiEye, FiEdit, FiTrash2, FiSend } from 'react-icons/fi';
 import AdminLayout from '../components/admin/AdminLayout';
@@ -399,24 +400,24 @@ const AdminAnnouncementsPage = () => {
 
         {/* Stats Cards */}
         <SimpleGrid columns={{ base: 1, md: 4 }} spacing={4} w="full">
-          <Stat bg="white" p={4} borderRadius="lg" shadow="sm">
-            <StatLabel fontSize="sm" color="gray.600">Toplam Duyuru</StatLabel>
+          <Stat bg={useColorModeValue('white','neutral.800')} p={4} borderRadius="lg" shadow="sm">
+            <StatLabel fontSize="sm" color={useColorModeValue('neutral.600','neutral.300')}>Toplam Duyuru</StatLabel>
             <StatNumber color="brand.500">{pagination.total}</StatNumber>
           </Stat>
-          <Stat bg="white" p={4} borderRadius="lg" shadow="sm">
-            <StatLabel fontSize="sm" color="gray.600">Aktif</StatLabel>
+          <Stat bg={useColorModeValue('white','neutral.800')} p={4} borderRadius="lg" shadow="sm">
+            <StatLabel fontSize="sm" color={useColorModeValue('neutral.600','neutral.300')}>Aktif</StatLabel>
             <StatNumber color="green.500">
               {announcements.filter(ann => ann.isActive).length}
             </StatNumber>
           </Stat>
-          <Stat bg="white" p={4} borderRadius="lg" shadow="sm">
-            <StatLabel fontSize="sm" color="gray.600">Genel</StatLabel>
+          <Stat bg={useColorModeValue('white','neutral.800')} p={4} borderRadius="lg" shadow="sm">
+            <StatLabel fontSize="sm" color={useColorModeValue('neutral.600','neutral.300')}>Genel</StatLabel>
             <StatNumber color="blue.500">
               {announcements.filter(ann => ann.type === 'GENERAL').length}
             </StatNumber>
           </Stat>
-          <Stat bg="white" p={4} borderRadius="lg" shadow="sm">
-            <StatLabel fontSize="sm" color="gray.600">Organizasyon</StatLabel>
+          <Stat bg={useColorModeValue('white','neutral.800')} p={4} borderRadius="lg" shadow="sm">
+            <StatLabel fontSize="sm" color={useColorModeValue('neutral.600','neutral.300')}>Organizasyon</StatLabel>
             <StatNumber color="purple.500">
               {announcements.filter(ann => ann.type === 'ORGANIZATION').length}
             </StatNumber>
@@ -424,7 +425,7 @@ const AdminAnnouncementsPage = () => {
         </SimpleGrid>
 
         {/* Filters */}
-        <Box bg="white" p={4} borderRadius="lg" shadow="sm" w="full">
+        <Box bg={useColorModeValue('white','neutral.800')} p={4} borderRadius="lg" shadow="sm" w="full">
           <HStack spacing={4}>
             <Select
               placeholder="Durum Filtresi"
@@ -440,7 +441,7 @@ const AdminAnnouncementsPage = () => {
         </Box>
 
         {/* Announcements Table */}
-        <Box bg="white" borderRadius="lg" shadow="sm" w="full" overflow="hidden">
+        <Box bg={useColorModeValue('white','neutral.800')} borderRadius="lg" shadow="sm" w="full" overflow="hidden">
           {loading ? (
             <Flex justify="center" py={8}>
               <Spinner size="lg" color="brand.500" />
@@ -452,7 +453,7 @@ const AdminAnnouncementsPage = () => {
             </Alert>
           ) : (
             <Table variant="simple">
-              <Thead bg="gray.50">
+              <Thead bg={useColorModeValue('neutral.100','neutral.800')}>
                 <Tr>
                   <Th>Başlık</Th>
                   <Th>Tür</Th>
@@ -468,7 +469,7 @@ const AdminAnnouncementsPage = () => {
                     <Td>
                       <VStack align="start" spacing={1}>
                         <Text fontWeight="semibold">{announcement.title}</Text>
-                        <Text fontSize="sm" color="gray.600" noOfLines={2}>
+                        <Text fontSize="sm" color={useColorModeValue('neutral.600','neutral.300')} noOfLines={2}>
                           {announcement.body}
                         </Text>
                       </VStack>
@@ -521,7 +522,7 @@ const AdminAnnouncementsPage = () => {
             >
               Önceki
             </Button>
-            <Text fontSize="sm" color="gray.600">
+            <Text fontSize="sm" color={useColorModeValue('neutral.600','neutral.400')}>
               Sayfa {pagination.page} / {pagination.totalPages}
             </Text>
             <Button

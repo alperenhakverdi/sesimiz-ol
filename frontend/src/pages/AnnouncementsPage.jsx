@@ -40,8 +40,11 @@ const AnnouncementsPage = () => {
             visibility: 'PUBLIC'
           }
         })
-        
-        setAnnouncements(response.data?.data?.announcements || [])
+        if (response?.success) {
+          setAnnouncements(response.data?.announcements || [])
+        } else {
+          setAnnouncements([])
+        }
       } catch (err) {
         console.error('Announcements fetch error:', err)
         setError('Duyurular yüklenirken bir hata oluştu.')

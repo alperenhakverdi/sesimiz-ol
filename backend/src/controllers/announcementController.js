@@ -101,7 +101,7 @@ export const getAnnouncements = async (req, res) => {
       }
     })
   } finally {
-    await prisma.$disconnect()
+    // Keep Prisma client connected for the app lifecycle
   }
 }
 
@@ -159,7 +159,7 @@ export const getAnnouncement = async (req, res) => {
       }
     })
   } finally {
-    await prisma.$disconnect()
+    // Keep Prisma client connected for the app lifecycle
   }
 }
 
@@ -213,7 +213,7 @@ export const createAnnouncement = async (req, res) => {
       }
     })
   } finally {
-    await prisma.$disconnect()
+    // Keep Prisma client connected for the app lifecycle
   }
 }
 
@@ -276,7 +276,7 @@ export const updateAnnouncement = async (req, res) => {
       }
     })
   } finally {
-    await prisma.$disconnect()
+    // Keep Prisma client connected for the app lifecycle
   }
 }
 
@@ -312,7 +312,7 @@ export const deleteAnnouncement = async (req, res) => {
       }
     })
   } finally {
-    await prisma.$disconnect()
+    // Keep Prisma client connected for the app lifecycle
   }
 }
 
@@ -372,6 +372,6 @@ export const getAnnouncementStats = async (req, res) => {
       }
     })
   } finally {
-    await prisma.$disconnect()
+    // Keep Prisma client connected for the app lifecycle
   }
 }

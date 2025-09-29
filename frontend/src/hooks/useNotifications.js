@@ -22,7 +22,6 @@ export const useNotifications = (options = {}) => {
     page = 1,
     limit = 20,
     status,
-    type,
     autoRefresh = true
   } = options
 
@@ -30,10 +29,10 @@ export const useNotifications = (options = {}) => {
     serializeFilters({
       page,
       limit,
-      status,
-      type
+      // backend supports only unread flag; map status accordingly
+      unread: status === 'unread' ? true : undefined
     })
-  ), [page, limit, status, type])
+  ), [page, limit, status])
 
   const swrKey = isAuthenticated ? ['notifications', params] : null
 
@@ -47,30 +46,41 @@ export const useNotifications = (options = {}) => {
     }
   )
 
-  const data = swrResponse.data || {}
+  const listData = swrResponse.data || {}
+
+  const unreadKey = isAuthenticated ? ['notifications-unread-count'] : null
+  const unreadSWR = useSWR(
+    unreadKey,
+    () => notificationAPI.unreadCount(),
+    {
+      refreshInterval: autoRefresh ? REFRESH_INTERVAL : 0,
+      revalidateOnFocus: true
+    }
+  )
 
   const markRead = async (id) => {
     await notificationAPI.markRead(id)
-    await swrResponse.mutate()
+    await Promise.all([swrResponse.mutate(), unreadSWR.mutate()])
   }
 
   const markBulkRead = async (ids) => {
     if (!ids?.length) return
-    await notificationAPI.markBulk(ids)
-    await swrResponse.mutate()
+    // Not supported explicitly by backend; fallback to marking individually
+    await Promise.all(ids.map((id) => notificationAPI.markRead(id)))
+    await Promise.all([swrResponse.mutate(), unreadSWR.mutate()])
   }
 
   const markAllRead = async () => {
     await notificationAPI.markAll()
-    await swrResponse.mutate()
+    await Promise.all([swrResponse.mutate(), unreadSWR.mutate()])
   }
 
   return {
-    notifications: data.data || [],
-    pagination: data.pagination || { page: 1, limit, total: 0, pages: 0 },
-    unreadCount: data.unreadCount || 0,
+    notifications: listData.notifications || [],
+    pagination: listData.pagination || { page: 1, limit, total: 0, pages: 0 },
+    unreadCount: unreadSWR.data?.count ?? (listData.notifications?.filter?.(n => !n.read)?.length || 0),
     isLoading: swrResponse.isLoading,
-    isValidating: swrResponse.isValidating,
+    isValidating: swrResponse.isValidating || unreadSWR.isValidating,
     error: swrResponse.error,
     mutate: swrResponse.mutate,
     markRead,

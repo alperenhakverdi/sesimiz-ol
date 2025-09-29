@@ -18,18 +18,22 @@ import {
   useColorModeValue
 } from '@chakra-ui/react'
 import { Link as RouterLink } from 'react-router-dom'
-import { ArrowBackIcon } from '@chakra-ui/icons'
+import { ArrowBackIcon, ViewIcon } from '@chakra-ui/icons'
 import { formatDistanceToNow } from 'date-fns'
 import { tr } from 'date-fns/locale'
 import { storyAPI } from '../services/api'
 import { useAuth } from '../contexts/AuthContext'
 import CommentSection from '../components/comments/CommentSection'
 import SendMessageButton from '../components/story/SendMessageButton'
+import StoryLikeButton from '../components/story/StoryLikeButton'
+import { ensureAvatar } from '../utils/avatar'
 
 const StoryDetailPage = () => {
   const { id } = useParams()
   const { user } = useAuth()
   const [story, setStory] = useState(null)
+  const [likesCount, setLikesCount] = useState(0)
+  const [userHasLiked, setUserHasLiked] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
@@ -38,6 +42,7 @@ const StoryDetailPage = () => {
   const textColor = useColorModeValue('neutral.800', 'neutral.100')
   const metaColor = useColorModeValue('neutral.600', 'neutral.400')
   const borderColor = useColorModeValue('neutral.200', 'neutral.700')
+  const authorProfileUrl = story?.author?.id ? `/profil/${story.author.id}` : story?.authorId ? `/profil/${story.authorId}` : null
 
   // useMemo must be called before any conditional returns
   const timeAgo = useMemo(() => {
@@ -88,6 +93,12 @@ const StoryDetailPage = () => {
       fetchStory()
     }
   }, [id])
+
+  useEffect(() => {
+    if (!story) return
+    setLikesCount(story.likesCount ?? 0)
+    setUserHasLiked(Boolean(story.userHasLiked))
+  }, [story])
 
   if (loading) {
     return (
@@ -159,16 +170,22 @@ const StoryDetailPage = () => {
               </Heading>
               
               <HStack justify="space-between" w="full" align="center" flexWrap={{ base: "wrap", md: "nowrap" }} gap={4}>
-                <HStack spacing={3}>
+                <HStack
+                  spacing={3}
+                  as={authorProfileUrl ? RouterLink : 'div'}
+                  to={authorProfileUrl || undefined}
+                  onClick={authorProfileUrl ? (event) => event.stopPropagation() : undefined}
+                  _hover={authorProfileUrl ? { textDecoration: 'none' } : undefined}
+                >
                   <Avatar
                     size="md"
                     name={story.authorNickname || story.author?.nickname}
-                    src={story.authorAvatar || story.author?.avatar}
+                    src={ensureAvatar(story.authorAvatar || story.author?.avatar, story.authorNickname || story.author?.nickname)}
                     bg="brand.100"
                     color="brand.500"
                   />
                   <VStack align="start" spacing={0}>
-                    <Text fontWeight="medium" color={textColor}>
+                    <Text fontWeight="medium" color={textColor} _hover={authorProfileUrl ? { color: 'accent.500' } : undefined}>
                       @{story.authorNickname || story.author?.nickname}
                     </Text>
                     <Text fontSize="sm" color={metaColor}>
@@ -177,7 +194,22 @@ const StoryDetailPage = () => {
                   </VStack>
                 </HStack>
 
-                <HStack spacing={3}>
+                <HStack spacing={3} align="center">
+                  <StoryLikeButton
+                    storyId={story.id}
+                    initialLiked={userHasLiked}
+                    initialCount={likesCount}
+                    onChange={({ liked, likesCount: updatedCount }) => {
+                      setUserHasLiked(liked)
+                      if (typeof updatedCount === 'number') {
+                        setLikesCount(updatedCount)
+                      }
+                    }}
+                  />
+                  <HStack spacing={1} color={metaColor} fontSize="sm">
+                    <ViewIcon />
+                    <Text>{story.viewCount ?? 0} görüntüleme</Text>
+                  </HStack>
                   <SendMessageButton
                     storyAuthor={{
                       id: story.authorId || story.author?.id,

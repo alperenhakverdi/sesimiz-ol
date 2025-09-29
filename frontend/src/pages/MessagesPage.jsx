@@ -14,6 +14,7 @@ import {
   Badge,
   IconButton,
   useToast,
+  useColorModeValue,
   Divider,
   InputGroup,
   InputLeftElement,
@@ -28,11 +29,22 @@ import {
 import { FiSend, FiMoreVertical, FiSlash, FiSearch } from 'react-icons/fi';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../services/api';
+import { Link as RouterLink } from 'react-router-dom';
+import { ensureAvatar } from '../utils/avatar';
 
 const MessagesPage = () => {
   const { user, isAuthenticated } = useAuth();
   const toast = useToast();
   const messagesEndRef = useRef(null);
+  const messagesContainerRef = useRef(null);
+  const dividerColor = useColorModeValue('neutral.200','neutral.700');
+  const hoverRowBg = useColorModeValue('neutral.100','neutral.700');
+  const muted = useColorModeValue('neutral.600','neutral.300');
+  const subtle = useColorModeValue('neutral.600','neutral.400');
+  const bubbleIncomingBg = useColorModeValue('neutral.100','neutral.700');
+  const bubbleIncomingText = useColorModeValue('neutral.800','neutral.100');
+  const selectedRowBg = useColorModeValue('brand.50','neutral.800');
+  const searchResultHoverBorderColor = useColorModeValue('neutral.300','neutral.600');
 
   const [conversations, setConversations] = useState([]);
   const [selectedConversation, setSelectedConversation] = useState(null);
@@ -44,11 +56,20 @@ const MessagesPage = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const { isOpen: isSearchOpen, onOpen: onSearchOpen, onClose: onSearchClose } = useDisclosure();
+  const [rateLimitUntil, setRateLimitUntil] = useState(0);
+  const rateLimitNotifiedRef = useRef(false);
   const scrollToBottom = useCallback(() => {
-  setTimeout(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, 100);
-}, []);
+    const container = messagesContainerRef.current;
+    if (!container) return;
+    // Use rAF to ensure DOM is painted
+    requestAnimationFrame(() => {
+      try {
+        container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+      } catch {
+        container.scrollTop = container.scrollHeight;
+      }
+    });
+  }, []);
 
   // Search messages
   const searchMessages = useCallback(async (query) => {
@@ -85,28 +106,70 @@ const MessagesPage = () => {
 
   // Fetch conversations list
   const fetchConversations = useCallback(async () => {
+    if (rateLimitUntil && Date.now() < rateLimitUntil) {
+      return;
+    }
     try {
       const response = await api.get('/messages');
       if (response.success) {
         setConversations(response.conversations || []);
+        if (rateLimitNotifiedRef.current) {
+          rateLimitNotifiedRef.current = false;
+          setRateLimitUntil(0);
+        }
       }
     } catch (error) {
-      console.error('Error fetching conversations:', error);
+      if (error?.response?.status === 429) {
+        setRateLimitUntil(Date.now() + 60_000);
+        if (!rateLimitNotifiedRef.current) {
+          toast({
+            title: 'Çok fazla istek',
+            description: 'Mesajlar çok sık yenilendi. Lütfen kısa bir süre sonra tekrar deneyin.',
+            status: 'warning',
+            duration: 4000,
+            isClosable: true
+          });
+          rateLimitNotifiedRef.current = true;
+        }
+      } else {
+        console.error('Error fetching conversations:', error);
+      }
     }
-  }, []);
+  }, [rateLimitUntil, toast]);
 
   // Fetch messages for a specific conversation
   const fetchMessages = useCallback(async (userId) => {
+    if (rateLimitUntil && Date.now() < rateLimitUntil) {
+      return;
+    }
     try {
       const response = await api.get(`/messages/${userId}`);
       if (response.success) {
         setMessages(response.messages || []);
         scrollToBottom();
+        if (rateLimitNotifiedRef.current) {
+          rateLimitNotifiedRef.current = false;
+          setRateLimitUntil(0);
+        }
       }
     } catch (error) {
-      console.error('Error fetching messages:', error);
+      if (error?.response?.status === 429) {
+        setRateLimitUntil(Date.now() + 60_000);
+        if (!rateLimitNotifiedRef.current) {
+          toast({
+            title: 'Çok fazla istek',
+            description: 'Mesajlar çok sık yenilendi. Lütfen kısa bir süre sonra tekrar deneyin.',
+            status: 'warning',
+            duration: 4000,
+            isClosable: true
+          });
+          rateLimitNotifiedRef.current = true;
+        }
+      } else {
+        console.error('Error fetching messages:', error);
+      }
     }
-  }, [scrollToBottom]);
+  }, [scrollToBottom, rateLimitUntil, toast]);
 
   // Send a new message
   const sendMessage = async () => {
@@ -261,16 +324,16 @@ const MessagesPage = () => {
         <Box
           w={{ base: selectedConversation ? '0' : 'full', md: '300px' }}
           borderRight={{ base: 'none', md: '1px solid' }}
-          borderColor="gray.200"
+          borderColor={dividerColor}
           display={{ base: selectedConversation ? 'none' : 'block', md: 'block' }}
         >
-          <Box p={4} borderBottom="1px solid" borderColor="gray.200">
+          <Box p={4} borderBottom="1px solid" borderColor={dividerColor}>
             <HStack justify="space-between">
               <Text fontSize="lg" fontWeight="bold">Mesajlar</Text>
               <IconButton
                 size="sm"
                 variant="ghost"
-                icon={<FiSearch />}
+                icon={<FiSearch color={subtle} />}
                 aria-label="Mesajlarda ara"
                 onClick={onSearchOpen}
               />
@@ -280,7 +343,7 @@ const MessagesPage = () => {
           <VStack spacing={0} align="stretch" maxH="calc(100% - 60px)" overflowY="auto">
             {conversations.length === 0 ? (
               <Box p={6} textAlign="center">
-                <Text color="gray.500">Henüz mesaj yok</Text>
+                <Text color={subtle}>Henüz mesaj yok</Text>
               </Box>
             ) : (
               conversations.map((conversation) => (
@@ -288,21 +351,29 @@ const MessagesPage = () => {
                   key={conversation.user.id}
                   p={3}
                   borderBottom="1px solid"
-                  borderColor="gray.100"
+                  borderColor={dividerColor}
                   cursor="pointer"
-                  bg={selectedConversation?.user.id === conversation.user.id ? 'brand.50' : 'white'}
-                  _hover={{ bg: 'gray.50' }}
+                  bg={selectedConversation?.user.id === conversation.user.id ? selectedRowBg : 'transparent'}
+                  _hover={{ bg: hoverRowBg }}
                   onClick={() => selectConversation(conversation)}
                 >
                   <HStack spacing={3}>
                     <Avatar
                       size="sm"
                       name={conversation.user.nickname}
-                      src={conversation.user.avatar}
+                      src={ensureAvatar(conversation.user.avatar, conversation.user.nickname)}
                     />
                     <Box flex={1} minW={0}>
                       <HStack justify="space-between" align="start">
-                        <Text fontWeight="medium" fontSize="sm" noOfLines={1}>
+                        <Text
+                          as={RouterLink}
+                          to={`/profil/${conversation.user.id}`}
+                          fontWeight="medium"
+                          fontSize="sm"
+                          noOfLines={1}
+                          onClick={(event) => event.stopPropagation()}
+                          _hover={{ color: 'accent.500' }}
+                        >
                           {conversation.user.nickname}
                         </Text>
                         {conversation.unreadCount > 0 && (
@@ -311,10 +382,10 @@ const MessagesPage = () => {
                           </Badge>
                         )}
                       </HStack>
-                      <Text fontSize="xs" color="gray.500" noOfLines={1}>
+                      <Text fontSize="xs" color={subtle} noOfLines={1}>
                         {conversation.lastMessage}
                       </Text>
-                      <Text fontSize="xs" color="gray.400">
+                      <Text fontSize="xs" color={subtle}>
                         {formatMessageTime(conversation.lastMessageTime)}
                       </Text>
                     </Box>
@@ -334,7 +405,7 @@ const MessagesPage = () => {
           {selectedConversation ? (
             <>
               {/* Chat Header */}
-              <Box p={4} borderBottom="1px solid" borderColor="gray.200">
+              <Box p={4} borderBottom="1px solid" borderColor={dividerColor}>
                 <HStack justify="space-between">
                   <HStack spacing={3}>
                     <Button
@@ -348,9 +419,15 @@ const MessagesPage = () => {
                     <Avatar
                       size="sm"
                       name={selectedConversation.user.nickname}
-                      src={selectedConversation.user.avatar}
+                      src={ensureAvatar(selectedConversation.user.avatar, selectedConversation.user.nickname)}
                     />
-                    <Text fontWeight="medium">
+                    <Text
+                      as={RouterLink}
+                      to={`/profil/${selectedConversation.user.id}`}
+                      fontWeight="medium"
+                      onClick={(event) => event.stopPropagation()}
+                      _hover={{ color: 'accent.500' }}
+                    >
                       {selectedConversation.user.nickname}
                     </Text>
                   </HStack>
@@ -366,7 +443,7 @@ const MessagesPage = () => {
               </Box>
 
               {/* Messages */}
-              <Box flex={1} overflowY="auto" p={4}>
+              <Box flex={1} overflowY="auto" p={4} ref={messagesContainerRef} sx={{ overscrollBehavior: 'contain' }}>
                 <VStack spacing={4} align="stretch">
                   {messages.map((message) => (
                     <Box
@@ -375,8 +452,8 @@ const MessagesPage = () => {
                       maxW="70%"
                     >
                       <Box
-                        bg={message.senderId === user.id ? 'brand.500' : 'gray.100'}
-                        color={message.senderId === user.id ? 'white' : 'gray.800'}
+                        bg={message.senderId === user.id ? 'brand.500' : bubbleIncomingBg}
+                        color={message.senderId === user.id ? 'white' : bubbleIncomingText}
                         px={3}
                         py={2}
                         borderRadius="lg"
@@ -387,7 +464,7 @@ const MessagesPage = () => {
                       </Box>
                       <Text
                         fontSize="xs"
-                        color="gray.400"
+                        color={subtle}
                         mt={1}
                         textAlign={message.senderId === user.id ? 'right' : 'left'}
                       >
@@ -401,7 +478,7 @@ const MessagesPage = () => {
               </Box>
 
               {/* Message Input */}
-              <Box p={4} borderTop="1px solid" borderColor="gray.200">
+              <Box p={4} borderTop="1px solid" borderColor={dividerColor}>
                 <HStack spacing={2}>
                   <Input
                     placeholder="Mesajınızı yazın..."
@@ -419,7 +496,7 @@ const MessagesPage = () => {
                     aria-label="Mesaj gönder"
                   />
                 </HStack>
-                <Text fontSize="xs" color="gray.400" mt={1}>
+                <Text fontSize="xs" color={subtle} mt={1}>
                   {newMessage.length}/1000
                 </Text>
               </Box>
@@ -427,10 +504,10 @@ const MessagesPage = () => {
           ) : (
             <Flex justify="center" align="center" h="full">
               <Box textAlign="center">
-                <Text fontSize="lg" color="gray.500" mb={2}>
+                <Text fontSize="lg" color={subtle} mb={2}>
                   Mesajlaşmaya başlamak için bir konuşma seçin
                 </Text>
-                <Text fontSize="sm" color="gray.400">
+                <Text fontSize="sm" color={subtle}>
                   Sol taraftan bir kullanıcı seçerek mesajlaşabilirsiniz
                 </Text>
               </Box>
@@ -448,7 +525,7 @@ const MessagesPage = () => {
               <VStack spacing={4} align="stretch">
                 <InputGroup>
                   <InputLeftElement pointerEvents="none">
-                    <FiSearch color="gray.400" />
+                    <FiSearch color={subtle} />
                   </InputLeftElement>
                   <Input
                     placeholder="Mesaj içeriğinde ara..."
@@ -470,15 +547,16 @@ const MessagesPage = () => {
                         key={message.id}
                         p={3}
                         border="1px solid"
-                        borderColor="gray.200"
+                        borderColor={dividerColor}
                         borderRadius="md"
-                        _hover={{ borderColor: "gray.300" }}
+                        _hover={{ borderColor: searchResultHoverBorderColor }}
                       >
                         <HStack spacing={3} align="start">
                           <Avatar
                             size="sm"
                             name={message.senderId === user.id ? message.receiver.nickname : message.sender.nickname}
-                            src={message.senderId === user.id ? message.receiver.avatar : message.sender.avatar}
+                            src={ensureAvatar(message.senderId === user.id ? message.receiver.avatar : message.sender.avatar,
+                              message.senderId === user.id ? message.receiver.nickname : message.sender.nickname)}
                           />
                           <VStack align="start" spacing={1} flex={1}>
                             <Text fontSize="sm" fontWeight="medium">
@@ -487,10 +565,10 @@ const MessagesPage = () => {
                                 `${message.sender.nickname} → Size`
                               }
                             </Text>
-                            <Text fontSize="sm" color="gray.600" noOfLines={2}>
+                            <Text fontSize="sm" color={muted} noOfLines={2}>
                               {message.content}
                             </Text>
-                            <Text fontSize="xs" color="gray.400">
+                            <Text fontSize="xs" color={subtle}>
                               {new Date(message.createdAt).toLocaleDateString('tr-TR', {
                                 day: '2-digit',
                                 month: '2-digit',
@@ -508,7 +586,7 @@ const MessagesPage = () => {
 
                 {searchQuery.trim() && !searchLoading && searchResults.length === 0 && (
                   <Box textAlign="center" py={8}>
-                    <Text color="gray.500">
+                    <Text color={subtle}>
                       "{searchQuery}" için sonuç bulunamadı
                     </Text>
                   </Box>

@@ -14,7 +14,8 @@ import {
   HStack,
   Stat,
   StatLabel,
-  StatNumber
+  StatNumber,
+  useColorModeValue
 } from '@chakra-ui/react'
 import { Link as RouterLink } from 'react-router-dom'
 import { AddIcon } from '@chakra-ui/icons'
@@ -35,6 +36,7 @@ const HomePage = () => {
   const [stats, setStats] = useState({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const statCardBg = useColorModeValue('white', 'neutral.800')
   // Mock data for MVP
   const mockOrganizations = [
     {
@@ -282,19 +284,19 @@ const HomePage = () => {
             maxW="4xl"
             mx="auto"
           >
-                 <Stat textAlign="center" bg="white" p={6} borderRadius="lg" shadow="sm">
+                 <Stat textAlign="center" bg={statCardBg} p={6} borderRadius="lg" shadow="sm">
                    <StatNumber fontSize="3xl" color="accent.500" fontWeight="bold">{stats.totalStories || 250}+</StatNumber>
                    <StatLabel fontSize="sm" color="primary.600">Paylaşılan Hikâye</StatLabel>
                  </Stat>
-                 <Stat textAlign="center" bg="white" p={6} borderRadius="lg" shadow="sm">
+                 <Stat textAlign="center" bg={statCardBg} p={6} borderRadius="lg" shadow="sm">
                    <StatNumber fontSize="3xl" color="accent.500" fontWeight="bold">{stats.totalUsers || 1200}+</StatNumber>
                    <StatLabel fontSize="sm" color="primary.600">Topluluk Üyesi</StatLabel>
                  </Stat>
-                 <Stat textAlign="center" bg="white" p={6} borderRadius="lg" shadow="sm">
+                 <Stat textAlign="center" bg={statCardBg} p={6} borderRadius="lg" shadow="sm">
                    <StatNumber fontSize="3xl" color="accent.500" fontWeight="bold">{stats.totalOrganizations || 45}+</StatNumber>
                    <StatLabel fontSize="sm" color="primary.600">Aktif STK</StatLabel>
                  </Stat>
-                 <Stat textAlign="center" bg="white" p={6} borderRadius="lg" shadow="sm">
+                 <Stat textAlign="center" bg={statCardBg} p={6} borderRadius="lg" shadow="sm">
                    <StatNumber fontSize="3xl" color="accent.500" fontWeight="bold">%{stats.satisfaction || 95}</StatNumber>
                    <StatLabel fontSize="sm" color="primary.600">Memnuniyet</StatLabel>
                  </Stat>

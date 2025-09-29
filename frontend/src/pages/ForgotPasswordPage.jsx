@@ -15,7 +15,8 @@ import {
   AlertDescription,
   useToast,
   Link as ChakraLink,
-  Divider
+  Divider,
+  useColorModeValue
 } from '@chakra-ui/react'
 import { EmailIcon, CheckCircleIcon, ArrowBackIcon } from '@chakra-ui/icons'
 import { Link, useNavigate } from 'react-router-dom'
@@ -81,7 +82,7 @@ const ForgotPasswordPage = () => {
       <Container maxW="lg" py={{ base: 12, md: 16 }}>
         <FadeIn>
           <Box
-            bg="white"
+            bg={useColorModeValue('white','neutral.800')}
             borderRadius="xl"
             boxShadow="lg"
             px={{ base: 6, md: 10 }}

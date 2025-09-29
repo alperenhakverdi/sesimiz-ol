@@ -14,7 +14,8 @@ import {
   Alert,
   AlertIcon,
   Skeleton,
-  SimpleGrid
+  SimpleGrid,
+  useColorModeValue
 } from '@chakra-ui/react'
 import { useAuth } from '../contexts/AuthContext'
 import useNotifications from '../hooks/useNotifications'
@@ -36,6 +37,12 @@ const NotificationsPage = () => {
   const [status, setStatus] = useState('all')
   const [type, setType] = useState('all')
   const [page, setPage] = useState(1)
+
+  const pageBg = useColorModeValue('neutral.50', 'neutral.900')
+  const cardBg = useColorModeValue('white', 'neutral.800')
+  const headingColor = useColorModeValue('primary.800', 'neutral.100')
+  const subTextColor = useColorModeValue('neutral.600', 'neutral.300')
+  const dividerColor = useColorModeValue('neutral.200', 'neutral.700')
 
   const filters = useMemo(() => ({
     page,
@@ -88,26 +95,38 @@ const NotificationsPage = () => {
     )
   }
 
-  const totalPages = Math.max(pagination.pages || 1, 1)
+  const totalPages = Math.max((pagination.totalPages || pagination.pages || 1), 1)
   const canGoPrev = page > 1
   const canGoNext = page < totalPages
 
+  // Client-side filtering for type and read (backend already handles unread)
+  const filteredNotifications = useMemo(() => {
+    let items = notifications || []
+    if (status === 'read') {
+      items = items.filter(n => n.read)
+    }
+    if (type && type !== 'all') {
+      items = items.filter(n => n.type === type)
+    }
+    return items
+  }, [notifications, status, type])
+
   return (
-    <Box bg="gray.50" py={{ base: 8, md: 12 }}>
+    <Box bg={pageBg} py={{ base: 8, md: 12 }}>
       <Container maxW="container.lg">
         <Stack spacing={6}>
           <Box>
-            <Heading size="lg" color="gray.800">Bildirimler</Heading>
-            <Text mt={2} color="gray.600">
+            <Heading size="lg" color={headingColor}>Bildirimler</Heading>
+            <Text mt={2} color={subTextColor}>
               Tüm bildirimlerini tek bir yerden yönet. {unreadCount} okunmamış bildirimin var.
             </Text>
           </Box>
 
-          <Box bg="white" borderRadius="lg" p={{ base: 4, md: 6 }} boxShadow="sm">
+          <Box bg={cardBg} borderRadius="lg" p={{ base: 4, md: 6 }} boxShadow="sm">
             <Stack spacing={4}>
               <SimpleGrid columns={{ base: 1, md: 2 }} spacing={3}>
                 <HStack spacing={2}>
-                  <Text fontWeight="medium" fontSize="sm" color="gray.600">
+                  <Text fontWeight="medium" fontSize="sm" color={subTextColor}>
                     Durum
                   </Text>
                   <ButtonGroup size="sm" variant="outline" isAttached>
@@ -125,7 +144,7 @@ const NotificationsPage = () => {
                 </HStack>
 
                 <HStack spacing={2}>
-                  <Text fontWeight="medium" fontSize="sm" color="gray.600">
+                  <Text fontWeight="medium" fontSize="sm" color={subTextColor}>
                     Tür
                   </Text>
                   <Select size="sm" value={type} onChange={handleTypeChange} maxW="220px">
@@ -138,11 +157,11 @@ const NotificationsPage = () => {
                 </HStack>
               </SimpleGrid>
 
-              <Divider />
+              <Divider borderColor={dividerColor} />
 
               <Stack spacing={4}>
                 <HStack align="center">
-                  <Text fontSize="sm" color="gray.500">
+                  <Text fontSize="sm" color={useColorModeValue('neutral.600', 'neutral.400')}>
                     Sayfa {pagination.page || page} / {totalPages}
                   </Text>
                   <Spacer />
@@ -152,7 +171,7 @@ const NotificationsPage = () => {
                 </HStack>
 
                 <NotificationList
-                  notifications={notifications}
+                  notifications={filteredNotifications}
                   isLoading={isLoading || isValidating}
                   onMarkRead={markRead}
                   emptyMessage="Bu kriterlere uygun bildirim bulunmuyor."
@@ -168,7 +187,7 @@ const NotificationsPage = () => {
                     Önceki
                   </Button>
                   <HStack spacing={2}>
-                    <Text fontSize="sm" color="gray.500">
+                    <Text fontSize="sm" color={useColorModeValue('neutral.600', 'neutral.400')}>
                       Toplam {pagination.total || 0} bildirim
                     </Text>
                   </HStack>

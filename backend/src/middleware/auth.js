@@ -187,7 +187,10 @@ export const refreshTokenMiddleware = async (req, res, next) => {
 // Optional auth middleware (doesn't fail if no token)
 export const optionalAuth = async (req, res, next) => {
   const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
+  let token = authHeader && authHeader.split(' ')[1];
+  if (!token && req.cookies) {
+    token = req.cookies[ACCESS_COOKIE];
+  }
 
   if (!token) {
     req.user = null;

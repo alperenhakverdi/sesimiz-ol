@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import api from '../../../services/api';
 import {
   Modal,
   ModalOverlay,
@@ -49,20 +50,7 @@ const FeatureFlagEditModal = ({ isOpen, onClose, flag, onUpdate }) => {
     try {
       setLoading(true);
 
-      const response = await fetch(`/api/admin/feature-flags/${flag.key}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify(formData)
-      });
-
-      if (!response.ok) {
-        throw new Error('Feature flag güncellenemedi');
-      }
-
-      const data = await response.json();
+      const data = await api.patch(`/admin/feature-flags/${flag.key}`, formData);
 
       if (data.success) {
         onUpdate({

@@ -33,7 +33,9 @@ export const SocketProvider = ({ children }) => {
       },
       transports: ['websocket', 'polling'],
       timeout: 20000,
-      forceNew: true
+      forceNew: true,
+      reconnection: true,
+      reconnectionAttempts: 5
     });
 
     newSocket.on('connect', () => {

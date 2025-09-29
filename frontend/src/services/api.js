@@ -2,6 +2,7 @@ import axios from 'axios';
 import {
   logoutHandler,
   csrfTokenHandler,
+  accessTokenHandler,
   isRefreshing,
   setIsRefreshing,
   getFailedQueue,
@@ -69,8 +70,12 @@ api.interceptors.response.use(
           { withCredentials: true }
         );
         const newCsrf = refreshResponse.data?.csrfToken;
+        const newAccessToken = refreshResponse.data?.data?.tokens?.accessToken || refreshResponse.data?.tokens?.accessToken;
         if (newCsrf) {
           csrfTokenHandler(newCsrf);
+        }
+        if (newAccessToken) {
+          accessTokenHandler(newAccessToken);
         }
         processQueue(null);
         return api(originalRequest);
@@ -157,6 +162,14 @@ export const storyAPI = {
     });
   },
 
+  like: async (storyId) => {
+    return await api.post(`/stories/${storyId}/like`);
+  },
+
+  unlike: async (storyId) => {
+    return await api.delete(`/stories/${storyId}/like`);
+  },
+
   // Increment view count
   incrementView: async (storyId) => {
     return await api.post(`/stories/${storyId}/view`);
@@ -180,14 +193,14 @@ export const notificationAPI = {
   list: async (params = {}) => {
     return await api.get('/notifications', { params });
   },
+  unreadCount: async () => {
+    return await api.get('/notifications/unread-count');
+  },
   markRead: async (id) => {
     return await api.put(`/notifications/${id}/read`);
   },
-  markBulk: async (ids = []) => {
-    return await api.put('/notifications/bulk/read', { ids });
-  },
   markAll: async () => {
-    return await api.put('/notifications/all/read');
+    return await api.put('/notifications/mark-all-read');
   }
 };
 

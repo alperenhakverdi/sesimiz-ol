@@ -28,8 +28,8 @@ import {
 import { Link as RouterLink } from 'react-router-dom'
 
 const CommunityGuidelinesPage = () => {
-  const bgColor = useColorModeValue('white', 'gray.800')
-  const borderColor = useColorModeValue('gray.200', 'gray.600')
+  const bgColor = useColorModeValue('white', 'neutral.800')
+  const borderColor = useColorModeValue('neutral.200', 'neutral.700')
 
   const GuidelineSection = ({ icon, title, children, variant = 'default' }) => (
     <Box

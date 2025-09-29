@@ -39,9 +39,13 @@ const OrganizationDetailPage = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  const bgColor = useColorModeValue('gray.50', 'gray.900')
-  const cardBgColor = useColorModeValue('white', 'gray.800')
-  const borderColor = useColorModeValue('gray.200', 'gray.700')
+  const bgColor = useColorModeValue('neutral.50', 'neutral.900')
+  const cardBgColor = useColorModeValue('white', 'neutral.800')
+  const borderColor = useColorModeValue('neutral.200', 'neutral.700')
+  const muted = useColorModeValue('neutral.600', 'neutral.400')
+  const subtle = useColorModeValue('neutral.500', 'neutral.500')
+  const headingColor = useColorModeValue('primary.800', 'neutral.100')
+  const breadcrumbSeparatorColor = useColorModeValue('neutral.500', 'neutral.400')
 
   useEffect(() => {
     const fetchOrganization = async () => {
@@ -49,14 +53,20 @@ const OrganizationDetailPage = () => {
         setLoading(true)
         
         const response = await api.get(`/organizations/${slug}`)
-        setOrganization(response.data.data)
+
+        if (response?.success && response?.data) {
+          setOrganization(response.data)
+          setError(null)
+        } else {
+          const message = response?.error?.message || 'STK bilgileri yüklenirken bir hata oluştu.'
+          setError(message)
+          setOrganization(null)
+        }
       } catch (err) {
         console.error('Organization fetch error:', err)
-        if (err.response?.status === 404) {
-          setError('STK bulunamadı.')
-        } else {
-          setError('STK bilgileri yüklenirken bir hata oluştu.')
-        }
+        setOrganization(null)
+        const message = err?.message || 'STK bilgileri yüklenirken bir hata oluştu.'
+        setError(message.toLowerCase().includes('bulunamad') ? 'STK bulunamadı.' : 'STK bilgileri yüklenirken bir hata oluştu.')
       } finally {
         setLoading(false)
       }
@@ -94,7 +104,7 @@ const OrganizationDetailPage = () => {
           <Center py={20}>
             <VStack spacing={4}>
               <Spinner size="xl" color="accent.500" thickness="4px" />
-              <Text color="gray.500">STK bilgileri yükleniyor...</Text>
+              <Text color={subtle}>STK bilgileri yükleniyor...</Text>
             </VStack>
           </Center>
         </Container>
@@ -115,12 +125,25 @@ const OrganizationDetailPage = () => {
     )
   }
 
+  if (!organization) {
+    return (
+      <Box bg={bgColor} minH="100vh" py={8}>
+        <Container maxW="container.xl">
+          <Alert status="warning" borderRadius="lg">
+            <AlertIcon />
+            STK bilgileri şu anda görüntülenemiyor.
+          </Alert>
+        </Container>
+      </Box>
+    )
+  }
+
   return (
     <Box bg={bgColor} minH="100vh" py={8}>
       <Container maxW="container.xl">
         <VStack spacing={8} align="stretch">
           {/* Breadcrumb */}
-          <Breadcrumb spacing="8px" separator={<FiChevronRight color="gray.500" />}>
+          <Breadcrumb spacing="8px" separator={<FiChevronRight color={breadcrumbSeparatorColor} />}>
             <BreadcrumbItem>
               <BreadcrumbLink as={RouterLink} to="/">Ana Sayfa</BreadcrumbLink>
             </BreadcrumbItem>
@@ -128,7 +151,7 @@ const OrganizationDetailPage = () => {
               <BreadcrumbLink as={RouterLink} to="/stklar">STK'lar</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbItem isCurrentPage>
-              <BreadcrumbLink>{organization.name}</BreadcrumbLink>
+              <BreadcrumbLink>{organization?.name || 'STK Detayı'}</BreadcrumbLink>
             </BreadcrumbItem>
           </Breadcrumb>
 
@@ -137,35 +160,35 @@ const OrganizationDetailPage = () => {
             <VStack spacing={6} align="stretch">
               <HStack spacing={6} align="start">
                 <Avatar 
-                  name={organization.name} 
-                  src={organization.logo}
+                  name={organization?.name} 
+                  src={organization?.logo}
                   size="2xl"
                   bg="accent.500"
                 />
                 
                 <VStack align="start" spacing={3} flex={1}>
                   <HStack spacing={3} flexWrap="wrap">
-                    <Badge colorScheme={getTypeColor(organization.type)} size="lg">
-                      {getTypeLabel(organization.type)}
+                    <Badge colorScheme={getTypeColor(organization?.type)} size="lg">
+                      {getTypeLabel(organization?.type)}
                     </Badge>
                     <Badge colorScheme="green" size="lg" variant="subtle">
                       Aktif
                     </Badge>
                   </HStack>
                   
-                  <Heading size="xl" color="accent.600">
-                    {organization.name}
+                  <Heading size="xl" color={headingColor}>
+                    {organization?.name}
                   </Heading>
                   
-                  <Text fontSize="lg" color="gray.600">
-                    {organization.description}
+                  <Text fontSize="lg" color={muted}>
+                    {organization?.description || 'Bu STK için açıklama henüz eklenmemiş.'}
                   </Text>
 
                   <HStack spacing={6} flexWrap="wrap">
-                    {organization.website && (
+                    {organization?.website && (
                       <Button
                         as="a"
-                        href={organization.website}
+                        href={organization?.website}
                         target="_blank"
                         rel="noopener noreferrer"
                         colorScheme="accent"
@@ -175,10 +198,10 @@ const OrganizationDetailPage = () => {
                       </Button>
                     )}
                     
-                    {organization.email && (
+                    {organization?.email && (
                       <Button
                         as="a"
-                        href={`mailto:${organization.email}`}
+                        href={`mailto:${organization?.email}`}
                         variant="outline"
                         colorScheme="accent"
                         rightIcon={<FiMail />}
@@ -200,19 +223,19 @@ const OrganizationDetailPage = () => {
                 <Box bg={cardBgColor} borderRadius="lg" p={6} borderWidth="1px" borderColor={borderColor}>
                   <VStack spacing={4} align="stretch">
                     <Heading size="md">Hakkında</Heading>
-                    <Text color="gray.600" lineHeight="tall">
-                      {organization.longDescription}
+                    <Text color={muted} lineHeight="tall">
+                      {organization?.longDescription}
                     </Text>
                   </VStack>
                 </Box>
 
                 {/* Activities */}
-                {organization.activities && (
+                {organization?.activities && (
                   <Box bg={cardBgColor} borderRadius="lg" p={6} borderWidth="1px" borderColor={borderColor}>
                     <VStack spacing={4} align="stretch">
                       <Heading size="md">Faaliyet Alanları</Heading>
                       <SimpleGrid columns={{ base: 1, md: 2 }} spacing={2}>
-                        {organization.activities.map((activity, index) => (
+                        {organization?.activities.map((activity, index) => (
                           <HStack key={index} spacing={2}>
                             <Box w={2} h={2} bg="accent.500" borderRadius="full" mt={2} />
                             <Text>{activity}</Text>
@@ -236,24 +259,24 @@ const OrganizationDetailPage = () => {
                     <HStack spacing={3}>
                       <Icon as={FiUsers} color="accent.500" boxSize={5} />
                       <VStack align="start" spacing={0}>
-                        <Text fontWeight="semibold">{organization.memberCount?.toLocaleString()}</Text>
-                        <Text fontSize="sm" color="gray.500">Üye</Text>
+                        <Text fontWeight="semibold">{organization?.memberCount?.toLocaleString()}</Text>
+                        <Text fontSize="sm" color={subtle}>Üye</Text>
                       </VStack>
                     </HStack>
 
                     <HStack spacing={3}>
                       <Icon as={FiCalendar} color="accent.500" boxSize={5} />
                       <VStack align="start" spacing={0}>
-                        <Text fontWeight="semibold">{organization.foundedYear}</Text>
-                        <Text fontSize="sm" color="gray.500">Kuruluş Yılı</Text>
+                        <Text fontWeight="semibold">{organization?.foundedYear}</Text>
+                        <Text fontSize="sm" color={subtle}>Kuruluş Yılı</Text>
                       </VStack>
                     </HStack>
 
                     <HStack spacing={3}>
                       <Icon as={FiMapPin} color="accent.500" boxSize={5} />
                       <VStack align="start" spacing={0}>
-                        <Text fontWeight="semibold">{organization.location}</Text>
-                        <Text fontSize="sm" color="gray.500">Konum</Text>
+                        <Text fontWeight="semibold">{organization?.location}</Text>
+                        <Text fontSize="sm" color={subtle}>Konum</Text>
                       </VStack>
                     </HStack>
                   </VStack>
@@ -266,29 +289,29 @@ const OrganizationDetailPage = () => {
                   <Heading size="md">İletişim Bilgileri</Heading>
                   
                   <VStack spacing={3} align="stretch">
-                    {organization.email && (
+                    {organization?.email && (
                       <HStack spacing={3}>
                         <Icon as={FiMail} color="accent.500" boxSize={5} />
-                        <Text as="a" href={`mailto:${organization.email}`} _hover={{ color: "accent.500" }}>
-                          {organization.email}
+                        <Text as="a" href={`mailto:${organization?.email}`} _hover={{ color: "accent.500" }}>
+                          {organization?.email}
                         </Text>
                       </HStack>
                     )}
 
-                    {organization.phone && (
+                    {organization?.phone && (
                       <HStack spacing={3}>
                         <Icon as={FiPhone} color="accent.500" boxSize={5} />
-                        <Text as="a" href={`tel:${organization.phone}`} _hover={{ color: "accent.500" }}>
-                          {organization.phone}
+                        <Text as="a" href={`tel:${organization?.phone}`} _hover={{ color: "accent.500" }}>
+                          {organization?.phone}
                         </Text>
                       </HStack>
                     )}
 
-                    {organization.address && (
+                    {organization?.address && (
                       <HStack spacing={3} align="start">
                         <Icon as={FiMapPin} color="accent.500" boxSize={5} mt={0.5} />
-                        <Text fontSize="sm" color="gray.600">
-                          {organization.address}
+                        <Text fontSize="sm" color={muted}>
+                          {organization?.address}
                         </Text>
                       </HStack>
                     )}

@@ -16,9 +16,11 @@ import {
   useColorModeValue
 } from '@chakra-ui/react'
 import { ChevronDownIcon, AddIcon, SettingsIcon } from '@chakra-ui/icons'
+import { FiUser, FiBookOpen, FiLogOut } from 'react-icons/fi'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import LoginModal from './LoginModal'
+import { ensureAvatar } from '../../utils/avatar'
 
 const AuthButton = ({ size = "md", variant = "outline" }) => {
   const { user, isAuthenticated, logout } = useAuth()
@@ -27,16 +29,8 @@ const AuthButton = ({ size = "md", variant = "outline" }) => {
   const textColor = useColorModeValue('neutral.800', 'neutral.100')
   const emailColor = useColorModeValue('neutral.500', 'neutral.400')
   const logoutColor = useColorModeValue('red.600', 'red.400')
-  
-  const getAvatarUrl = (avatarPath) => {
-    if (!avatarPath) return null
-    // Handle base64 data URLs directly
-    if (avatarPath.startsWith('data:image/')) return avatarPath
-    // Handle HTTP URLs directly  
-    if (avatarPath.startsWith('http')) return avatarPath
-    // Handle relative paths
-    return `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}${avatarPath}`
-  }
+  const menuBg = useColorModeValue('white', 'neutral.800')
+  const menuBorder = useColorModeValue('neutral.200', 'neutral.600')
 
   if (!isAuthenticated) {
     return (
@@ -69,18 +63,19 @@ const AuthButton = ({ size = "md", variant = "outline" }) => {
           {user.avatar ? (
             <Box position="relative">
               <Image
-                src={getAvatarUrl(user.avatar)}
+                src={ensureAvatar(user.avatar, user.nickname)}
                 alt={`${user.nickname} profil fotoğrafı`}
                 boxSize="32px"
                 borderRadius="full"
                 objectFit="cover"
-                fallback={<Avatar size="sm" name={user.nickname} bg="brand.100" color="brand.500" />}
+                fallback={<Avatar size="sm" name={user.nickname} src={ensureAvatar(null, user.nickname)} bg="brand.100" color="brand.500" />}
               />
             </Box>
           ) : (
             <Avatar 
               size="sm" 
               name={user.nickname}
+              src={ensureAvatar(null, user.nickname)}
               bg="brand.100"
               color="brand.500"
             />
@@ -98,25 +93,32 @@ const AuthButton = ({ size = "md", variant = "outline" }) => {
         </HStack>
       </MenuButton>
       
-      <MenuList>
-        <MenuItem isDisabled>
-          <VStack spacing={1} align="start">
-            <Text fontWeight="medium">@{user.nickname}</Text>
-            <Text fontSize="xs" color={emailColor}>
-              {user.email || 'Email adresi yok'}
-            </Text>
-          </VStack>
+      <MenuList bg={menuBg} borderColor={menuBorder}>
+        <MenuItem
+          as={Link}
+          to={`/profil/${user.id}`}
+          icon={<FiUser />}
+        >
+          Profilim
         </MenuItem>
-        
+
+        <MenuItem
+          as={Link}
+          to={`/profil/${user.id}?section=stories`}
+          icon={<FiBookOpen />}
+        >
+          Hikayelerim
+        </MenuItem>
+
         <MenuDivider />
-        
+
         <MenuItem as={Link} to="/ayarlar" icon={<SettingsIcon />}>
           Ayarlar
         </MenuItem>
-        
+
         <MenuDivider />
-        
-        <MenuItem onClick={logout} color={logoutColor}>
+
+        <MenuItem onClick={logout} color={logoutColor} icon={<FiLogOut />}>
           Çıkış Yap
         </MenuItem>
       </MenuList>

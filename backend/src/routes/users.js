@@ -312,14 +312,12 @@ router.get('/search', async (req, res) => {
         OR: [
           {
             nickname: {
-              contains: q.trim(),
-              mode: 'insensitive'
+              contains: q.trim()
             }
           },
           {
             bio: {
-              contains: q.trim(),
-              mode: 'insensitive'
+              contains: q.trim()
             }
           }
         ]
@@ -349,14 +347,12 @@ router.get('/search', async (req, res) => {
         OR: [
           {
             nickname: {
-              contains: q.trim(),
-              mode: 'insensitive'
+              contains: q.trim()
             }
           },
           {
             bio: {
-              contains: q.trim(),
-              mode: 'insensitive'
+              contains: q.trim()
             }
           }
         ]

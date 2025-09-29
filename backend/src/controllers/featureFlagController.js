@@ -66,7 +66,7 @@ const notifyAdminsOfChange = async ({ key, enabled, actorId }) => {
       userId: admin.id,
       type: 'SYSTEM',
       title: `Feature flag güncellendi: ${key}`,
-      body: `"${key}" özelliği ${enabled ? 'aktif' : 'pasif'} hale getirildi.`,
+      message: `"${key}" özelliği ${enabled ? 'aktif' : 'pasif'} hale getirildi.`,
       data: {
         key,
         enabled,

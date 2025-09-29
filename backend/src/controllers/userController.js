@@ -247,26 +247,33 @@ export const getUserStories = async (req, res) => {
 
     const stories = await prisma.story.findMany({
       where: { authorId: userId },
-      select: {
-        id: true,
-        title: true,
-        content: true,
-        createdAt: true,
-        updatedAt: true,
+      include: {
         author: {
           select: {
             id: true,
             nickname: true,
             avatar: true
           }
+        },
+        _count: {
+          select: {
+            likes: true,
+            comments: true
+          }
         }
       },
       orderBy: { createdAt: 'desc' }
     });
 
+    const formattedStories = stories.map(({ _count, ...rest }) => ({
+      ...rest,
+      likesCount: _count?.likes ?? 0,
+      commentCount: _count?.comments ?? 0
+    }));
+
     res.json({
       success: true,
-      data: stories
+      data: formattedStories
     });
   } catch (error) {
     console.error('Get user stories error:', error);

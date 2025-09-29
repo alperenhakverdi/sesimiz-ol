@@ -20,6 +20,13 @@ if (baseOptions.sameSite === 'none') {
   baseOptions.secure = true;
 }
 
+// In non-production environments, relax cookie settings for localhost development
+// to avoid logout on refresh due to Secure/None requirements without HTTPS.
+if ((process.env.NODE_ENV || 'development').toLowerCase() !== 'production') {
+  baseOptions.secure = false;
+  baseOptions.sameSite = 'lax';
+}
+
 export const buildCookieOptions = (overrides = {}) => ({
   ...baseOptions,
   ...overrides

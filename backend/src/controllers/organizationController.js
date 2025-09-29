@@ -26,8 +26,8 @@ export const getOrganizations = async (req, res) => {
     // Add search filter
     if (search) {
       where.OR = [
-        { name: { contains: search, mode: 'insensitive' } },
-        { description: { contains: search, mode: 'insensitive' } }
+        { name: { contains: search } },
+        { description: { contains: search } }
       ]
     }
 
@@ -89,7 +89,7 @@ export const getOrganizations = async (req, res) => {
       }
     })
   } finally {
-    await prisma.$disconnect()
+    // Keep Prisma client connected for the app lifecycle
   }
 }
 
@@ -98,12 +98,15 @@ export const getOrganization = async (req, res) => {
   try {
     const { slug } = req.params
 
+    const orFilters = [{ slug }]
+    const numericId = Number(slug)
+    if (!Number.isNaN(numericId) && Number.isInteger(numericId)) {
+      orFilters.push({ id: numericId })
+    }
+
     const organization = await prisma.organization.findFirst({
       where: {
-        OR: [
-          { slug: slug },
-          { id: slug }
-        ],
+        OR: orFilters,
         status: 'ACTIVE'
       },
       select: {
@@ -152,7 +155,7 @@ export const getOrganization = async (req, res) => {
       }
     })
   } finally {
-    await prisma.$disconnect()
+    // Keep Prisma client connected for the app lifecycle
   }
 }
 
@@ -233,7 +236,7 @@ export const createOrganization = async (req, res) => {
       }
     })
   } finally {
-    await prisma.$disconnect()
+    // Keep Prisma client connected for the app lifecycle
   }
 }
 
@@ -287,7 +290,7 @@ export const updateOrganization = async (req, res) => {
       }
     })
   } finally {
-    await prisma.$disconnect()
+    // Keep Prisma client connected for the app lifecycle
   }
 }
 
@@ -323,7 +326,7 @@ export const deleteOrganization = async (req, res) => {
       }
     })
   } finally {
-    await prisma.$disconnect()
+    // Keep Prisma client connected for the app lifecycle
   }
 }
 
@@ -386,6 +389,6 @@ export const getOrganizationStats = async (req, res) => {
       }
     })
   } finally {
-    await prisma.$disconnect()
+    // Keep Prisma client connected for the app lifecycle
   }
 }

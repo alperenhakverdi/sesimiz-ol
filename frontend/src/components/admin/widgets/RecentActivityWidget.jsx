@@ -28,7 +28,7 @@ const ActivityIcon = ({ type }) => {
   const colorMap = {
     user_registered: 'green.500',
     story_created: 'purple.500',
-    default: 'gray.500'
+    default: 'neutral.500'
   };
 
   const IconComponent = iconMap[type] || iconMap.default;
@@ -48,7 +48,7 @@ const ActivityIcon = ({ type }) => {
 };
 
 const ActivityItem = ({ activity }) => {
-  const borderColor = useColorModeValue('gray.100', 'gray.700');
+  const borderColor = useColorModeValue('neutral.200', 'neutral.700');
 
   const formatTime = (timestamp) => {
     if (!timestamp) return '';
@@ -85,10 +85,10 @@ const ActivityItem = ({ activity }) => {
           <Text fontSize="sm" fontWeight="medium" lineHeight="short">
             {activity.title}
           </Text>
-          <Text fontSize="xs" color="gray.600" lineHeight="short">
+          <Text fontSize="xs" color={useColorModeValue('neutral.600', 'neutral.300')} lineHeight="short">
             {activity.description}
           </Text>
-          <Text fontSize="xs" color="gray.500">
+          <Text fontSize="xs" color={useColorModeValue('neutral.600', 'neutral.400')}>
             {formatTime(activity.timestamp)}
           </Text>
         </VStack>
@@ -102,8 +102,8 @@ const RecentActivityWidget = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const bgColor = useColorModeValue('white', 'gray.800');
-  const borderColor = useColorModeValue('gray.200', 'gray.700');
+  const bgColor = useColorModeValue('white', 'neutral.800');
+  const borderColor = useColorModeValue('neutral.200', 'neutral.700');
 
   useEffect(() => {
     const fetchRecentActivity = async () => {
@@ -183,7 +183,7 @@ const RecentActivityWidget = () => {
           ))}
         </VStack>
       ) : (
-        <Text color="gray.500" textAlign="center" py={8}>
+        <Text color={useColorModeValue('neutral.600', 'neutral.400')} textAlign="center" py={8}>
           Henüz aktivite bulunmuyor
         </Text>
       )}

@@ -1,8 +1,8 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react'
+import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react'
 import { useColorMode } from '@chakra-ui/react'
 import axios from 'axios'
 import api from '../services/api'
-import { setLogoutHandler, setCsrfTokenHandler } from '../services/authHandlers'
+import { setLogoutHandler, setCsrfTokenHandler, setAccessTokenHandler } from '../services/authHandlers'
 
 const CSRF_HEADER_NAME = (import.meta.env.VITE_CSRF_HEADER_NAME || 'x-csrf-token').toLowerCase()
 
@@ -20,8 +20,10 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [csrfToken, setCsrfToken] = useState(null)
+  const [accessToken, setAccessToken] = useState(null)
   const [renderKey, setRenderKey] = useState(0)
   const { colorMode, setColorMode } = useColorMode()
+  const guestPreferencesInitializedRef = useRef(false)
 
   const applyThemePreference = useCallback((preference) => {
     if (typeof window === 'undefined' || !setColorMode) return
@@ -66,6 +68,10 @@ export const AuthProvider = ({ children }) => {
     axios.defaults.headers.common[CSRF_HEADER_NAME] = token
   }, [])
 
+  const applyAccessToken = useCallback((token) => {
+    setAccessToken(token || null)
+  }, [])
+
   const fetchProfile = useCallback(async () => {
     try {
       const response = await api.get('/auth/session')
@@ -98,7 +104,7 @@ export const AuthProvider = ({ children }) => {
       setUser(null)
       return null
     }
-  }, [applyCsrfToken])
+  }, [applyCsrfToken, applyAccessToken])
 
   const initialize = useCallback(async () => {
     try {
@@ -126,11 +132,16 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     if (!userSettings) {
-      applyThemePreference('SYSTEM')
-      applyFontSizePreference('MEDIUM')
-      applyMotionPreference(false)
+      if (!guestPreferencesInitializedRef.current) {
+        applyThemePreference('SYSTEM')
+        applyFontSizePreference('MEDIUM')
+        applyMotionPreference(false)
+        guestPreferencesInitializedRef.current = true
+      }
       return
     }
+
+    guestPreferencesInitializedRef.current = false
 
     const { theme, fontSize, reducedMotion } = userSettings
     applyThemePreference(theme)
@@ -161,6 +172,7 @@ export const AuthProvider = ({ children }) => {
     }
     setUser(null)
     setCsrfToken(null)
+    setAccessToken(null)
     delete api.defaults.headers.common[CSRF_HEADER_NAME]
     delete axios.defaults.headers.common[CSRF_HEADER_NAME]
   }, [])
@@ -168,7 +180,8 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     setLogoutHandler(() => forceLogout)
     setCsrfTokenHandler((token) => applyCsrfToken(token))
-  }, [forceLogout, applyCsrfToken])
+    setAccessTokenHandler((token) => applyAccessToken(token))
+  }, [forceLogout, applyCsrfToken, applyAccessToken])
 
   const register = useCallback(async (payload) => {
     const { nickname, email, password, avatar } = payload
@@ -196,15 +209,19 @@ export const AuthProvider = ({ children }) => {
       }
       
       const token = response?.data?.csrfToken
+      const tokens = response?.data?.tokens
       if (token) {
         applyCsrfToken(token)
+      }
+      if (tokens?.accessToken) {
+        applyAccessToken(tokens.accessToken)
       }
       const profile = await fetchProfile()
       return profile
     } finally {
       setIsLoading(false)
     }
-  }, [applyCsrfToken, fetchProfile])
+  }, [applyCsrfToken, fetchProfile, applyAccessToken])
 
   const login = useCallback(async (identifier, password) => {
     setIsLoading(true)
@@ -222,9 +239,13 @@ export const AuthProvider = ({ children }) => {
       
       const loggedInUser = response?.data?.user || null
       const token = response?.data?.csrfToken
+      const tokens = response?.data?.tokens
 
       if (token) {
         applyCsrfToken(token)
+      }
+      if (tokens?.accessToken) {
+        applyAccessToken(tokens.accessToken)
       }
 
       if (loggedInUser) {
@@ -265,7 +286,7 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setIsLoading(false)
     }
-  }, [applyCsrfToken])
+  }, [applyCsrfToken, applyAccessToken])
 
   const logout = useCallback(async () => {
     await forceLogout()
@@ -357,6 +378,7 @@ export const AuthProvider = ({ children }) => {
     refreshProfile: fetchProfile,
     api,
     csrfToken,
+    token: accessToken,
     renderKey // Add render key to force re-renders when needed
   }
 

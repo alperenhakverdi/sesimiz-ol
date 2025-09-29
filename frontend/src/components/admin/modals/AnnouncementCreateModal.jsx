@@ -22,7 +22,8 @@ import {
   Box,
   Alert,
   AlertIcon,
-  useToast
+  useToast,
+  useColorModeValue
 } from '@chakra-ui/react';
 
 const AnnouncementCreateModal = ({ isOpen, onClose, announcement, onUpdate }) => {
@@ -218,7 +219,7 @@ const AnnouncementCreateModal = ({ isOpen, onClose, announcement, onUpdate }) =>
                   <Radio value="all">
                     <VStack align="start" spacing={0}>
                       <Text>Herkese</Text>
-                      <Text fontSize="sm" color="gray.600">
+                      <Text fontSize="sm" color={useColorModeValue('neutral.600', 'neutral.300')}>
                         Tüm platform kullanıcıları (yaklaşık 245 kişi)
                       </Text>
                     </VStack>
@@ -226,7 +227,7 @@ const AnnouncementCreateModal = ({ isOpen, onClose, announcement, onUpdate }) =>
                   <Radio value="users">
                     <VStack align="start" spacing={0}>
                       <Text>Sadece Kullanıcılara</Text>
-                      <Text fontSize="sm" color="gray.600">
+                      <Text fontSize="sm" color={useColorModeValue('neutral.600', 'neutral.300')}>
                         Normal kullanıcılar (yaklaşık 200 kişi)
                       </Text>
                     </VStack>
@@ -234,7 +235,7 @@ const AnnouncementCreateModal = ({ isOpen, onClose, announcement, onUpdate }) =>
                   <Radio value="organizations">
                     <VStack align="start" spacing={0}>
                       <Text>Sadece STK'lara</Text>
-                      <Text fontSize="sm" color="gray.600">
+                      <Text fontSize="sm" color={useColorModeValue('neutral.600', 'neutral.300')}>
                         Kayıtlı kuruluşlar (yaklaşık 15 kuruluş)
                       </Text>
                     </VStack>
@@ -242,7 +243,7 @@ const AnnouncementCreateModal = ({ isOpen, onClose, announcement, onUpdate }) =>
                   <Radio value="admins">
                     <VStack align="start" spacing={0}>
                       <Text>Sadece Adminlere</Text>
-                      <Text fontSize="sm" color="gray.600">
+                      <Text fontSize="sm" color={useColorModeValue('neutral.600', 'neutral.300')}>
                         Sistem yöneticileri (5 kişi)
                       </Text>
                     </VStack>
