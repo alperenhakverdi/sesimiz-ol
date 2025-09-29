@@ -1,34 +1,53 @@
-# Repository Guidelines
+# Contributor Quick Guide
 
-## Project Structure & Module Organization
-- `backend/` hosts the Express API; core code lives in `backend/src/`, Prisma schema in `backend/prisma/`, automated tests in `backend/tests/`, and seed utilities in `backend/scripts/`.
-- `frontend/` contains the Vite React app with components, pages, and contexts under `frontend/src/` and static assets in `frontend/public/`.
-- `functions/` provides Firebase Cloud Functions targeting Node 18, while `docs/`, `scripts/`, and `shared/` hold reference material, operational helpers, and shared assets.
-- Copy `.env.example` files (root and `backend/`) before running any service; adjust ports and database URLs as needed.
+Welcome to *Sesimiz Ol*. This is the drop-in cheat sheet for agents/contributors.
 
-## Build, Test, and Development Commands
-- `npm run dev` (root) boots the full stack: backend on `http://localhost:3002` and frontend via Vite (default `5173`).
-- `cd backend && npm run dev` starts the API with hot reload.
-- `cd frontend && npm run dev` launches the React client.
-- `cd backend && npm test` runs Jest + Supertest suites; `npm run test:coverage` adds Istanbul coverage output.
-- Prisma workflows: `npm run prisma:generate`, `npm run prisma:migrate`, and `npm run seed` for development data.
+## Project Snapshot
+- **Frontend:** `frontend/` (React 18 + Vite + Chakra UI)
+- **Backend:** `backend/` (Node.js + Express + Prisma)
+- **Infra:** `docker-compose.yml` (backend + frontend + optional nginx), shared helpers in `shared/`, scripts in `scripts/`.
+- **Serverless:** `functions/` hosts Firebase Cloud Functions (optional).
 
-## Coding Style & Naming Conventions
-- Follow the shared Prettier config (2-space indent, single quotes, semicolons) and ESLint rules in both apps.
-- Prefer `const`/`let`; avoid `var`. Backend routes use lowercase filenames (e.g., `stories.js`), controllers use `camelCaseController.js`, and React components use PascalCase (e.g., `HomePage.jsx`).
-- Keep commits and diffs ASCII; document any intentional deviations.
+## Local Workflow
+1. `npm install` (root) → installs root toolchain (`concurrently`).
+2. `cd frontend && npm install`, `cd backend && npm install`.
+3. `cp .env.example .env` in root, backend, and frontend.
+4. Database setup:
+   ```bash
+   cd backend
+   npx prisma migrate dev
+   npm run seed
+   ```
+5. Start everything from root: `npm run dev` (backend 3002, frontend 5173).
 
-## Testing Guidelines
-- Backend tests reside in `backend/tests/endpoints/` and related folders, leveraging Jest setup that auto-applies migrations using `TEST_DATABASE_URL`.
-- Write tests alongside features; mirror filenames with a `.test.js` suffix.
-- Inspect coverage locally with `npm run test:coverage`; investigate any drops before merging.
+> Prefer SQLite for local dev (auto-managed by Prisma). Use PostgreSQL in production.
 
-## Commit & Pull Request Guidelines
-- Use Conventional Commit prefixes (`feat:`, `fix:`, `docs:`, `refactor:`); write imperative, concise subjects.
-- PRs should include a clear summary, linked issues, backend/frontend testing notes, and screenshots for UI tweaks.
-- Verify lint (`cd frontend && npm run lint`) and Jest suites before requesting review; mention Prisma migrations or seed changes explicitly.
+## Coding Standards
+- Follow ESLint/Prettier defaults (2 spaces, single quotes, semicolons).
+- React components in PascalCase (`StoryLikeButton.jsx`), backend controllers in `camelCaseController.js`.
+- Keep hooks at the top level; avoid conditional `useColorModeValue` calls.
+- Check `frontend/.eslintrc` and `backend` lint rules when touching files.
 
-## Security & Configuration Tips
-- Never commit secrets; rely on `.env` files and keep them out of version control.
-- Update `VITE_API_BASE_URL` when the backend port or host changes.
-- Rotate `JWT_SECRET` and `JWT_REFRESH_SECRET` promptly if exposed, and restrict CORS origins to trusted hosts.
+## Git & Reviews
+- Conventional commits (`feat:`, `fix:`, `chore:`, `docs:`).
+- Run relevant lint/tests before opening a PR:
+  ```bash
+  cd frontend && npm run lint
+  cd backend && npm test
+  ```
+- Mention Prisma migrations/seed changes in PR description.
+- Screenshots/GIFs for UI adjustments are appreciated.
+
+## Data & Seeds
+- Seed script lives at `backend/src/seedDatabase.js` (`npm run seed`).
+- Demo accounts include `fatma@example.com / demo123` plus additional sample users.
+
+## Docker Tips
+- `docker compose up --build` starts backend + frontend (nginx proxy optional).
+- After containers start, run migrations inside backend container:
+  ```bash
+  docker compose exec backend npx prisma migrate deploy
+  docker compose exec backend npm run seed
+  ```
+
+Need more detail? Check `README.md`, `DEVELOPMENT.md`, and `SECURITY.md` for expanded instructions.

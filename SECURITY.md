@@ -1,92 +1,46 @@
-# Security Configuration Guide
+# Security & Hardening Guide
 
-## Production Security Checklist
+This checklist summarizes the minimum steps required before deploying *Sesimiz Ol* to a production environment.
 
-### 1. Environment Variables
-- [ ] Change `JWT_SECRET` to a secure random string
-- [ ] Change `CSRF_SECRET` to a secure random string
-- [ ] Set `NODE_ENV=production`
-- [ ] Configure proper `CORS_ORIGIN` for your domain
-- [ ] Set up email configuration for password reset
+## 1. Environment & Secrets
+- Generate unique values for `JWT_SECRET` and `JWT_REFRESH_SECRET` (store outside git).
+- Set `DATABASE_URL` to a managed PostgreSQL instance with TLS.
+- Configure `CORS_ORIGIN` to the public frontend domain.
+- Disable verbose logging: `NODE_ENV=production` and adjust logger level.
 
-### 2. Database Security
-- [ ] Use PostgreSQL in production (not SQLite)
-- [ ] Enable SSL for database connections
-- [ ] Use strong database credentials
-- [ ] Regular database backups
+## 2. Prisma & Database
+- Run migrations via `npx prisma migrate deploy` during deployment.
+- Enforce least-privilege DB credentials and rotate regularly.
+- Enable automated backups and point-in-time recovery on the DB server.
+- Monitor slow queries (via Prisma or DB logs).
 
-### 3. Server Security
-- [ ] Use HTTPS in production
-- [ ] Set up proper reverse proxy (nginx)
-- [ ] Enable security headers
-- [ ] Configure rate limiting
-- [ ] Set up monitoring and logging
+## 3. API & App Server
+- Serve backend behind HTTPS (e.g., nginx reverse proxy).
+- Helmet middleware already sets CSP, HSTS, and other security headers—verify values match deployment domain.
+- Keep rate limits enabled (`express-rate-limit` in auth & messaging routes).
+- Ensure CSRF tokens are required for all state-changing requests (already enforced).
+- Validate payloads via existing Joi/validator middleware; extend rules when adding fields.
 
-### 4. Authentication Security
-- [ ] Strong password requirements
-- [ ] Account lockout after failed attempts
-- [ ] Session management
-- [ ] CSRF protection enabled
-- [ ] JWT token expiration
+## 4. Authentication & Sessions
+- Passwords hashed with bcrypt (12 rounds); enforce strong password policy on the frontend.
+- JWT access tokens short lived; refresh tokens rotated on each refresh.
+- Account lockout is implemented—monitor lockout events to detect brute-force attempts.
+- Invalidate sessions on logout/all-device logout endpoints.
 
-### 5. File Upload Security
-- [ ] File type validation
-- [ ] File size limits
-- [ ] Virus scanning
-- [ ] Secure file storage
+## 5. File Uploads
+- Avatar uploads limited to 5 MB and verified by MIME type.
+- Store uploads outside the repo (`backend/uploads`) and back the directory with a secure volume or object store.
+- Consider adding antivirus scanning in production if allowing arbitrary uploads.
 
-### 6. API Security
-- [ ] Input validation on all endpoints
-- [ ] SQL injection prevention
-- [ ] XSS protection
-- [ ] Rate limiting per endpoint
-- [ ] Authentication required for sensitive operations
+## 6. Monitoring & Alerts
+- Enable application logging (pino) and ship logs to a central store.
+- Track health endpoints (`/health`) with uptime monitoring.
+- Set up alerting for 4xx/5xx spikes, rate-limit hits, and DB connection errors.
 
-## Security Headers
+## 7. Ongoing Maintenance
+- Regularly update npm dependencies (`npm outdated` / `npm audit fix`).
+- Review audit logs for admin actions and failed logins.
+- Run `npm run test` and `npm run lint` before each release.
+- Document and test incident response (backup restore, user lockout).
 
-The application includes comprehensive security headers:
-
-- **Content Security Policy (CSP)**: Prevents XSS attacks
-- **X-Frame-Options**: Prevents clickjacking
-- **X-Content-Type-Options**: Prevents MIME sniffing
-- **Referrer-Policy**: Controls referrer information
-- **HSTS**: Forces HTTPS in production
-
-## Rate Limiting
-
-Rate limiting is configured for:
-
-- **General API**: 100 requests per 15 minutes
-- **Authentication**: 5 requests per 15 minutes
-- **File Upload**: 10 requests per 15 minutes
-
-## CSRF Protection
-
-All state-changing operations require CSRF tokens:
-
-- POST, PUT, DELETE, PATCH requests
-- Tokens are generated per session
-- Tokens expire with sessions
-
-## Authentication Flow
-
-1. User provides credentials
-2. Server validates credentials
-3. Server creates JWT tokens
-4. Tokens stored in secure HTTP-only cookies
-5. CSRF token generated and sent
-6. Subsequent requests include CSRF token
-
-## Password Security
-
-- Passwords hashed with bcrypt (12 rounds)
-- Account lockout after 5 failed attempts
-- 30-minute lockout duration
-- Strong password requirements
-
-## Session Management
-
-- JWT tokens with expiration
-- Refresh token rotation
-- Session invalidation on logout
-- Multiple session support per user
+For additional reference, see `docs/SECURITY_CHECKLIST.md` (if maintained) or expand this file as the platform evolves.
